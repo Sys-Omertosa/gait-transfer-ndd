@@ -1,0 +1,24 @@
+# Data
+data/raw/
+data/processed/
+
+# Private context
+context/
+
+# Experiment outputs
+experiments/models/
+experiments/results/interim/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment
+.env
+venv/
+
+# Windows
+Thumbs.db
+desktop.ini
+.vscode/

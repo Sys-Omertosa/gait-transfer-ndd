@@ -1,0 +1,32 @@
+# Python 3.12.x
+# Generated: 2026-03-30
+# Full pinned environment: requirements.txt
+
+# Core data
+numpy==2.4.4
+polars==1.39.3
+pandas==2.2.3
+
+# ML
+scikit-learn==1.8.0
+imbalanced-learn==0.14.1
+xgboost==3.2.0
+lightgbm==4.6.0
+
+# Explainability
+shap==0.51.0
+
+# Visualization
+plotly==6.6.0
+matplotlib==3.10.8
+
+# Notebooks
+jupyter==1.1.1
+ipykernel==7.2.0
+
+# Deployment
+streamlit==1.55.0
+
+# Utilities
+scipy==1.17.1
+tqdm==4.67.3
