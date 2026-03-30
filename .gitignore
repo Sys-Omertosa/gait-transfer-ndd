@@ -4,6 +4,7 @@ data/processed/
 
 # Private context
 context/
+CLAUDE.md
 
 # Experiment outputs
 experiments/models/
