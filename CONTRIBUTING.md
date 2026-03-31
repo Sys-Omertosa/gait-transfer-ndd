@@ -81,3 +81,32 @@ Member 2:                            ↑ unblocked → Step 2 → Steps 5, 6, 7,
 **Note:** Steps 6 and 7 (PCA, K-Means) only require the processed feature matrix — Member 2 can begin these immediately after Step 1 without waiting for Step 2 to complete.
 
 ---
+
+## 3. Technology Stack
+
+**Language:** Python 3.12.x
+
+| Library | Role |
+|---|---|
+| `polars` | Primary data layer — loading, filtering, feature engineering |
+| `pandas` | Compatibility layer for sklearn/shap/imbalanced-learn only |
+| `numpy` | Array operations, noise injection |
+| `scikit-learn` | All classifiers, LOSO-CV, GridSearchCV, PCA, KMeans |
+| `imbalanced-learn` | SMOTE — inside LOSO pipeline only via `imblearn.pipeline.Pipeline` |
+| `xgboost` | Gradient boosting classifier 1 |
+| `lightgbm` | Gradient boosting classifier 2 |
+| `shap` | SHAP values, δj metric, waterfall plots |
+| `plotly` | Primary visualization library — all custom charts |
+| `matplotlib` | SHAP built-in plots only — do not use for custom charts |
+| `streamlit` | Deployment demo (Step 8) — minimal UI |
+| `scipy` | Statistical tests |
+| `tqdm` | Progress bars for LOSO loops |
+
+**Polars→pandas handoff pattern (use at sklearn/shap boundary only):**
+```python
+X_np = gait_clean.select(feature_cols).to_numpy()
+y = gait_clean['label'].to_numpy()
+groups = gait_clean['subject_id'].to_numpy()
+```
+
+---
