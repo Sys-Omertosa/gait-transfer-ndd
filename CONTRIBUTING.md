@@ -57,28 +57,56 @@ gait-transfer-ndd/
 
 ## 2. Work Split
 
-### Member 1
-- **Step 1** — Data pipeline: `src/preprocessing.py`, `src/features.py`, `notebooks/01_preprocessing.ipynb`
-- **Step 3** — Cross-condition transfer experiment: `src/evaluate.py`, `notebooks/03_cross_condition.ipynb` (primary novel contribution)
-- **Step 4** — SHAP transfer failure diagnosis: `src/explain.py`, `notebooks/04_shap_analysis.ipynb`
-- **IEEE paper** — Sections 1–4: Introduction, Related Work, Dataset, Methodology
-
-### Member 2
-- **Step 2** — Within-condition training: hyperparameter tuning grid, SMOTE pipeline, `src/train.py`, `notebooks/02_within_condition.ipynb`
-- **Step 5** — Noise robustness: `notebooks/05_noise_robustness.ipynb`
-- **Steps 6–7** — PCA and K-Means: `notebooks/06_pca_kmeans.ipynb`
-- **Step 8** — Streamlit deployment demo: `app/app.py`
-- **IEEE paper** — Sections 5–7: Results, Discussion, Conclusion
-
 ### Dependency order and coordination
 ```
-Member 1: Step 1 → commit processed data + split → Step 3 → Step 4
-Member 2:                            ↑ unblocked → Step 2 → Steps 5, 6, 7, 8
+Step 1 (Member 1)
+    └── Step 2 (Member 1 + Member 2)
+            ├── Step 3 (Member 1)
+                    ├── Step 4 (Member 1)
+            ├── Step 5 (Member 2)
+            └── Step 8 (Member 2)
+
+Step 1 (Member 1)
+    ├── Step 6 (Member 2)
+    └── Step 7 (Member 2)
 ```
 
-**Hard rule:** Member 1 commits the processed feature matrix (`data/processed/gait_features.csv`) and the fixed control partition definition before Member 2 begins any training. This is the single coordination artifact the entire project depends on.
+**Hard rule:** Member 1 commits `data/processed/gait_features.csv` and `data/processed/control_partition.json` before Member 2 begins any work.
 
-**Note:** Steps 6 and 7 (PCA, K-Means) only require the processed feature matrix — Member 2 can begin these immediately after Step 1 without waiting for Step 2 to complete.
+**Steps 6 and 7** only require the feature matrix — Member 2 can begin these
+immediately after Step 1 without waiting for Step 2.
+
+**Steps 3 and 4** cannot begin until Step 2 is complete — Step 3 requires the
+modal best hyperparameters and within-condition F1 scores produced by Step 2.
+
+**Timeline:**
+```
+Member 1: Step 1 → Step 2 (RF + XGB/LGB) → Step 3 (RF first, then full table) → Step 4
+Member 2:              ↑ Step 2 (KNN/SVM/DT/GDA) + Steps 6, 7 → Step 5 → Step 8
+```
+
+### Work Split Assessment:
+
+| Step                   | Best Owner | Reason                                              |
+| ---------------------- | ---------- | --------------------------------------------------- |
+| Step 1                 | Member 1   | Foundational — your work, your constraint knowledge |
+| Step 2: RF + XGB/LGB   | Member 1   | RF and XGBoost/LightGBM pipelines in `src/train.py` |
+| Step 2: KNN/SVM/DT/GDA | Member 2   | KNN, SVM, DT, GDA pipelines in `src/train.py`       |
+| Step 3                 | Member 1   | Primary novel contribution                          |
+| Step 4                 | Member 1   | Depends on Step 3, flows naturally                  |
+| Step 5                 | Member 2   | Only needs Step 2 output                            |
+| Step 6                 | Member 2   | Only needs Step 1 output — can start early          |
+| Step 7                 | Member 2   | Same as Step 6                                      |
+| Step 8                 | Member 2   | Only needs Step 2 RF model                          |
+
+**The key recommendation: split Step 2 between both of you.**
+
+Step 2 is the bottleneck because everything downstream depends on it. The simplest split is by classifier family:
+
+- **Member 1 implements:** RF and XGBoost/LightGBM pipelines in `src/train.py`
+- **Member 2 implements:** KNN, SVM, DT, GDA pipelines in `src/train.py`
+
+Both work in parallel on Step 2 after Step 1 is committed. Member 1 gets the RF results first (the primary classifier), which is enough to unblock Step 3 partially — you can run the RF cross-condition experiment and SHAP analysis while Member 2 finishes the remaining classifiers. The full degradation table is only complete when all classifiers are done, but the most important result (RF) doesn't have to wait.
 
 ---
 
