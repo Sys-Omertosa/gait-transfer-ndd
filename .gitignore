@@ -4,6 +4,8 @@ data/raw/
 # Private context
 context/
 CLAUDE.md
+*.html
+*.pdf
 
 # Experiment outputs
 experiments/models/
