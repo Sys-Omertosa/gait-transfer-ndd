@@ -60,13 +60,12 @@ gait-transfer-ndd/
 ### Dependency order and coordination
 ```
 Step 1 (Member 1)
-    └── Step 2 (Member 1 + Member 2)
-            ├── Step 3 (Member 1)
-                    ├── Step 4 (Member 1)
-            ├── Step 5 (Member 2)
-            └── Step 8 (Member 2)
-
-Step 1 (Member 1)
+    ├── Step 2 (Member 1)
+    |       ├── Step 3 (Member 1)
+    |       |       └── Step 4 (Member 1)
+    |       ├── Step 5 (Member 2)
+    |       └── Step 8 (Member 2)
+    |
     ├── Step 6 (Member 2)
     └── Step 7 (Member 2)
 ```
@@ -81,8 +80,8 @@ modal best hyperparameters and within-condition F1 scores produced by Step 2.
 
 **Timeline:**
 ```
-Member 1: Step 1 → Step 2 (RF + XGB/LGB) → Step 3 (RF first, then full table) → Step 4
-Member 2:              ↑ Step 2 (KNN/SVM/DT/GDA) + Steps 6, 7 → Step 5 → Step 8
+Member 1: Step 1 → Step 2 → Step 3 → Step 4
+Member 2:    ↑ Steps 6, 7 → Step 5 → Step 8
 ```
 
 ### Work Split Assessment:
@@ -90,8 +89,7 @@ Member 2:              ↑ Step 2 (KNN/SVM/DT/GDA) + Steps 6, 7 → Step 5 → S
 | Step                   | Best Owner | Reason                                              |
 | ---------------------- | ---------- | --------------------------------------------------- |
 | Step 1                 | Member 1   | Foundational — your work, your constraint knowledge |
-| Step 2: RF + XGB/LGB   | Member 1   | RF and XGBoost/LightGBM pipelines in `src/train.py` |
-| Step 2: KNN/SVM/DT/GDA | Member 2   | KNN, SVM, DT, GDA pipelines in `src/train.py`       |
+| Step 2:                | Member 1   | All classifier pipelines                            |
 | Step 3                 | Member 1   | Primary novel contribution                          |
 | Step 4                 | Member 1   | Depends on Step 3, flows naturally                  |
 | Step 5                 | Member 2   | Only needs Step 2 output                            |
@@ -99,14 +97,7 @@ Member 2:              ↑ Step 2 (KNN/SVM/DT/GDA) + Steps 6, 7 → Step 5 → S
 | Step 7                 | Member 2   | Same as Step 6                                      |
 | Step 8                 | Member 2   | Only needs Step 2 RF model                          |
 
-**The key recommendation: split Step 2 between both of you.**
-
-Step 2 is the bottleneck because everything downstream depends on it. The simplest split is by classifier family:
-
-- **Member 1 implements:** RF and XGBoost/LightGBM pipelines in `src/train.py`
-- **Member 2 implements:** KNN, SVM, DT, GDA pipelines in `src/train.py`
-
-Both work in parallel on Step 2 after Step 1 is committed. Member 1 gets the RF results first (the primary classifier), which is enough to unblock Step 3 partially — you can run the RF cross-condition experiment and SHAP analysis while Member 2 finishes the remaining classifiers. The full degradation table is only complete when all classifiers are done, but the most important result (RF) doesn't have to wait.
+Work assignments are subject to change. This table reflects the current state.
 
 ---
 
