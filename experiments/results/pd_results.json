@@ -55,7 +55,7 @@
       "modal_frequency": 6
     },
     "lgbm": {
-      "f1_macro": 0.721128,
+      "f1_macro": 0.725111,
       "modal_params": {
         "clf__learning_rate": 0.01,
         "clf__max_depth": 5,

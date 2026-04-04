@@ -137,7 +137,7 @@ def run_condition(
             "clf__n_estimators":  [100, 200],
             "clf__max_depth":     [3, 5, 7],
             "clf__learning_rate": [0.01, 0.1, 0.3],
-            "clf__num_leaves":    [31, 63],   # full grid: 32 GB RAM + n_jobs=1 makes this safe
+            "clf__num_leaves":    [31, 63],   # full grid
         },
     )
 

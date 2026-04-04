@@ -55,14 +55,14 @@
       "modal_frequency": 9
     },
     "lgbm": {
-      "f1_macro": 0.870176,
+      "f1_macro": 0.870331,
       "modal_params": {
         "clf__learning_rate": 0.01,
         "clf__max_depth": 7,
         "clf__n_estimators": 200,
         "clf__num_leaves": 31
       },
-      "modal_frequency": 8
+      "modal_frequency": 7
     }
   }
 }
