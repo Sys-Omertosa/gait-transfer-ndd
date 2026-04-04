@@ -40,7 +40,7 @@ volume = modal.Volume.from_name("gait-results", create_if_missing=True)
 # ── Per-condition training function ───────────────────────────────────────────
 @app.function(
     cpu=16,
-    memory=32768,      # 32 GB RAM — eliminates swap risk for num_leaves=63
+    memory=16384,
     timeout=86400,     # 24-hour ceiling, far beyond the ~2.5 hour estimate
     volumes={"/results": volume},
 )
@@ -66,6 +66,8 @@ def run_condition(
     import polars as pl
     from datetime import datetime
     from pathlib import Path as _Path
+    from sklearn.ensemble import RandomForestClassifier
+    from xgboost import XGBClassifier
     from lightgbm import LGBMClassifier
 
     from features import ALL_FEATURE_COLS
@@ -106,6 +108,25 @@ def run_condition(
 
     # ── Classifier configs with Modal-specific LightGBM override ─────────────
     configs = get_classifier_configs()
+    
+    configs["rf"] = (
+        RandomForestClassifier(
+            class_weight='balanced',
+            random_state=42,
+            n_jobs=1,
+        ),
+        configs["rf"][1],  # keep original grid unchanged
+    )
+    
+    configs["xgb"] = (
+        XGBClassifier(
+            eval_metric='logloss',
+            random_state=42,
+            n_jobs=1,
+        ),
+        configs["xgb"][1],  # keep original grid unchanged
+    )
+    
     configs["lgbm"] = (
         LGBMClassifier(
             random_state=42,
@@ -189,7 +210,7 @@ def main():
     conditions = ["pd", "hd", "als"]
 
     print("Launching all three conditions in parallel on Modal...")
-    print("Each condition: 16 physical CPU cores, 32 GB RAM, separate container.")
+    print("Each condition: 16 physical CPU cores, 16 GB RAM, separate container.")
     print()
 
     # .spawn() submits all three simultaneously without blocking.

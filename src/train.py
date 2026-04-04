@@ -256,10 +256,7 @@ def get_classifier_configs() -> dict[str, tuple[Any, dict[str, list]]]:
     Each value is a (clf_instance, param_grid) tuple. The param_grid keys use
     the clf__ prefix for ImbPipeline compatibility.
 
-    Classifiers requiring parallelism (RF, XGBoost, LightGBM) are instantiated
-    with n_jobs=-1. Distance-based and margin-based classifiers (KNN, SVM) are
-    not given n_jobs because their parallelism is handled at the GridSearchCV
-    level. QDA and DT have no n_jobs parameter.
+    Parallelism is handled at the GridSearchCV level.
 
     SVM is instantiated with probability=True, which is required for SHAP
     KernelExplainer to compute probability-based explanations.
@@ -272,7 +269,7 @@ def get_classifier_configs() -> dict[str, tuple[Any, dict[str, list]]]:
             RandomForestClassifier(
                 class_weight='balanced',
                 random_state=42,
-                n_jobs=-1,
+                n_jobs=1,
             ),
             {
                 'clf__n_estimators':    [100, 200, 500],
@@ -321,7 +318,7 @@ def get_classifier_configs() -> dict[str, tuple[Any, dict[str, list]]]:
             XGBClassifier(
                 eval_metric='logloss',
                 random_state=42,
-                n_jobs=-1,
+                n_jobs=1,
             ),
             {
                 'clf__n_estimators':  [100, 200],
