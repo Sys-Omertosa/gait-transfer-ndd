@@ -34,6 +34,7 @@ import time
 import warnings
 from pathlib import Path
 from typing import Any
+from datetime import datetime
 
 import numpy as np
 import polars as pl
@@ -331,7 +332,7 @@ def get_classifier_configs() -> dict[str, tuple[Any, dict[str, list]]]:
         'lgbm': (
             LGBMClassifier(
                 random_state=42,
-                n_jobs=-1,
+                n_jobs=1,
                 verbose=-1,
             ),
             {
@@ -399,9 +400,12 @@ def run_within_condition(
     for clf_name, (clf, param_grid) in get_classifier_configs().items():
         pipeline = build_pipeline(clf_name, clf)
 
-        t0 = time.time()
+        t_start = time.time()
+        start_ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f'  {clf_name:<6}  started: {start_ts}', flush=True)
         loso_out = run_nested_loso(X, y, groups, pipeline, param_grid)
-        elapsed = time.time() - t0
+        elapsed = time.time() - t_start
+        end_ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         modal = get_modal_params(
             loso_out['fold_params'],
@@ -422,7 +426,7 @@ def run_within_condition(
 
         print(
             f'  {clf_name:<6}  F1={loso_out["f1_macro"]:.4f}  '
-            f'modal={modal}  ({elapsed:.0f}s)',
+            f'modal={modal}  start={start_ts}  end={end_ts}  ({elapsed:.0f}s)',
             flush=True,
         )
 

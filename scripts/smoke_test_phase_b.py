@@ -27,7 +27,7 @@ from train import get_classifier_configs
 configs = get_classifier_configs()
 
 EXPECTED = ['rf', 'knn', 'svm', 'dt', 'qda', 'xgb', 'lgbm']
-NEED_NJOBS = {'rf', 'xgb', 'lgbm'}
+NEED_NJOBS = {'rf', 'xgb'}
 NO_NJOBS   = {'knn', 'svm'}
 
 passed = 0
@@ -73,6 +73,11 @@ check('qda is QDA not LDA', isinstance(qda_clf, QuadraticDiscriminantAnalysis),
 check('qda is not LDA',     not isinstance(qda_clf, LinearDiscriminantAnalysis),
       type(qda_clf).__name__)
 
+# ── LGBM has n_jobs=1 ──────────────────────────────────────────────────────
+lgbm_clf, _ = configs['lgbm']
+check('lgbm has n_jobs=1', getattr(lgbm_clf, 'n_jobs', None) == 1,
+      f'n_jobs={getattr(lgbm_clf, "n_jobs", "NOT SET")}')
+
 # ── Param grid key prefix checks (clf__) ─────────────────────────────────────
 for name in EXPECTED:
     _, grid = configs[name]
@@ -94,7 +99,7 @@ expected_sizes = {
     'dt':   4 * 3 * 2,   # 24
     'qda':  3,            # 3
     'xgb':  2 * 3 * 3,   # 18
-    'lgbm': 2 * 3 * 3 * 2, # 36
+    'lgbm': 2 * 3 * 3 * 1, # 18
 }
 for name, expected in expected_sizes.items():
     _, grid = configs[name]
