@@ -1,0 +1,68 @@
+{
+  "condition": "hd",
+  "pool_subjects": 27,
+  "pool_strides": 6661,
+  "classifiers": {
+    "rf": {
+      "f1_macro": 0.89947,
+      "modal_params": {
+        "clf__max_depth": null,
+        "clf__min_samples_leaf": 5,
+        "clf__n_estimators": 100
+      },
+      "modal_frequency": 4
+    },
+    "knn": {
+      "f1_macro": 0.866928,
+      "modal_params": {
+        "clf__metric": "euclidean",
+        "clf__n_neighbors": 3,
+        "clf__weights": "distance"
+      },
+      "modal_frequency": 16
+    },
+    "svm": {
+      "f1_macro": 0.852442,
+      "modal_params": {
+        "clf__C": 0.1,
+        "clf__gamma": 0.01
+      },
+      "modal_frequency": 9
+    },
+    "dt": {
+      "f1_macro": 0.898026,
+      "modal_params": {
+        "clf__criterion": "entropy",
+        "clf__max_depth": 5,
+        "clf__min_samples_leaf": 5
+      },
+      "modal_frequency": 15
+    },
+    "qda": {
+      "f1_macro": 0.57988,
+      "modal_params": {
+        "clf__reg_param": 0.5
+      },
+      "modal_frequency": 23
+    },
+    "xgb": {
+      "f1_macro": 0.893711,
+      "modal_params": {
+        "clf__learning_rate": 0.01,
+        "clf__max_depth": 7,
+        "clf__n_estimators": 200
+      },
+      "modal_frequency": 9
+    },
+    "lgbm": {
+      "f1_macro": 0.870176,
+      "modal_params": {
+        "clf__learning_rate": 0.01,
+        "clf__max_depth": 7,
+        "clf__n_estimators": 200,
+        "clf__num_leaves": 31
+      },
+      "modal_frequency": 8
+    }
+  }
+}
