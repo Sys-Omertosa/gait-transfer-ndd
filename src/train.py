@@ -362,10 +362,10 @@ def run_within_condition(
     serve as the fixed parameter set for the zero-shot cross-condition
     evaluation, where no target-condition data is available for tuning.
 
-    The JSON output contains f1_macro, modal_params, and modal_frequency per
-    classifier. The raw prediction arrays (y_true_all, y_pred_all) are not
-    persisted because they are only needed transiently for the confusion matrix
-    in the notebook.
+    The JSON output contains f1_macro, modal_params, modal_frequency, y_true,
+    and y_pred per classifier. The prediction arrays are stored as flat Python
+    lists so that notebooks can compute exact confusion matrices without
+    re-running LOSO-CV with fixed modal params.
 
     Args:
         condition:   One of 'pd', 'hd', 'als'. Must match the condition column
@@ -415,10 +415,20 @@ def run_within_condition(
             1 for p in loso_out['fold_params'] if _params_to_key(p) == modal_key
         )
 
+        f1_stored = round(float(loso_out['f1_macro']), 6)
+        y_true_list = loso_out['y_true_all'].tolist()
+        y_pred_list = loso_out['y_pred_all'].tolist()
+
+        # Verify the stored lists reproduce the stored F1 exactly.
+        assert abs(f1_score(y_true_list, y_pred_list, average='macro') - f1_stored) < 1e-6, \
+            f'{clf_name}: F1 mismatch between stored value and prediction lists'
+
         clf_results[clf_name] = {
-            'f1_macro':       round(float(loso_out['f1_macro']), 6),
-            'modal_params':   modal,
+            'f1_macro':        f1_stored,
+            'modal_params':    modal,
             'modal_frequency': modal_frequency,
+            'y_true':          y_true_list,
+            'y_pred':          y_pred_list,
         }
 
         print(
