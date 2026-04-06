@@ -5,12 +5,14 @@ data/raw/
 context/
 CLAUDE.md
 *.html
-*.pdf
-training_log.txt
+notebooks/*.pdf
+*.txt
+.codex
 
 # Experiment outputs
 experiments/models/
 experiments/results/interim/
+report/figures/*.png
 
 # Python
 __pycache__/
