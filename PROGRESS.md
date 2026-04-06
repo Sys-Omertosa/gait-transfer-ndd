@@ -1,5 +1,23 @@
 # Project Progress Log
 
+## 2026-04-06 — Shahmeer — Within-condition notebook: figures and PDF (notebooks/02_within_condition.ipynb)
+- Refactored `notebooks/02_within_condition.ipynb` to use stored predictions from result JSON files instead of re-running LOSO-CV with fixed modal params (`eval_loso_fixed` removed entirely)
+- Fixed `FIGURES_DIR` from `reports/figures/` (wrong) to `report/figures/` (correct)
+- All five paper figures saved to `report/figures/`: `f1_within_condition_heatmap`, `modal_frequency_heatmap`, `cm_pd_rf`, `cm_hd_rf`, `cm_als_knn` (PDF + PNG each)
+- Notebook executes top-to-bottom without errors
+
+## 2026-04-06 — Shahmeer — Within-condition training: Modal re-run, y_true/y_pred persistence
+- Updated `src/train.py` and `scripts/training/run_within_condition_modal.py` to persist `y_true` and `y_pred` as flat Python lists in each classifier's result JSON entry; added `< 1e-6` F1 round-trip assertion at write time
+- Re-ran all three conditions on Modal (cpu=16, memory=16384) to produce updated `experiments/results/{pd,hd,als}_results.json` with stored prediction arrays
+- LightGBM num_leaves grid confirmed {31, 63} on Modal; num_leaves=31 selected in all conditions; only change from previous run is LightGBM PD F1: 0.7211 → 0.7251
+- All other classifiers bit-for-bit identical between local and Modal runs, confirming full determinism across platforms
+
+## 2026-04-04 — Shahmeer — Within-condition training: local run, Modal run, results analysis
+- Ran full within-condition training locally for all three conditions and all 7 classifiers using `scripts/run_step2_training.py`; results saved to `experiments/results/{pd,hd,als}_results.json`
+- Identified nested OpenMP parallelism bug (n_jobs=-1 at both GridSearchCV and classifier level under gVisor); fixed by setting n_jobs=1 on RF, XGBoost, and LightGBM at classifier level; n_jobs=-1 retained at GridSearchCV level only; zero effect on accuracy
+- Re-ran on Modal (cpu=16, memory=16384) with expanded LightGBM num_leaves grid {31, 63} to validate the num_leaves=31 constraint; confirmed num_leaves=31 selected in all three conditions, validating original grid choice
+- Authoritative results (Modal run): PD best RF F1=0.7777, HD best RF F1=0.8995, ALS best KNN F1=0.8758
+
 ## 2026-04-03 — Shahmeer — Within-condition training: Phase B (src/train.py complete, runner script)
 - Implemented `get_classifier_configs()` with all 7 classifiers (RF, KNN, SVM, DT, QDA, XGBoost, LightGBM) and full hyperparameter grids matching GUIDELINE.md
 - Implemented `run_within_condition()` which constructs the binary training pool, runs nested LOSO-CV for all classifiers, and saves results to `experiments/results/{condition}_results.json`
