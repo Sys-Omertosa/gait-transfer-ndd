@@ -1,5 +1,34 @@
 # Project Progress Log
 
+## 2026-04-08 — Shahmeer — Step 3 Phase C: subject-level bootstrap CIs and structural fix
+
+- Added subject-level bootstrap CIs to `run_cross_condition()` in `src/train.py`: 10,000 resamples (vs. 1,000 for stride-level) drawing subjects with replacement and collecting all their strides, with a degenerate-resample rejection loop that discards and redraws any resample producing a single-class y_true; rejection rates confirmed negligible (0.01–0.03% across all 42 classifier-direction pairs)
+- Moved `target_subject_ids` from per-classifier dict to direction-level in `src/train.py` and regenerated `experiments/results/cross_condition_results.json`; field now appears once per direction alongside `target_pool_subjects` and `target_pool_strides`, not duplicated 7× across classifiers
+- Subject CI fields `f1_macro_subj_ci_lower` and `f1_macro_subj_ci_upper` confirmed present and bracketing point estimate for all 42 entries; subject CIs are 0.20–0.41 F1 units wider than stride CIs, confirming subject-to-subject variance dominates uncertainty
+- Modal run confirmed bit-for-bit identical F1 values and stride CIs to the local run; subject CIs differ by up to ~0.02 due to different rng state consumed by the 10,000-resample loops across the two runs (rng state is direction-sequential and the Modal run processes directions independently)
+
+## 2026-04-08 — Shahmeer — Step 3 Phase B: runner scripts and full six-direction transfer run
+
+- Added `scripts/training/run_cross_condition_local.py`: sequential local runner for all six transfer directions; loads `gait_features.csv`, `control_partition.json`, and the three Step 2 result JSONs; accumulates all six direction dicts into a single output dict; writes `experiments/results/cross_condition_results.json` after all directions complete
+- Added `scripts/training/run_cross_condition_modal.py`: single-container Modal runner (cpu=16, memory=16384) replicating the image/volume/entrypoint pattern from `run_within_condition_modal.py`; single container because the 21 source models (7 classifiers × 3 source conditions) are fitted once and cached via joblib for reuse across directions sharing the same source
+- Local run: all six directions completed in 136 seconds; all verification assertions pass (F1 round-trip < 1e-6, CI brackets point estimate, p-value ∈ [0,1], both classes in target, 21 joblib model files confirmed in `experiments/models/`)
+- `experiments/results/cross_condition_results.json` written by local run and confirmed bit-for-bit identical to `experiments/results/cross_condition_results_modal.json` downloaded from Modal volume
+- Preliminary degradation table (best-classifier ΔF1 per direction): pd→hd −0.0431, hd→pd +0.2288, pd→als +0.0312, als→pd +0.2722, hd→als +0.1653, als→hd +0.2942
+
+## 2026-04-07 — Shahmeer — Step 3 Phase A: run_cross_condition() implementation and documentation
+
+- Implemented `run_cross_condition()` in `src/train.py`: source pool construction with pool-size assertions against Step 2 JSON, target pool construction with both-class assertion, per-classifier modal-param loading → pipeline build → set_params → fit-or-load → predict → metrics → bootstrap CI → permutation test → joblib save
+- Bootstrap 95% CI: 1,000 resamples of (y_true, y_pred) pairs using `numpy.random.default_rng(42)`, 2.5th/97.5th percentile of F1 macro distribution
+- Permutation test: 1,000 shuffles of y_true against original y_pred, p-value = fraction of permuted F1 ≥ observed F1
+- Model persistence: fitted pipelines saved to `experiments/models/{source_cond}_{clf_name}.joblib`; function is idempotent (loads existing model rather than retraining)
+- Verification: all assertions pass; pd→hd RF F1=0.8208 CI=[0.8108,0.8309] p=0.0000; target pool 27 subjects 6,611 strides confirmed; zero source/target overlap confirmed
+
+## 2026-04-07 — Shahmeer — Step 2 improvement candidates identified, deferred to post-Step-4
+
+- Identified four improvement candidates for the within-condition baseline after Steps 3 and 4 are complete: (1) expanded hyperparameter grids for RF, KNN, SVM, XGBoost, LightGBM; (2) subject-level normalization / dimensionless normalization (highest expected value for PD); (3) additional engineered features (stance/swing ratio, signed L/R asymmetry, CV of swing and stance); (4) SMOTE ablations for HD and ALS
+- Deferred to a unified post-Step-4 Modal run combining improved Steps 1–4 in sequence; no changes to existing Step 2 results or pipeline
+- Current Step 2 results remain the authoritative baseline for Step 3 degradation computation
+
 ## 2026-04-06 — Shahmeer — Within-condition notebook: figures and PDF (notebooks/02_within_condition.ipynb)
 - Refactored `notebooks/02_within_condition.ipynb` to use stored predictions from result JSON files instead of re-running LOSO-CV with fixed modal params (`eval_loso_fixed` removed entirely)
 - Fixed `FIGURES_DIR` from `reports/figures/` (wrong) to `report/figures/` (correct)
