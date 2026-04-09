@@ -9,6 +9,7 @@ Functions implemented here:
   get_modal_params        -- extracts modal best params from per-fold records
   get_classifier_configs  -- returns all 7 (clf, param_grid) configurations
   run_within_condition    -- orchestrates the full experiment for one condition
+  run_cross_condition     -- zero-shot transfer from source to target condition
 
 SMOTE convention: Mittal et al. (Frontiers Robotics AI, 2025) and Chu et al.
 (MDPI Entropy, 2020) both apply SMOTE on training folds only on PhysioNet NDD
@@ -36,6 +37,7 @@ from pathlib import Path
 from typing import Any
 from datetime import datetime
 
+import joblib
 import numpy as np
 import polars as pl
 from imblearn.over_sampling import SMOTE
@@ -43,7 +45,7 @@ from imblearn.pipeline import Pipeline as ImbPipeline
 from lightgbm import LGBMClassifier
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
@@ -56,6 +58,7 @@ from features import ALL_FEATURE_COLS
 warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
 # ── Shared helpers ───────────────────────────────────────────────────────────
+
 
 def _params_to_key(d: dict) -> tuple:
     """Convert a params dict to a hashable tuple for counting and comparison."""
@@ -382,13 +385,14 @@ def run_within_condition(
 
     # ── Construct binary training pool ────────────────────────────────────────
     pool = df.filter(
-        (pl.col('condition') == condition) | pl.col('subject_id').is_in(control_a)
+        (pl.col('condition') == condition) | pl.col(
+            'subject_id').is_in(control_a)
     )
     pool_subjects = pool.n_unique('subject_id')
-    pool_strides  = pool.shape[0]
+    pool_strides = pool.shape[0]
 
-    X      = pool.select(ALL_FEATURE_COLS).to_numpy().astype(np.float64)
-    y      = pool['label'].to_numpy().astype(int)
+    X = pool.select(ALL_FEATURE_COLS).to_numpy().astype(np.float64)
+    y = pool['label'].to_numpy().astype(int)
     groups = pool['subject_id'].to_numpy()
 
     # ── Run each classifier ───────────────────────────────────────────────────
@@ -450,3 +454,259 @@ def run_within_condition(
         json.dump(output, f, indent=2)
 
     return output
+
+
+# ── Zero-shot cross-condition transfer ───────────────────────────────────────
+
+def run_cross_condition(
+    source_condition: str,
+    target_condition: str,
+    df: pl.DataFrame,
+    control_a: list[str],
+    control_b: list[str],
+    source_results: dict,
+    results_dir: str | Path,
+    models_dir: str | Path,
+) -> dict[str, Any]:
+    """
+    Zero-shot transfer of source-condition classifiers to a target condition.
+
+    The source model is trained once on the full source pool (source condition
+    strides + Control Group A strides) using the modal hyperparameters
+    identified during within-condition LOSO-CV. No hyperparameter tuning is
+    performed on target-condition data -- none is available under the zero-shot
+    protocol. This design choice is a deliberate limitation and must be stated
+    as such in the Methods section.
+
+    Control partition enforces the zero-shot claim for both classes:
+      - Control Group A appears in the source training pool only.
+      - Control Group B appears in the target evaluation pool only.
+    Neither the target pathological subjects nor the Group B controls were seen
+    during source training, so neither class leaks across the split.
+
+    SMOTE is applied inside the ImbPipeline during .fit() on the source pool
+    only. It is never applied to the target evaluation pool -- the pipeline's
+    .predict() call skips the SMOTE step, as ImbPipeline's transform chain
+    does not run samplers at prediction time.
+
+    Statistical context per classifier:
+      - Bootstrap 95% CI: 1,000 resamples of (y_true, y_pred) pairs with
+        replacement; 2.5th/97.5th percentile of resampled F1 macro values.
+        Provides a confidence interval on the transfer F1 estimate.
+      - Permutation p-value: 1,000 random shuffles of y_true against the
+        original y_pred; p = fraction of permuted F1 >= observed F1.
+        Tests whether the observed transfer F1 exceeds chance performance.
+      Both procedures use numpy.random.default_rng(42) for reproducibility.
+
+    Model persistence: each fitted pipeline is saved to
+    experiments/models/{source_condition}_{clf_name}.joblib for Step 4 SHAP
+    computation. If the file already exists it is loaded rather than re-fitted,
+    so the function is idempotent across repeated calls.
+
+    Args:
+        source_condition: One of 'pd', 'hd', 'als'. Condition the classifier
+                          was tuned and trained on.
+        target_condition: One of 'pd', 'hd', 'als'. Condition being evaluated.
+                          Must differ from source_condition.
+        df:               Full feature DataFrame from gait_features.csv.
+        control_a:        List of Control Group A subject IDs. Used in the
+                          source training pool only.
+        control_b:        List of Control Group B subject IDs. Used in the
+                          target evaluation pool only.
+        source_results:   Dict loaded from {source_condition}_results.json.
+                          Must contain 'pool_subjects', 'pool_strides', and
+                          'classifiers' with modal_params per classifier.
+        results_dir:      Directory where the output JSON will be written.
+                          The file is NOT written by this function -- the
+                          caller (runner script) is responsible for writing.
+        models_dir:       Directory where fitted pipelines are saved as
+                          {source_condition}_{clf_name}.joblib.
+
+    Returns:
+        Dict with keys: source_condition, target_condition,
+        source_pool_subjects, source_pool_strides, target_pool_subjects,
+        target_pool_strides, classifiers. The classifiers dict maps each
+        classifier name to its transfer metrics, CIs, p-value, stored
+        predictions, and the modal params used for training. Does NOT write
+        any JSON file -- the caller handles persistence.
+    """
+    results_dir = Path(results_dir)
+    models_dir = Path(models_dir)
+    models_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Source pool ───────────────────────────────────────────────────────────
+    source_pool = df.filter(
+        (pl.col('condition') == source_condition) |
+        pl.col('subject_id').is_in(control_a)
+    )
+    source_pool_subjects = source_pool.n_unique('subject_id')
+    source_pool_strides = source_pool.shape[0]
+
+    # Guard against drift between the stored JSON and the current feature matrix.
+    assert source_pool_subjects == source_results['pool_subjects'], (
+        f'Source pool subject count mismatch: feature matrix has '
+        f'{source_pool_subjects}, JSON says {source_results["pool_subjects"]}. '
+        f'Re-run within-condition training or verify gait_features.csv.'
+    )
+    assert source_pool_strides == source_results['pool_strides'], (
+        f'Source pool stride count mismatch: feature matrix has '
+        f'{source_pool_strides}, JSON says {source_results["pool_strides"]}. '
+        f'Re-run within-condition training or verify gait_features.csv.'
+    )
+
+    X_source = source_pool.select(
+        ALL_FEATURE_COLS).to_numpy().astype(np.float64)
+    y_source = source_pool['label'].to_numpy().astype(int)
+
+    # ── Target pool ───────────────────────────────────────────────────────────
+    target_pool = df.filter(
+        (pl.col('condition') == target_condition) |
+        pl.col('subject_id').is_in(control_b)
+    )
+    target_pool_subjects = target_pool.n_unique('subject_id')
+    target_pool_strides = target_pool.shape[0]
+
+    X_target = target_pool.select(
+        ALL_FEATURE_COLS).to_numpy().astype(np.float64)
+    y_target = target_pool['label'].to_numpy().astype(int)
+    # Stored alongside y_true/y_pred so that the notebook can compute per-subject
+    # degradation breakdowns without requiring a separate join back to the CSV.
+    target_subject_ids = target_pool['subject_id'].to_list()
+
+    # Both classes must be present in the target pool for F1 macro to be
+    # well-defined. A single-class target pool would indicate a data error.
+    assert len(np.unique(y_target)) == 2, (
+        f'Target pool ({target_condition} + Control B) contains only one class. '
+        f'Check control_partition.json and gait_features.csv.'
+    )
+
+    # ── Per-classifier transfer evaluation ───────────────────────────────────
+    # The rng is instantiated once per direction call and consumed sequentially
+    # across classifiers (1,000 bootstrap draws then 1,000 permutation draws per
+    # classifier, in get_classifier_configs() order). Results are deterministic
+    # given fixed classifier order.
+    rng = np.random.default_rng(42)
+    clf_results: dict[str, dict] = {}
+
+    for clf_name, (clf_instance, _) in get_classifier_configs().items():
+        modal_params = source_results['classifiers'][clf_name]['modal_params']
+        pipeline = build_pipeline(clf_name, clf_instance)
+        pipeline.set_params(**modal_params)
+
+        model_path = models_dir / f'{source_condition}_{clf_name}.joblib'
+
+        if model_path.exists():
+            # Load previously fitted pipeline to ensure reproducibility across
+            # repeated calls. The saved model was fitted on the identical source
+            # pool with identical modal params.
+            pipeline = joblib.load(model_path)
+        else:
+            pipeline.fit(X_source, y_source)
+            joblib.dump(pipeline, model_path)
+
+        y_pred = pipeline.predict(X_target)
+        y_true = y_target
+
+        f1_val = round(float(f1_score(y_true, y_pred, average='macro')), 6)
+        precision_val = round(float(precision_score(
+            # type: ignore[arg-type]
+            y_true, y_pred, average='macro', zero_division=0)), 6)
+        recall_val = round(float(recall_score(
+            # type: ignore[arg-type]
+            y_true, y_pred, average='macro', zero_division=0)), 6)
+        accuracy_val = round(float(accuracy_score(y_true, y_pred)), 6)
+
+        # Stride-level bootstrap 95% CI on F1 macro (primary reported CI).
+        # Resamples (y_true, y_pred) pairs with replacement 1,000 times.
+        n = len(y_true)
+        boot_f1 = np.empty(1000)
+        for i in range(1000):
+            idx = rng.integers(0, n, size=n)
+            boot_f1[i] = f1_score(y_true[idx], y_pred[idx], average='macro')
+        ci_lower = round(float(np.percentile(boot_f1, 2.5)), 6)
+        ci_upper = round(float(np.percentile(boot_f1, 97.5)), 6)
+
+        # Permutation test: how often does shuffling y_true produce F1 >= observed?
+        # p-value = fraction of permuted F1 values >= observed F1.
+        perm_f1 = np.empty(1000)
+        for i in range(1000):
+            y_shuffled = rng.permutation(y_true)
+            perm_f1[i] = f1_score(y_shuffled, y_pred, average='macro')
+        p_value = round(float(np.mean(perm_f1 >= f1_val)), 4)
+
+        # Subject-level bootstrap 95% CI (supplementary robustness check).
+        # Resamples subjects (not strides) with replacement; collects all strides
+        # belonging to each resampled subject. 10,000 resamples because subject
+        # n is small (~27), giving higher per-resample variance than stride-level
+        # resampling, so more resamples are needed for stable percentile estimates.
+        # Uses the same rng instance (continuing the sequential stream).
+        # order-preserving dedup
+        unique_subjects = list(dict.fromkeys(target_subject_ids))
+        n_subj = len(unique_subjects)
+        # Map each subject to its stride index array once, before the resample loop.
+        subj_idx: dict[str, np.ndarray] = {
+            s: np.where(np.array(target_subject_ids) == s)[0]
+            for s in unique_subjects
+        }
+
+        subj_boot_f1: list[float] = []
+        n_rejected = 0
+        while len(subj_boot_f1) < 10_000:
+            chosen = rng.choice(unique_subjects, size=n_subj, replace=True)
+            boot_idx = np.concatenate([subj_idx[s] for s in chosen])
+            yt_boot = y_true[boot_idx]
+            yp_boot = y_pred[boot_idx]
+            # Reject resamples that produce only one class — F1 macro is undefined
+            # and would produce misleading percentile estimates.
+            if len(np.unique(yt_boot)) < 2:
+                n_rejected += 1
+                continue
+            subj_boot_f1.append(
+                float(f1_score(yt_boot, yp_boot, average='macro')))
+
+        subj_boot_arr = np.array(subj_boot_f1)
+        subj_ci_lower = round(float(np.percentile(subj_boot_arr, 2.5)), 6)
+        subj_ci_upper = round(float(np.percentile(subj_boot_arr, 97.5)), 6)
+        rejection_rate = n_rejected / (10_000 + n_rejected)
+
+        if n_rejected > 0:
+            print(
+                f'    [subject bootstrap] {n_rejected} degenerate resamples rejected '
+                f'({rejection_rate:.2%} rejection rate)',
+                flush=True,
+            )
+
+        clf_results[clf_name] = {
+            'f1_macro':               f1_val,
+            'precision_macro':        precision_val,
+            'recall_macro':           recall_val,
+            'accuracy':               accuracy_val,
+            'f1_macro_ci_lower':      ci_lower,
+            'f1_macro_ci_upper':      ci_upper,
+            'f1_macro_subj_ci_lower': subj_ci_lower,
+            'f1_macro_subj_ci_upper': subj_ci_upper,
+            'permutation_p_value':    p_value,
+            'source_modal_params':    modal_params,
+            'y_true':                 y_true.tolist(),
+            'y_pred':                 y_pred.tolist()
+        }
+
+        print(
+            f'  {source_condition}->{target_condition}  {clf_name:<6}  '
+            f'F1={f1_val:.4f}  '
+            f'stride_CI=[{ci_lower:.4f},{ci_upper:.4f}]  '
+            f'subj_CI=[{subj_ci_lower:.4f},{subj_ci_upper:.4f}]  '
+            f'p={p_value:.4f}',
+            flush=True,
+        )
+
+    return {
+        'source_condition':     source_condition,
+        'target_condition':     target_condition,
+        'source_pool_subjects': source_pool_subjects,
+        'source_pool_strides':  source_pool_strides,
+        'target_pool_subjects': target_pool_subjects,
+        'target_pool_strides':  target_pool_strides,
+        'target_subject_ids':   target_subject_ids,
+        'classifiers':          clf_results,
+    }
