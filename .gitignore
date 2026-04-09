@@ -8,6 +8,7 @@ CLAUDE.md
 notebooks/*.pdf
 *.txt
 .codex
+logs/
 
 # Experiment outputs
 experiments/models/
