@@ -13,7 +13,8 @@ logs/
 # Experiment outputs
 experiments/models/
 experiments/results/interim/
-report/figures/*.png
+experiments/shap/
+report/figures/png
 
 # Python
 __pycache__/

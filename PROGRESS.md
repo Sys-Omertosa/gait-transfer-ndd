@@ -1,5 +1,53 @@
 # Project Progress Log
 
+## 2026-04-12 — Shahmeer — Step 4 complete: infrastructure and result verification
+
+- Confirmed two independent Modal runs produce scientifically equivalent results; shap_results.json authoritative from run 2
+- report/figures/ reorganised into pdf/ and png/ subdirectories; all notebooks updated to save to both
+- Step 4 deferred items documented: expanded hyperparameter grids, subject-level normalization, additional engineered features, SMOTE ablations — unified post-Step-4 improvement pass planned before paper submission
+
+## 2026-04-12 — Shahmeer — Step 4 Phase C: 04_shap_diagnosis.ipynb implementation
+
+- Implemented `notebooks/04_shap_diagnosis.ipynb` with 8 analysis cells, markdown explanation before each cell, and completed clinical narrative
+- Figures produced: δj heatmap (RF raw + 7-classifier normalised mean), cross-classifier Spearman consistency (6×7×7 matrices), within vs. cross SHAP importance bars (RF, 6 directions), top-3 δj features table (pandas gradient + matplotlib color-coded), emerged features bar chart, δj vs ΔF1 scatter, δj summary statistic sensitivity analysis (4 variants), 3 waterfall plots for most confidently misclassified pd→hd strides
+- Key results: cv_stride top-shifted in 5/6 directions; right_swing_pct emerged exclusively in XGB/LightGBM (8/42 pairs); overall δj→ΔF1 Spearman ρ=0.345 (p=0.025) driven by between-condition differences, not within-condition relationship (per-condition ρ range: -0.07 to +0.14, all p>0.6); max-normalised δj remains best summary statistic across 4 tested variants
+- All 18 figures saved to `report/figures/pdf/` and `report/figures/png/`; notebook converts to PDF cleanly
+
+## 2026-04-11 — Shahmeer — Step 4 Phase B: runner scripts and Modal run
+
+- Added `scripts/training/run_shap_local.py`: sequential runner with partial save after each direction (`shap_results_partial.json` → renamed `shap_results_local.json` at completion to enable comparison with Modal run)
+- Added `scripts/training/run_shap_modal.py`: 6-container parallel Modal runner (one container per direction); `reuse_within=False` to avoid race condition between containers sharing the same source condition; polling loop with `future.get(timeout=5)` for completion-order feedback
+- Modal run 1: completed with one container preemption (`pd_to_hd` during SVM pool workers); restart succeeded; all 42 entries confirmed present in `shap_results.json`
+- Modal run 2 (verification run): all 6 containers completed cleanly with no preemptions; wall time ≈32 min total; tree classifier results bit-for-bit identical to run 1; kernel classifier results differ by ≤0.002 δj (KernelExplainer random coalition sampling, expected)
+- `fork` context retained over `spawn` after confirming spawn is incompatible with stdin-based Python scripts and Modal container entrypoints; preemption-triggered KeyboardInterrupt in forked workers is handled by Modal's automatic container restart
+- Key findings: cv_stride dominates δj in 5/6 directions for RF; asymmetry_index prominent in HD-source directions; completeness errors excellent across all 42 pairs; 972/6611 (14.7%) strides misclassified in pd→hd RF cross-condition
+
+## 2026-04-10 — Shahmeer — Step 4 Phase A: KernelExplainer parallelization investigation
+
+- Identified that KernelExplainer is fundamentally single-threaded (Python loop over each sample); adding CPU cores via n_jobs has no effect on the core loop — 10% CPU utilization on Modal was one core at 100% out of 16
+- Benchmarked threadpoolctl fix under gVisor: speedup = 0.99× (noise level) — confirmed threading is not the bottleneck, unlike the previous n_jobs=-1 bug in Step 2
+- gVisor overhead: Modal containers run ≈6× slower than local hardware for KernelExplainer (1.73s/sample vs 0.22s/sample) due to syscall overhead on repeated predict_proba calls
+- Sequential KernelExplainer at n_explained=1000, nsamples=1024: estimated 115 min/computation on Modal — infeasible for 36 total kernel computations
+- Solution: custom batch parallelization via `mp.get_context('fork').Pool` splitting 1000 samples into per-core batches; each worker loads its own pipeline copy from disk; achieves near-linear speedup
+- Modal diagnostic confirmed: 50 samples in 19.3s with 31 workers → estimated 25.8 min for full 1000-sample run — feasible within Modal timeout
+
+## 2026-04-10 — Shahmeer — Step 4 Phase A: src/explain.py implementation
+
+- Implemented `src/explain.py` (683 lines): full SHAP-based transfer-failure diagnosis library for all 7 classifiers
+- Explainer assignment: RF/DT use `shap.TreeExplainer(feature_perturbation='tree_path_dependent')` — exact probability-scale output; XGB/LightGBM use `shap.TreeExplainer(feature_perturbation='interventional', model_output='probability')` — required because tree_path_dependent produces log-odds for gradient boosting; SVM/QDA/KNN use `shap.KernelExplainer(pipeline.predict_proba, background)` — full ImbPipeline passed to keep SHAP values in original 14-dimensional feature space
+- Background data: class-balanced `shap.sample(k=100)` from source pool — equal disease/control strides sampled before k-means to prevent disease-cluster bias; produces base values ≈0.46–0.50 for XGB/LGB (vs. ≈0.88 without balancing)
+- δj metric implemented: `δj = |mean(|φj_within|) − mean(|φj_cross|)|` with normalised variant `δj_norm = δj / mean(|φj_within|)` capped at 10.0; emerged features flagged where `mean(|φj_within|) < 1e-3`
+- SHAP 0.51.0 fix: interventional TreeExplainer requires `np.asarray(background.data)` not the DenseData object; `shap.sample()` returns plain numpy array in this version (not DenseData), enabling direct pickling for multiprocessing
+- Completeness verification: tree classifiers assert max error < 1e-4; kernel classifiers report median error (approximate by design); all 7 paths verified — RF/DT: 1e-15 to 4e-16 (machine precision), XGB/LGB: 1e-7 to 1e-8, KNN/SVM/QDA: ≈2e-16
+- Storage: raw SHAP arrays to `experiments/shap/{source}_{clf}_{pool}.npz` (gitignored); aggregated δj results to `experiments/results/shap_results.json`
+- RNG: direction-specific deterministic seed `42 + condition_seeds[src]*10 + condition_seeds[tgt]` enabling parallel Modal containers with reproducible subsamples
+
+## 2026-04-09 — Shahmeer — Step 3: cross-condition notebook complete (notebooks/03_cross_condition.ipynb)
+
+- Implemented `notebooks/03_cross_condition.ipynb` with all analysis cells: per-classifier degradation table (styled HTML + matplotlib PDF-compatible split into two half-figures), degradation heatmap (`degradation_heatmap.pdf/.png`), within-vs-cross F1 grouped bar chart with per-classifier within-condition baselines and stride CI error bars (`within_vs_cross_f1.pdf/.png`), normalized confusion matrices with single shared colorbar (`cross_condition_cms.pdf/.png`), per-subject accuracy grouped bar chart with disease/control separation (`per_subject_accuracy.pdf/.png`), CI width comparison (`ci_width_comparison.pdf/.png`), and per-class recall breakdown table (`recall_table.pdf/.png`)
+- Paired Wilcoxon signed-rank test cell added (one-sided, H1 = within > cross, n=7 classifiers per direction); results recorded in notebook output
+- All 9 figures saved to `report/figures/`; notebook converts to `notebooks/03_cross_condition.pdf` without errors
+
 ## 2026-04-08 — Shahmeer — Step 3 Phase C: subject-level bootstrap CIs and structural fix
 
 - Added subject-level bootstrap CIs to `run_cross_condition()` in `src/train.py`: 10,000 resamples (vs. 1,000 for stride-level) drawing subjects with replacement and collecting all their strides, with a degenerate-resample rejection loop that discards and redraws any resample producing a single-class y_true; rejection rates confirmed negligible (0.01–0.03% across all 42 classifier-direction pairs)
