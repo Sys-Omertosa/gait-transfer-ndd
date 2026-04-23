@@ -1,5 +1,13 @@
 # Project Progress Log
 
+## 2026-04-23 — Step 6: PCA/K-Means notebook (notebooks/06_pca_kmeans.ipynb)
+
+- Implemented `notebooks/06_pca_kmeans.ipynb` with full Step 6 flow: setup/imports, data loading from `data/processed/gait_features.csv`, feature scaling, PCA decomposition, K-Means clustering, and interpretation prompts.
+- Added and exported all planned figures to `report/figures/pdf/` and `report/figures/png/`: `pca_explained_variance`, `pca_scatter_by_condition`, `pca_feature_loadings`, `kmeans_elbow`, `kmeans_silhouette`, and `kmeans_scatter_k3`.
+- Notebook includes both static Matplotlib outputs (paper-ready exports) and interactive Plotly scatter views for PCA and K-Means overlays.
+- Added quantitative evaluation cells for unsupervised alignment: ARI for `K=3` vs condition labels, ARI for `K=6` vs condition×label groups, plus contingency tables for both settings.
+- Runtime validation of numerical outputs is pending on a fully provisioned environment with project dependencies installed (`polars`, `scikit-learn`) before final reporting of variance/ARI values.
+
 ## 2026-04-12 — Shahmeer — Step 4 complete: infrastructure and result verification
 
 - Confirmed two independent Modal runs produce scientifically equivalent results; shap_results.json authoritative from run 2

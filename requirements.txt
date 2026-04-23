@@ -125,6 +125,7 @@ rich==14.3.3
 rpds-py==0.30.0
 scikit-learn==1.8.0
 scipy==1.17.1
+seaborn
 Send2Trash==2.1.0
 setuptools==82.0.1
 shap==0.51.0

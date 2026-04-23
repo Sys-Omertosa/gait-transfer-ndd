@@ -6,7 +6,7 @@ from pathlib import Path
 
 import polars as pl
 
-from preprocessing import (
+from src.preprocessing import (
     FEATURE_COLS,
     load_raw_data,
     filter_pause_events,
