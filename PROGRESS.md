@@ -47,6 +47,27 @@
 - Implemented `notebooks/03_cross_condition.ipynb` with all analysis cells: per-classifier degradation table (styled HTML + matplotlib PDF-compatible split into two half-figures), degradation heatmap (`degradation_heatmap.pdf/.png`), within-vs-cross F1 grouped bar chart with per-classifier within-condition baselines and stride CI error bars (`within_vs_cross_f1.pdf/.png`), normalized confusion matrices with single shared colorbar (`cross_condition_cms.pdf/.png`), per-subject accuracy grouped bar chart with disease/control separation (`per_subject_accuracy.pdf/.png`), CI width comparison (`ci_width_comparison.pdf/.png`), and per-class recall breakdown table (`recall_table.pdf/.png`)
 - Paired Wilcoxon signed-rank test cell added (one-sided, H1 = within > cross, n=7 classifiers per direction); results recorded in notebook output
 - All 9 figures saved to `report/figures/`; notebook converts to `notebooks/03_cross_condition.pdf` without errors
+## 2026-04-22 — Step 5 Phase C: full Modal runner added
+
+- Added `scripts/training/run_noise_robustness_modal.py` mirroring existing project Modal runner patterns (`debian_slim` image, `requirements-core.txt`, `PYTHONPATH=/root/src`, `src` mounted into image, `gait-results` volume mounted at `/results`).
+- Runner executes the full Step 5 pipeline only (no reduced sweep): full sigma grid `(0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50)`, `N_NOISE_REPEATS=30`, all 7 classifiers, and both within/cross-condition analyses.
+- Outputs are written to Modal volume as `/results/noise_robustness.json`, `/results/feature_sensitivity.json`, and `/results/subject_sensitivity.json`; local entrypoint prints exact `modal volume get` commands for download.
+- Validation attempt from local environment failed before remote execution because Modal auth token is not configured (`Token missing. Could not authenticate client.`). Script is ready; run once `modal token new` is completed on the operator machine.
+
+## 2026-04-22 — Step 5 Phase A: `src/robustness.py` (noise + sensitivity helpers)
+
+- Added self-contained [src/robustness.py](src/robustness.py) for Step 5 noise robustness and sensitivity analysis without importing `train.py` (keeps Step 2/3 code untouched per strict file scope).
+- Implements Gaussian noise on test inputs only, LOSO with fixed modal params (pre-fit folds once per classifier then reuse for noise/permutation repeats), per-feature column shuffle on test folds (within) or target matrix (cross), and per-subject accuracy from stored `y_true` / `y_pred` plus LOSO test index alignment.
+- Classifier construction and `build_pipeline` mirror `train.py` defaults; XGBoost and LightGBM are imported only inside `_fresh_classifier()` when those models are instantiated.
+
+## 2026-04-22 — Step 5: remove environment-specific classifier skipping
+
+- Removed `fresh_classifier_or_skip` and LOSO `None`/`nan` fallbacks from `src/robustness.py`; XGBoost/LightGBM are instantiated like other classifiers and failures surface as normal errors (intended for Linux/other CI or lab machines with full native deps, not partial Mac workarounds).
+
+## 2026-04-22 — Step 5 Phase B: `run_noise_robustness_local.py`
+
+- Added [scripts/training/run_noise_robustness_local.py](scripts/training/run_noise_robustness_local.py): loads `gait_features.csv`, control partition, Step 2 JSONs, optional `cross_condition_results.json`; calls `robustness` helpers; writes `noise_robustness.json`, `feature_sensitivity.json`, and `subject_sensitivity.json` under `experiments/results/`.
+- Cross-condition blocks are skipped automatically when `cross_condition_results.json` is absent; within-condition and per-subject (from stored predictions) always run.
 
 ## 2026-04-08 — Shahmeer — Step 3 Phase C: subject-level bootstrap CIs and structural fix
 
