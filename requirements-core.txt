@@ -20,6 +20,7 @@ shap==0.51.0
 # Visualization
 plotly==6.6.0
 matplotlib==3.10.8
+seaborn
 
 # Notebooks
 jupyter==1.1.1

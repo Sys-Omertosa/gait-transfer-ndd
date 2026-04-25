@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from preprocessing import (
+from src.preprocessing import (
     FEATURE_COLS,
     assign_labels,
     filter_pause_events,

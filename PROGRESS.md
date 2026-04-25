@@ -42,6 +42,57 @@
 - Implemented DFA per subject on the left stride-time sequence using log-spaced window sizes, linear detrending inside each scale, and explicit assertions on minimum usable strides and minimum valid scales before accepting an exponent
 - `cv_swing` and signed stride asymmetry were added as subject-/stride-level complements to `cv_stride` and `asymmetry_index`, preserving laterality and swing-phase variability in the v2 feature space
 
+## 2026-04-24 — Ali Aqdas — Step 8: Streamlit demo application (app/app.py)
+
+- Implemented `app/app.py` as the Step 8 "Streamlit deployment demo" deliverable defined in `CONTRIBUTING.md`; a single-file Streamlit app (~460 lines) exposing interactive inference over the existing Step 2 / 3 / 5 artefacts with zero re-processing of raw `.ts` files.
+- Inputs consumed read-only: `data/processed/gait_features.csv`, `data/processed/control_partition.json`, `experiments/results/{pd,hd,als}_results.json`, `cross_condition_results.json`, and `noise_robustness.json`. No Step 2–5 sweep, grid-search, bootstrap, or SHAP run is re-executed — the app only re-fits one RF pipeline per cohort on first load using the modal hyper-parameters stored in `{cond}_results.json`, then caches all seven resources (3 RF pipes + 3 TreeExplainers + 1 PCA/scaler) via `@st.cache_resource` for the session so every slider/dropdown interaction is instant.
+- Three tabs driven off `src/train.build_pipeline` (keeps the SMOTE → RF structure identical to Step 2 training): **(1) Within-condition inference** — pick PD/HD/ALS, supply a stride, get predicted class + P(disease) alongside the cohort's LOSO F1 with a stride-level bootstrap 95 % CI computed on-the-fly from the stored `y_true`/`y_pred` arrays; **(2) Cross-condition transfer** — pick a source cohort and a target cohort, banner surfaces the stored within-F1 / cross-F1 / ΔF1 / stride CI / permutation p-value pulled from `cross_condition_results.json` plus an automatic calibration warning when `|ΔF1| > 0.10`; **(3) Noise robustness** — σ slider (0 → 1, feature-std multiplier) sweeps a 100-sample Monte-Carlo over the user's stride and overlays the reference F1-vs-σ curve for the cohort from `noise_robustness.json`.
+- Interpretability: every tab renders a Plotly SHAP top-5 waterfall built from `shap.TreeExplainer` on the RF classifier (positive contributions plotted in red ⇒ push toward Disease, negative in blue ⇒ push toward Control) plus a PC1/PC2 scatter of all 14,753 strides (Step-6-identical `StandardScaler → PCA(2)` fit) with the user's stride highlighted as a red star, so each prediction is grounded in both local feature attributions and a global cohort-space placement.
+- Three input modes available in every tab, all preprocessing-free: **pick an existing subject + stride** from the cohort, **14 sliders** pre-filled with cohort median and clipped to cohort [p1, p99], or **upload a 14-column feature CSV** (multi-stride; the app aggregates per-stride predictions in a table).
+- Sidebar shows per-cohort F1 snapshot, a caching-semantics note, and a "research demo only" clinical disclaimer; footer cites the exact models / SHAP / PCA formulations used so reviewers can reproduce the cached components.
+- Smoke-tested headlessly: RF fits for all three cohorts in < 3 s total, `TreeExplainer.shap_values` returns valid contributions on a representative stride for all three cohorts, PCA projects the full 14,753-stride matrix, and the noise-robustness reference-curve key lookup round-trips all seven σ keys in `noise_robustness.json` (mean RF F1: 0.777 at σ=0.0 → 0.709 at σ=0.5). `streamlit run app/app.py --server.headless true` boots cleanly and responds with HTTP 200 on `GET /`.
+- No new dependencies: `streamlit==1.55.0`, `shap==0.51.0`, and `plotly==6.6.0` were already pinned in `requirements-core.txt`. README updated with a Run-the-demo section describing the three tabs and the cached-model boot step.
+
+## 2026-04-24 — Ali Aqdas — Step 7: final figures notebook (notebooks/07_final_figures.ipynb)
+
+- Implemented `notebooks/07_final_figures.ipynb` as the Step 7 "publication-quality plots for the IEEE paper" deliverable defined in `CONTRIBUTING.md`; consumes only existing artefacts — no training or sweep is re-executed.
+- Inputs: `experiments/results/{pd,hd,als}_results.json`, `cross_condition_results.json`, `shap_results.json`, `noise_robustness.json`, and `data/processed/gait_features.csv` (for the PCA reproduction used in Fig 5 styling).
+- Six hero figures exported to a new `report/figures/paper/{pdf,png}/` subdirectory at IEEE column widths (`IEEE_SINGLE = 3.5 in`, `IEEE_DOUBLE = 7.16 in`): `fig1_within_overview` (F1 + modal-frequency heatmaps + single-column F1 variant), `fig2_within_cms` (1×3 confusion matrices from stored `y_true`/`y_pred` with shared colorbar), `fig3_cross_degradation` (ΔF1 heatmap + within-vs-cross bars with stride-level 95% CIs), `fig4_shap_delta_j` (RF normalised δj heatmap + per-direction top-3 features), `fig5_pca_kmeans` (PC1/PC2 condition scatter + K=3 cluster overlay + cumulative variance strip, Step 6-identical fit), and `fig6_noise_robustness` (per-classifier F1-vs-σ curves with ±1 SD bands across 3 conditions; cross sweep is empty in the current JSON and is skipped with a clear message).
+- Master results table assembled per (direction × classifier) row with within F1, cross F1, ΔF1, stride CI, subject CI, permutation p-value, and top-1 δj feature; written to `report/tables/master_results.csv` (42 rows) and `report/tables/master_results.tex` (booktabs-style IEEE `tabular`, ready to `\input`).
+- Verification cell asserts every paper figure + both table files exist on disk and round-trips all F1 values back to the source JSONs to 1e-6; 42/42 rows confirmed.
+- Notebook-generation source of truth kept in `scripts/verification/build_step7_notebook.py` so cell structure is reviewable and regeneration is idempotent; notebook executed end-to-end via `jupyter nbconvert --to notebook --execute --inplace`.
+- PDF rendered to `notebooks/pdf/07_final_figures.pdf` via `nbconvert --to latex` + `tectonic` (pandoc + tectonic installed locally). Figures render cleanly; a handful of Greek Unicode glyphs (δ, σ, ∈) in inline text fall back to the default Latin Modern fonts, which does not affect the PDF figure content.
+
+## 2026-04-23 — Ali Aqdas — Step 6: PCA/K-Means notebook (notebooks/06_pca_kmeans.ipynb)
+
+- Implemented `notebooks/06_pca_kmeans.ipynb` with full Step 6 flow: setup/imports, data loading from `data/processed/gait_features.csv`, feature scaling, PCA decomposition, K-Means clustering, and interpretation prompts.
+- Added and exported all planned figures to `report/figures/pdf/` and `report/figures/png/`: `pca_explained_variance`, `pca_scatter_by_condition`, `pca_feature_loadings`, `kmeans_elbow`, `kmeans_silhouette`, and `kmeans_scatter_k3`.
+- Notebook includes both static Matplotlib outputs (paper-ready exports) and interactive Plotly scatter views for PCA and K-Means overlays.
+- Added quantitative evaluation cells for unsupervised alignment: ARI for `K=3` vs condition labels, ARI for `K=6` vs condition×label groups, plus contingency tables for both settings.
+- Runtime validation of numerical outputs is pending on a fully provisioned environment with project dependencies installed (`polars`, `scikit-learn`) before final reporting of variance/ARI values.
+
+## 2026-04-22 — Ali Aqdas — Step 5 Phase C: full Modal runner added
+
+- Added `scripts/training/run_noise_robustness_modal.py` mirroring existing project Modal runner patterns (`debian_slim` image, `requirements-core.txt`, `PYTHONPATH=/root/src`, `src` mounted into image, `gait-results` volume mounted at `/results`).
+- Runner executes the full Step 5 pipeline only (no reduced sweep): full sigma grid `(0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50)`, `N_NOISE_REPEATS=30`, all 7 classifiers, and both within/cross-condition analyses.
+- Outputs are written to Modal volume as `/results/noise_robustness.json`, `/results/feature_sensitivity.json`, and `/results/subject_sensitivity.json`; local entrypoint prints exact `modal volume get` commands for download.
+- Validation attempt from local environment failed before remote execution because Modal auth token is not configured (`Token missing. Could not authenticate client.`). Script is ready; run once `modal token new` is completed on the operator machine.
+
+## 2026-04-22 — Ali Aqdas — Step 5 Phase A: src/robustness.py (noise + sensitivity helpers)
+
+- Added self-contained `src/robustness.py` for Step 5 noise robustness and sensitivity analysis without importing `train.py` (keeps Step 2/3 code untouched per strict file scope).
+- Implements Gaussian noise on test inputs only, LOSO with fixed modal params (pre-fit folds once per classifier then reuse for noise/permutation repeats), per-feature column shuffle on test folds (within) or target matrix (cross), and per-subject accuracy from stored `y_true` / `y_pred` plus LOSO test index alignment.
+- Classifier construction and `build_pipeline` mirror `train.py` defaults; XGBoost and LightGBM are imported only inside `_fresh_classifier()` when those models are instantiated.
+
+## 2026-04-22 — Ali Aqdas — Step 5: remove environment-specific classifier skipping
+
+- Removed `fresh_classifier_or_skip` and LOSO `None`/`nan` fallbacks from `src/robustness.py`; XGBoost/LightGBM are instantiated like other classifiers and failures surface as normal errors (intended for Linux/other CI or lab machines with full native deps, not partial Mac workarounds).
+
+## 2026-04-22 — Ali Aqdas — Step 5 Phase B: run_noise_robustness_local.py
+
+- Added `scripts/training/run_noise_robustness_local.py`: loads `gait_features.csv`, control partition, Step 2 JSONs, optional `cross_condition_results.json`; calls `robustness` helpers; writes `noise_robustness.json`, `feature_sensitivity.json`, and `subject_sensitivity.json` under `experiments/results/`.
+- Cross-condition blocks are skipped automatically when `cross_condition_results.json` is absent; within-condition and per-subject (from stored predictions) always run.
+
 ## 2026-04-12 — Shahmeer — Step 4 complete: infrastructure and result verification
 
 - Confirmed two independent Modal runs produce scientifically equivalent results; shap_results.json authoritative from run 2
