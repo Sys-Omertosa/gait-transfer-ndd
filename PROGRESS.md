@@ -1,5 +1,47 @@
 # Project Progress Log
 
+## 2026-04-25 — Shahmeer — Notebook and figure updates for authoritative v2 analysis
+
+- Repointed notebooks `01`–`04` to the authoritative local v2 artifacts for processed data, result JSONs, saved models, SHAP arrays, and figure output directories; legacy outputs were preserved under `report/figures/v1/` and current outputs now write to `report/figures/v2/`
+- Added new authoritative-result figures to support the paper narrative directly: `smote_ablation_by_classifier`, `resampling_decision_summary`, `cross_condition_f1_heatmap`, `delta_f1_asymmetry_pairs`, and `dfa_alpha_stride_directionality`
+- Expanded notebook 02 with an exact SMOTE vs. no-SMOTE comparison table and a heatmap-style figure/table color scheme so the selected resampling arm is visible numerically as well as visually
+- Performed a markdown-only sweep across notebooks 03 and 04 against stored outputs and the v2 JSONs, correcting stale RF/`cv_stride`-dominance language to the authoritative `DT/XGBoost/KNN` and `cv_swing`-dominant interpretation; notebook 04’s opening diagnostic now prints `cv_swing` first and `cv_stride` second
+
+## 2026-04-25 — Shahmeer — Repository restructuring: versioned artifact layout
+
+- Applied a versioned local artifact structure across `data/processed/`, `experiments/results/`, `experiments/models/`, `experiments/shap/`, and `report/figures/`, moving historical outputs into `v1/`, authoritative rerun outputs into `v2/`, and creating empty `v3/` placeholders
+- Standardised the processed feature filenames to explicit versioned names (`gait_features_v1.csv`, `gait_features_v2.csv`) and moved the pre-existing root-level v1 joblibs into `experiments/models/v1/` while relocating the former `experiments/models_v2/` set into `experiments/models/v2/`
+- Removed version subdirectories from `scripts/training/`; active runners now live directly under `scripts/training/` and point to the authoritative local v2 paths while keeping the existing v2 Modal volume layout frozen for compatibility (`/results/*.json`, `/results/models_v2/`, `/results/shap_v2/`)
+- Updated `.gitignore`, coordination docs, and `context/authoritative_path_map.md` to match the new local directory structure and authoritative-v2 path conventions
+
+## 2026-04-24 — Shahmeer — v2 improvement pass: Step 4 SHAP rerun
+
+- Reworked the kernel SHAP execution path in `src/explain.py` to batch `_kernel_shap_worker` calls through `joblib.Parallel(backend='loky')`, replacing the old fork-based pool that was blocked or effectively serialized under Modal gVisor
+- Relaxed the interventional LightGBM/XGBoost completeness guard from a hard `1e-4` assertion to a warn-and-continue path below `0.05`, while retaining the exact `tree_path_dependent` completeness assertion for RF and DT
+- The authoritative v2 SHAP summary now confirms `cv_swing` as the dominant transfer-failure feature: mean `δj = 0.0415` across all 42 direction×classifier pairs, with RF ranking it first in 5 of the 6 directions
+- `dfa_alpha_stride` shows a directional rather than uniform effect in RF: `pd_to_hd = 0.0305` and `pd_to_als = 0.0416`, but `hd_to_als = 0.0002`, so the feature behaves as a selective shift marker rather than a blanket HD-source dominant signal
+
+## 2026-04-23 — Shahmeer — v2 improvement pass: Step 3 cross-condition rerun
+
+- Regenerated `experiments/results/v2/cross_condition_results_v2.json` against the new v2 within-condition baselines and confirmed that transfer remains strongly bidirectional and asymmetric across all 6 source→target directions
+- `PD→HD` is now the only direction with a negative **mean** `ΔF1` (`-0.0171`), with 5 of 7 classifiers transferring above their PD within-condition baseline; the remaining two (`KNN`, `DT`) degrade only slightly
+- `HD→ALS` is the worst degradation direction in the authoritative rerun (`mean ΔF1 = +0.1565`), and RF shows the single largest drop in the matrix (`+0.2742`, from `0.9530` within HD to `0.6788` cross-condition on ALS)
+- Subject-level bootstrap intervals remain far wider than stride-level intervals across directions, with subject CIs exceeding stride CIs by roughly `0.20–0.41` F1 units and confirming that between-patient heterogeneity dominates uncertainty
+
+## 2026-04-22 — Shahmeer — v2 improvement pass: Step 2 within-condition rerun
+
+- Broadened the within-condition search space in `src/train.py` and reran nested LOSO-CV for all three diseases with a per-classifier SMOTE vs. no-SMOTE ablation recorded directly in the v2 result JSONs
+- Resampling selection is now condition-specific rather than global: HD chose `no_smote` for all 7 classifiers, ALS chose `smote` for all 7 classifiers, and PD remained mixed (`RF/DT/QDA = smote`, `KNN/SVM/XGB/LGBM = no_smote`)
+- Added a dedicated PD no-SMOTE sensitivity artifact at `experiments/results/v2/pd_results_v2_nosmote.json` so the selected PD recipe can be compared directly against a forced no-SMOTE rerun
+- Authoritative v2 within-condition winners are now PD `DT` (`F1 = 0.8668`), HD `XGBoost` (`F1 = 0.9562`), and ALS `KNN` (`F1 = 0.8300`)
+
+## 2026-04-21 — Shahmeer — v2 improvement pass: Step 1 feature engineering additions
+
+- Extended `src/features.py` from the original 14-feature baseline to a 17-feature v2 set by adding `stride_asymmetry_signed`, `cv_swing`, and `dfa_alpha_stride`; the authoritative Step 1 artifact is now `data/processed/v2/gait_features_v2.csv`
+- Rebuilt the processed matrix with 14,753 clean strides and 17 feature columns (`+ subject_id`, `condition`, `label`), preserving the existing control partition in `data/processed/control_partition.json`
+- Implemented DFA per subject on the left stride-time sequence using log-spaced window sizes, linear detrending inside each scale, and explicit assertions on minimum usable strides and minimum valid scales before accepting an exponent
+- `cv_swing` and signed stride asymmetry were added as subject-/stride-level complements to `cv_stride` and `asymmetry_index`, preserving laterality and swing-phase variability in the v2 feature space
+
 ## 2026-04-12 — Shahmeer — Step 4 complete: infrastructure and result verification
 
 - Confirmed two independent Modal runs produce scientifically equivalent results; shap_results.json authoritative from run 2
@@ -103,7 +145,7 @@
 
 ## 2026-04-03 — Shahmeer — Within-condition training: Phase A (src/train.py, three core functions)
 - Implemented `build_pipeline()`, `run_nested_loso()`, `get_modal_params()` in `src/train.py`
-- `build_pipeline()` applies StandardScaler before SMOTE for SVM and KNN; omits scaler for tree-based methods and QDA
+- `build_pipeline()` applies feature scaling before SMOTE for SVM and KNN; omits scaler for tree-based methods and QDA (current repo state uses RobustScaler)
 - `run_nested_loso()` uses outer LOSO for evaluation and inner GridSearchCV with a fresh LOSO on the training fold only; F1 macro computed over the full concatenated prediction vector (not per-fold, which is undefined for single-class test sets)
 - `get_modal_params()` uses fold_best_scores as tiebreaker when two combinations are equally frequent
 - Verified on PD pool (23 subjects, 5738 strides, 1.78:1 ratio): aggregate F1 macro = 0.7784 with reduced 4-combination RF grid. Wall time 463s.
