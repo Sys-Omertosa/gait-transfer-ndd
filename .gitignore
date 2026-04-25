@@ -9,12 +9,15 @@ notebooks/*.pdf
 *.txt
 .codex
 logs/
+old/
 
 # Experiment outputs
-experiments/models/
-experiments/results/interim/
-experiments/shap/
-report/figures/png
+experiments/models/**/*.joblib
+experiments/results/**/*_smoke*.json
+experiments/results/**/*_partial.json
+experiments/results/**/*_local*.json
+experiments/shap/**/*.npz
+report/figures/**/png/*.png
 
 # Python
 __pycache__/

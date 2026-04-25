@@ -10,7 +10,7 @@ gait-transfer-ndd/
 │
 ├── data/
 │   ├── raw/                           # GAITNDD .ts files — gitignored
-│   └── processed/                     # gait_features.csv, control_partition.json — gitignored
+│   └── processed/                     # versioned feature matrices + shared control partition — gitignored
 │
 ├── context/                           # Private reference — gitignored entirely
 │   ├── GUIDELINE.md                   # Full scientific specification
@@ -32,7 +32,7 @@ gait-transfer-ndd/
 │   ├── 01_preprocessing.ipynb         # Pause filtering, feature engineering, verification
 │   ├── 02_within_condition.ipynb      # Within-condition LOSO-CV baselines for all 7 classifiers
 │   ├── 03_cross_condition.ipynb       # Transfer experiments, degradation table (primary result)
-│   ├── 04_shap_analysis.ipynb         # δj metric, per-classifier SHAP comparison
+│   ├── 04_shap_diagnosis.ipynb        # δj metric, per-classifier SHAP comparison
 │   ├── 05_noise_robustness.ipynb      # Gaussian noise injection analysis
 │   ├── 06_pca_kmeans.ipynb            # PCA geometric visualisation, K-Means cluster discovery
 │   └── 07_final_figures.ipynb         # Publication-quality plots for the IEEE paper
@@ -81,7 +81,7 @@ Step 1 (Member 1)
     └── Step 7 (Member 2)
 ```
 
-**Hard rule:** Member 1 commits `data/processed/gait_features.csv` and `data/processed/control_partition.json` before Member 2 begins any work.
+**Hard rule:** Member 1 commits `data/processed/v2/gait_features_v2.csv` and `data/processed/control_partition.json` before Member 2 begins any work.
 
 **Steps 6 and 7** only require the feature matrix — Member 2 can begin these
 immediately after Step 1 without waiting for Step 2.
@@ -122,7 +122,7 @@ Work assignments are subject to change. This table reflects the current state.
 | `pandas` | Compatibility layer for sklearn/shap/imbalanced-learn only |
 | `numpy` | Array operations, noise injection |
 | `scikit-learn` | All classifiers, LOSO-CV, GridSearchCV, PCA, KMeans |
-| `imbalanced-learn` | SMOTE — inside LOSO pipeline only via `imblearn.pipeline.Pipeline` |
+| `imbalanced-learn` | SMOTE — inside LOSO pipeline only via `imblearn.pipeline.Pipeline`; augments the minority Control Group A class when enabled |
 | `xgboost` | Gradient boosting classifier 1 |
 | `lightgbm` | Gradient boosting classifier 2 |
 | `shap` | SHAP values, δj metric, waterfall plots |
