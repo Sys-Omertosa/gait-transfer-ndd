@@ -15,7 +15,7 @@ import json
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 import numpy as np
 import polars as pl
@@ -25,9 +25,9 @@ from features import ALL_FEATURE_COLS
 from train import build_pipeline, run_nested_loso, get_modal_params
 
 # ── Load artifacts ────────────────────────────────────────────────────────────
-PROCESSED_DIR = Path(__file__).parent.parent / 'data' / 'processed'
+PROCESSED_DIR = Path(__file__).resolve().parents[2] / 'data' / 'processed'
 
-df = pl.read_csv(str(PROCESSED_DIR / 'gait_features.csv'))
+df = pl.read_csv(str(PROCESSED_DIR / 'v2' / 'gait_features_v2.csv'))
 
 with open(PROCESSED_DIR / 'control_partition.json') as f:
     partition = json.load(f)
@@ -58,7 +58,7 @@ groups = pool['subject_id'].to_numpy()
 clf = RandomForestClassifier(
     class_weight='balanced',
     random_state=42,
-    n_jobs=-1,
+    n_jobs=1,
 )
 pipeline = build_pipeline('rf', clf)
 

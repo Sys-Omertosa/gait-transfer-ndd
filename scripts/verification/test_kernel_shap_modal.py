@@ -40,7 +40,7 @@ def test_kernel_timing(gait_csv: bytes, partition_json: bytes) -> dict:
     background = get_background_data(X_source, y_source, k=100, rng=rng)
     X_sub, y_sub, idx_sub = subsample_stratified(X_source, y_source, 50, rng)
 
-    model_path = '/results/pd_knn.joblib'
+    model_path = '/results/models_v2/pd_knn.joblib'
     import joblib
     pipeline = joblib.load(model_path)
 
@@ -75,7 +75,7 @@ def main():
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent.parent
     result = test_kernel_timing.remote(
-        gait_csv=(repo / 'data/processed/gait_features.csv').read_bytes(),
+        gait_csv=(repo / 'data/processed/v2/gait_features_v2.csv').read_bytes(),
         partition_json=(repo / 'data/processed/control_partition.json').read_bytes(),
     )
     print(result)
