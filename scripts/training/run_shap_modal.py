@@ -1,41 +1,31 @@
 """
 Modal runner for SHAP transfer-failure diagnosis.
 
-Runs all six transfer directions in parallel — one Modal container per
-direction. Each container calls run_shap_for_direction() for its assigned
-(source, target) pair, computing SHAP values for all 7 classifiers and
-writing .npz files to the Modal volume at /results/shap/.
+Runs three Modal containers in parallel — one per source condition. Each
+container processes both target directions for that source serially, so the
+within-condition SHAP explanation can be computed once and reused safely.
 
 Parallelization rationale:
-  KernelExplainer classifiers (SVM, QDA, KNN) dominate cost at ~60+ minutes
-  each per direction. Each direction runs its 7 classifiers serially within
-  its container (KernelExplainer is single-threaded). With 6 parallel
-  containers the total wall time equals the slowest single direction rather
-  than the sum of all directions.
+  KernelExplainer classifiers (SVM, QDA, KNN) dominate cost. Grouping by
+  source condition eliminates duplicate within-condition SHAP work that would
+  otherwise be recomputed by two separate containers sharing the same source.
 
 Within-condition .npz caching:
-  Each container computes within-condition SHAP independently (reuse_within=False
-  is passed to run_shap_for_direction). This deliberately avoids the race condition
-  that would arise if two containers sharing the same source condition (e.g., PD as
-  source for both pd->hd and pd->als) simultaneously tried to write and read the
-  same within-condition file from the shared Modal volume. The within-condition
-  computation is negligible relative to KernelExplainer cost (~minutes for tree
-  classifiers, tens of minutes for kernel classifiers), so the duplication is
-  acceptable. The local sequential runner (run_shap_local.py) retains reuse_within=True
-  since it processes directions one at a time with no concurrency risk.
+  reuse_within=True is safe here because each source condition is handled by
+  exactly one container. The shared within-condition .npz files are written
+  once per source/classifier and then reused for the second target direction.
 
-Modal allocation: cpu=16, memory=16384 per container (fixed for all Modal
-runs in this project). KernelExplainer is single-threaded (Python loop) so
-cpu=16 primarily benefits the sklearn distance computations inside KNN's
-predict_proba calls.
+Modal allocation: cpu=16, memory=20480 per container. KernelExplainer is
+parallelised inside src/explain.py across CPU workers, so cpu=16 remains a
+reasonable balance between wall time and Modal credit consumption.
 
 Usage (from repo root with venv active):
     modal run scripts/training/run_shap_modal.py
 
 Download results after completion:
-    modal volume get gait-results shap_results.json
-    # .npz files in shap/ subdirectory (gitignored locally):
-    modal volume get gait-results shap/pd_rf_within.npz  # example
+    modal volume get gait-results shap_results_v2.json
+    # .npz files in shap_v2/ subdirectory (gitignored locally):
+    modal volume get gait-results shap_v2/pd_rf_within.npz  # example
 """
 
 import io
@@ -60,28 +50,28 @@ app = modal.App('gait-transfer-shap', image=image)
 volume = modal.Volume.from_name('gait-results', create_if_missing=True)
 
 
-# ── Per-direction SHAP function ───────────────────────────────────────────────
+# ── Per-source SHAP function ──────────────────────────────────────────────────
 @app.function(
     cpu=16,
-    memory=16384,
-    timeout=86400,      # 24-hour ceiling; each direction expected ~2-4 hours
+    memory=20480,
+    timeout=86400,
     volumes={'/results': volume},
+    retries=2,
 )
-def run_direction(
+def run_source_group(
     gait_features_csv: bytes,
     control_partition_json: bytes,
     source_condition: str,
-    target_condition: str,
 ) -> str:
     """
-    Compute SHAP values and δj for all 7 classifiers for one transfer direction.
+    Compute SHAP values and δj for both target directions of one source condition.
 
     Loads the feature matrix and control partition from bytes (passed in by the
-    local entrypoint), constructs pools, calls run_shap_for_direction(), and
-    writes .npz files to /results/shap/ on the Modal volume.
+    local entrypoint), constructs pools, calls run_shap_for_direction() twice,
+    and writes .npz files to /results/shap_v2/ on the Modal volume.
 
-    Returns the per-classifier δj results as a JSON string for accumulation
-    in the local entrypoint.
+    Returns a JSON string mapping both direction keys for the given source
+    condition to their per-classifier SHAP summaries.
     """
     import json
     import os
@@ -108,126 +98,129 @@ def run_direction(
     control_a: list[str] = partition['control_A']
     control_b: list[str] = partition['control_B']
 
-    # Model files were written to the volume root by run_cross_condition_modal.py.
-    models_dir = '/results'
+    # The current authoritative v2 Modal volume keeps model files at this path.
+    models_dir = '/results/models_v2'
 
-    # .npz files are written to /results/shap/ on the volume.
-    shap_dir = '/results/shap'
+    # .npz files are written to /results/shap_v2/ on the volume.
+    shap_dir = '/results/shap_v2'
     os.makedirs(shap_dir, exist_ok=True)
 
-    direction_key = f'{source_condition}_to_{target_condition}'
-    print(f'Container starting: {direction_key}', flush=True)
+    target_map = {
+        'pd': ['hd', 'als'],
+        'hd': ['pd', 'als'],
+        'als': ['pd', 'hd'],
+    }
+    group_results: dict[str, dict] = {}
+
+    print(f'Container starting: source={source_condition}', flush=True)
     t0 = time.time()
 
-    result = run_shap_for_direction(
-        source_condition=source_condition,
-        target_condition=target_condition,
-        df=df,
-        control_a=control_a,
-        control_b=control_b,
-        models_dir=models_dir,
-        shap_dir=shap_dir,
-        reuse_within=False,   # each container computes within-condition independently
-                              # to eliminate the race condition that would arise if two
-                              # containers sharing the same source tried to share a file
-    )
+    for target_condition in target_map[source_condition]:
+        direction_key = f'{source_condition}_to_{target_condition}'
+        group_results[direction_key] = run_shap_for_direction(
+            source_condition=source_condition,
+            target_condition=target_condition,
+            df=df,
+            control_a=control_a,
+            control_b=control_b,
+            models_dir=models_dir,
+            shap_dir=shap_dir,
+            reuse_within=True,
+        )
 
     elapsed = time.time() - t0
-    print(f'Container {direction_key} complete in {elapsed:.0f}s', flush=True)
+    print(
+        f'Container source={source_condition} complete in {elapsed:.0f}s',
+        flush=True,
+    )
 
-    return json.dumps(result)
+    return json.dumps(group_results)
 
 
 # ── Local entrypoint ──────────────────────────────────────────────────────────
 @app.local_entrypoint()
 def main() -> None:
     """
-    Submit all six directions in parallel and collect results.
+    Submit all three source groups in parallel and collect results.
 
-    All six containers are spawned simultaneously via .spawn(). The local
-    process then collects each result as it completes. After all six finish,
-    the accumulated dict is written to shap_results.json both on the Modal
-    volume and locally at experiments/results/shap_results.json.
+    Each source-group container computes two target directions serially so the
+    shared within-condition SHAP explanation can be reused safely. Partial
+    results are written to the Modal volume after each source group completes.
     """
-    repo_root = Path(__file__).resolve().parent.parent.parent
+    repo_root = Path(__file__).resolve().parents[2]
 
     print('Reading data files...', flush=True)
-    features_bytes = (repo_root / 'data/processed/gait_features.csv').read_bytes()
-    partition_bytes = (repo_root / 'data/processed/control_partition.json').read_bytes()
+    features_bytes = (
+        repo_root / 'data/processed/v2/gait_features_v2.csv').read_bytes()
+    partition_bytes = (
+        repo_root / 'data/processed/control_partition.json').read_bytes()
 
-    directions = [
-        ('pd',  'hd'),
-        ('hd',  'pd'),
-        ('pd',  'als'),
-        ('als', 'pd'),
-        ('hd',  'als'),
-        ('als', 'hd'),
-    ]
+    source_conditions = ['pd', 'hd', 'als']
 
-    print(f'Launching {len(directions)} directions in parallel on Modal...', flush=True)
-    print('Each container: 16 physical CPU cores, 16 GB RAM.', flush=True)
-    print('KernelExplainer classifiers (SVM, QDA, KNN) dominate per-container time.', flush=True)
-    print('Wall time ≈ slowest single direction (not sum of all).', flush=True)
+    print(
+        f'Launching {len(source_conditions)} source groups in parallel on Modal...', flush=True)
+    print('Each container: 16 CPU, 20480 MB RAM.', flush=True)
+    print('Each source-group container reuses within-condition SHAP across 2 targets.', flush=True)
     print()
 
-    # Spawn all six simultaneously without blocking.
     futures = {
-        f'{src}_to_{tgt}': run_direction.spawn(
+        source_condition: run_source_group.spawn(
             gait_features_csv=features_bytes,
             control_partition_json=partition_bytes,
-            source_condition=src,
-            target_condition=tgt,
+            source_condition=source_condition,
         )
-        for src, tgt in directions
+        for source_condition in source_conditions
     }
 
     accumulated: dict = {}
     t_start = time.time()
 
-    # Poll all futures until all six are done. Each .get(timeout=5) either returns
-    # the result (container finished) or raises a TimeoutError (still running).
-    # This lets us print each direction as it completes rather than waiting for all
-    # six to finish before printing any — important for a multi-hour run where the
-    # terminal would otherwise appear stuck.
     pending = list(futures.items())
     while pending:
-        for i, (direction_key, future) in enumerate(pending):
+        for i, (source_condition, future) in enumerate(pending):
             try:
-                result = json.loads(future.get(timeout=5))
-                accumulated[direction_key] = result
+                group_results = json.loads(future.get(timeout=5))
+                accumulated.update(group_results)
                 elapsed_so_far = time.time() - t_start
+                with volume.batch_upload(force=True) as batch:
+                    batch.put_file(
+                        io.BytesIO(json.dumps(accumulated, indent=2).encode()),
+                        '/results/shap_results_v2_partial.json',
+                    )
                 print(f'\n{"="*60}', flush=True)
                 print(
-                    f'Completed: {direction_key}  '
+                    f'Completed source group: {source_condition}  '
                     f'({elapsed_so_far:.0f}s elapsed, {len(accumulated)}/6 done)',
                     flush=True,
                 )
                 print(f'{"="*60}', flush=True)
                 pending.pop(i)
-                break  # restart the outer while loop immediately
+                break
             except TimeoutError:
                 continue
         else:
-            # All futures in this sweep were still running — sleep before next sweep
             time.sleep(10)
 
-    # Write shap_results.json to volume.
-    out_volume_path = '/results/shap_results.json'
-    with volume.batch_upload() as batch:
+    # Write shap_results_v2.json to volume.
+    out_volume_path = '/results/shap_results_v2.json'
+    with volume.batch_upload(force=True) as batch:
         batch.put_file(
             io.BytesIO(json.dumps(accumulated, indent=2).encode()),
             out_volume_path,
         )
 
-    # Write shap_results.json locally.
-    out_local_path = repo_root / 'experiments/results/shap_results.json'
+    # Write shap_results_v2.json locally.
+    out_local_path = repo_root / 'experiments/results/v2/shap_results_v2.json'
     out_local_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_local_path, 'w') as f:
         json.dump(accumulated, f, indent=2)
 
     total_elapsed = time.time() - t_start
-    print(f'\nAll six directions complete in {total_elapsed:.0f}s', flush=True)
+    print(
+        f'\nAll 3 source groups (6 directions) complete in {total_elapsed:.0f}s',
+        flush=True,
+    )
     print(f'Results written locally to {out_local_path}', flush=True)
     print(f'Results written to Modal volume at {out_volume_path}', flush=True)
     print('\nDownload .npz files:', flush=True)
-    print('  modal volume ls gait-results shap/', flush=True)
+    print('  modal volume ls gait-results shap_v2/', flush=True)

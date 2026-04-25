@@ -11,14 +11,14 @@ source models multiple times across containers. Sequential execution in one
 container allows model file caching: the pd_rf.joblib fitted for pd->hd is
 reused for pd->als without refitting.
 
-Modal allocation: cpu=16, memory=16384 (fixed for all Modal runs in this project).
+Modal allocation: cpu=16, memory=24576.
 
 Usage (from repo root with venv active):
     modal run scripts/training/run_cross_condition_modal.py
 
 Download results after completion:
-    modal volume get gait-results cross_condition_results.json
-    modal volume get gait-results pd_rf.joblib  # and all other model files
+    modal volume get gait-results cross_condition_results_v2.json
+    modal volume get gait-results models_v2/pd_rf.joblib  # and all other model files
 """
 
 import modal
@@ -42,9 +42,10 @@ volume = modal.Volume.from_name("gait-results", create_if_missing=True)
 # ── Single-container cross-condition function ─────────────────────────────────
 @app.function(
     cpu=16,
-    memory=16384,
+    memory=24576,
     timeout=86400,     # 24-hour ceiling; all 21 fits expected in ~3-4 hours
     volumes={"/results": volume},
+    retries=2,
 )
 def run_all_directions(
     gait_features_csv: bytes,
@@ -57,13 +58,13 @@ def run_all_directions(
     Run all six cross-condition transfer directions in one container.
 
     Source models (21 total: 7 classifiers x 3 source conditions) are saved to
-    /results/{source}_{clf}.joblib after fitting. Subsequent directions sharing
-    the same source condition load from disk rather than refitting, so each
-    source model is fitted exactly once regardless of how many target directions
-    share that source.
+    /results/models_v2/{source}_{clf}.joblib after fitting. Subsequent
+    directions sharing the same source condition load from disk rather than
+    refitting, so each source model is fitted exactly once regardless of how
+    many target directions share that source.
 
     Returns the accumulated results dict as a JSON string (also written to
-    /results/cross_condition_results.json on the Modal volume).
+    /results/cross_condition_results_v2.json on the Modal volume).
     """
     import json
     import os
@@ -100,7 +101,7 @@ def run_all_directions(
     # Model files persist on the volume; run_cross_condition() loads from disk
     # if {source}_{clf}.joblib already exists, so pd_rf.joblib is fitted once
     # for pd->hd and reused for pd->als without any code change here.
-    models_dir = "/results"
+    models_dir = "/results/models_v2"
 
     directions = [
         ("pd",  "hd"),
@@ -131,16 +132,20 @@ def run_all_directions(
             source_results=source_results[source_cond],
             results_dir="/results",
             models_dir=models_dir,
+            feature_matrix_file='v2/gait_features_v2.csv',
         )
 
         elapsed = time.time() - t_dir_start
         accumulated[direction_key] = result
+        partial_path = "/results/cross_condition_results_v2_partial.json"
+        with open(partial_path, "w") as f:
+            json.dump(accumulated, f, indent=2)
         print(
             f"\nDirection {direction_key} complete in {elapsed:.0f}s", flush=True)
         print(flush=True)
 
     # ── Write single output file to Modal volume ──────────────────────────────
-    out_path = "/results/cross_condition_results.json"
+    out_path = "/results/cross_condition_results_v2.json"
     with open(out_path, "w") as f:
         json.dump(accumulated, f, indent=2)
 
@@ -155,20 +160,20 @@ def run_all_directions(
 @app.local_entrypoint()
 def main():
     """Submit the cross-condition job to Modal and stream output."""
-    repo_root = Path(__file__).resolve().parent.parent.parent
+    repo_root = Path(__file__).resolve().parents[2]
 
     print("Reading data files...", flush=True)
     features_bytes = (
-        repo_root / "data/processed/gait_features.csv").read_bytes()
+        repo_root / "data/processed/v2/gait_features_v2.csv").read_bytes()
     partition_bytes = (
         repo_root / "data/processed/control_partition.json").read_bytes()
-    pd_bytes = (repo_root / "experiments/results/pd_results.json").read_bytes()
-    hd_bytes = (repo_root / "experiments/results/hd_results.json").read_bytes()
+    pd_bytes = (repo_root / "experiments/results/v2/pd_results_v2.json").read_bytes()
+    hd_bytes = (repo_root / "experiments/results/v2/hd_results_v2.json").read_bytes()
     als_bytes = (
-        repo_root / "experiments/results/als_results.json").read_bytes()
+        repo_root / "experiments/results/v2/als_results_v2.json").read_bytes()
 
     print("Submitting cross-condition job to Modal...")
-    print("Single container: 16 physical CPU cores, 16 GB RAM.")
+    print("Single container: 16 CPU, 24576 MB RAM.")
     print("21 source models will be fitted (7 classifiers x 3 source conditions).")
     print("Each source model is fitted once and cached for reuse across directions.")
     print()
@@ -182,8 +187,8 @@ def main():
     )
 
     print("\nJob complete. Download results:")
-    print("  modal volume get gait-results cross_condition_results.json")
+    print("  modal volume get gait-results cross_condition_results_v2.json")
     print("  # Model files (21 total):")
     for src in ["pd", "hd", "als"]:
         for clf in ["rf", "knn", "svm", "dt", "qda", "xgb", "lgbm"]:
-            print(f"  modal volume get gait-results {src}_{clf}.joblib")
+            print(f"  modal volume get gait-results models_v2/{src}_{clf}.joblib")

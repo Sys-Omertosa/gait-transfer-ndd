@@ -10,7 +10,7 @@ hyperparameters from within-condition LOSO-CV, then evaluates on the full
 target pool (target condition + Control B) with no retraining.
 
 Results from all six directions are accumulated into a single output dict
-and written to experiments/results/cross_condition_results.json after all
+and written to experiments/results/v2/cross_condition_results_v2.json after all
 directions complete.
 
 Usage (from repo root with venv active):
@@ -29,13 +29,13 @@ from pathlib import Path
 import polars as pl
 
 # Resolve repo root regardless of working directory.
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from train import run_cross_condition  # noqa: E402
 
-RESULTS_DIR = REPO_ROOT / "experiments" / "results"
-MODELS_DIR  = REPO_ROOT / "experiments" / "models"
+RESULTS_DIR = REPO_ROOT / "experiments" / "results" / "v2"
+MODELS_DIR  = REPO_ROOT / "experiments" / "models" / "v2"
 
 DIRECTIONS = [
     ("pd",  "hd"),
@@ -47,16 +47,16 @@ DIRECTIONS = [
 ]
 
 SOURCE_JSON = {
-    "pd":  RESULTS_DIR / "pd_results.json",
-    "hd":  RESULTS_DIR / "hd_results.json",
-    "als": RESULTS_DIR / "als_results.json",
+    "pd":  RESULTS_DIR / "pd_results_v2.json",
+    "hd":  RESULTS_DIR / "hd_results_v2.json",
+    "als": RESULTS_DIR / "als_results_v2.json",
 }
 
 
 def main() -> None:
     # ── Load shared inputs ────────────────────────────────────────────────────
     print("Loading feature matrix and control partition...", flush=True)
-    df = pl.read_csv(REPO_ROOT / "data" / "processed" / "gait_features.csv")
+    df = pl.read_csv(REPO_ROOT / "data" / "processed" / "v2" / "gait_features_v2.csv")
     with open(REPO_ROOT / "data" / "processed" / "control_partition.json") as f:
         partition = json.load(f)
     control_a = partition["control_A"]
@@ -90,6 +90,7 @@ def main() -> None:
             source_results=source_results[source_cond],
             results_dir=RESULTS_DIR,
             models_dir=MODELS_DIR,
+            feature_matrix_file='v2/gait_features_v2.csv',
         )
 
         elapsed = time.time() - t_dir_start
@@ -98,7 +99,7 @@ def main() -> None:
         print(flush=True)
 
     # ── Write single output file after all directions complete ────────────────
-    out_path = RESULTS_DIR / "cross_condition_results.json"
+    out_path = RESULTS_DIR / "cross_condition_results_v2.json"
     with open(out_path, "w") as f:
         json.dump(accumulated, f, indent=2)
 

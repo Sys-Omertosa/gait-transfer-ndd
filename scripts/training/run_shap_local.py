@@ -6,11 +6,14 @@ Runs all six transfer directions in order:
 
 For each direction, calls run_shap_for_direction() from src/explain.py,
 which computes SHAP values for all 7 classifiers, writes per-(source, clf)
-.npz files to experiments/shap/, and returns per-classifier δj results.
+.npz files to experiments/shap/v2_local/, and returns per-classifier δj
+results.
 
 After all six directions complete, the accumulated results are written to
-experiments/results/shap_results.json following the same structure and
-commit convention as cross_condition_results.json.
+experiments/results/v2/shap_results_v2_local.json following the same structure
+and commit convention as cross_condition_results_v2.json. Local outputs are
+kept separate from Modal outputs to avoid accidental overwrite when Modal
+volume downloads are synced back into the repository.
 
 TreeExplainer classifiers (RF, DT, XGB, LGB) complete in seconds to
 tens of seconds per classifier per direction. KernelExplainer classifiers
@@ -31,17 +34,17 @@ from pathlib import Path
 
 import polars as pl
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / 'src'))
 
 from explain import run_shap_for_direction  # noqa: E402
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-FEATURES_PATH   = REPO_ROOT / 'data/processed/gait_features.csv'
+FEATURES_PATH   = REPO_ROOT / 'data/processed/v2/gait_features_v2.csv'
 PARTITION_PATH  = REPO_ROOT / 'data/processed/control_partition.json'
-MODELS_DIR      = REPO_ROOT / 'experiments/models'
-SHAP_DIR        = REPO_ROOT / 'experiments/shap'
-RESULTS_DIR     = REPO_ROOT / 'experiments/results'
+MODELS_DIR      = REPO_ROOT / 'experiments/models/v2'
+SHAP_DIR        = REPO_ROOT / 'experiments/shap/v2_local'
+RESULTS_DIR     = REPO_ROOT / 'experiments/results/v2'
 
 DIRECTIONS = [
     ('pd',  'hd'),
@@ -89,14 +92,14 @@ def main() -> None:
 
         # Write a partial results file after each direction so that a crash does
         # not lose completed work during a multi-hour run.
-        partial_path = RESULTS_DIR / 'shap_results_partial.json'
+        partial_path = RESULTS_DIR / 'shap_results_v2_local_partial.json'
         with open(partial_path, 'w') as f:
             json.dump(accumulated, f, indent=2)
         print(f'Partial results saved ({len(accumulated)}/6 directions)', flush=True)
 
     # Rename the final partial file to the canonical output name.
-    partial_path = RESULTS_DIR / 'shap_results_partial.json'
-    out_path = RESULTS_DIR / 'shap_results_local.json'
+    partial_path = RESULTS_DIR / 'shap_results_v2_local_partial.json'
+    out_path = RESULTS_DIR / 'shap_results_v2_local.json'
     partial_path.rename(out_path)
 
     total_elapsed = time.time() - t_total
