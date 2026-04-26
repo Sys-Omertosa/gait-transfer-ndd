@@ -4,19 +4,19 @@ app/app.py
 Step 8 — Streamlit demo for interactive gait-based NDD inference.
 
 Three tabs driven entirely off the artefacts in experiments/results/ and the
-preprocessed data/processed/gait_features.csv:
+preprocessed feature matrix:
 
-    1. Within-condition inference  — pick a cohort (PD/HD/ALS), classify one
-       stride with the cohort's modal-RF pipeline, see SHAP contributions and
-       PCA placement.
+    1. Within-condition inference  — pick a cohort (PD/HD/ALS), inspect stored
+       predictions for one stride, and optionally enable SHAP/PCA with a cached
+       one-time RF fit.
     2. Cross-condition transfer    — pick source and target cohorts, run the
        source RF on the target stride, and show the stored ΔF1 degradation.
     3. Noise robustness            — perturb an input stride with Gaussian
        noise at a chosen σ, visualise how predicted P(disease) drifts.
 
-No raw .ts re-processing, no Step 2–5 sweep is re-run. RF pipelines are re-fit
-once per session using the modal hyper-parameters stored in
-experiments/results/{cond}_results.json and cached via @st.cache_resource.
+No raw .ts re-processing, and no Step 2–5 sweep is re-run. The default mode is
+read-only and uses stored v2 predictions. SHAP and live Monte-Carlo noise can
+be enabled as an optional one-time cached RF fit per cohort.
 """
 
 from __future__ import annotations
@@ -53,8 +53,13 @@ from train import build_pipeline  # noqa: E402
 CONDITIONS = ("pd", "hd", "als")
 COND_LABEL = {"pd": "Parkinson's disease", "hd": "Huntington's disease", "als": "ALS"}
 COND_SHORT = {"pd": "PD", "hd": "HD", "als": "ALS"}
-DATA_CSV = ROOT / "data" / "processed" / "gait_features.csv"
+DATA_CSV_CANDIDATES = (
+    ROOT / "data" / "processed" / "v2" / "gait_features_v2.csv",
+    ROOT / "data" / "processed" / "v1" / "gait_features_v1.csv",
+    ROOT / "data" / "processed" / "gait_features.csv",
+)
 RESULTS_DIR = ROOT / "experiments" / "results"
+RESULTS_V2_DIR = RESULTS_DIR / "v2"
 PARTITION_JSON = ROOT / "data" / "processed" / "control_partition.json"
 
 FEATURE_HELP = {
@@ -79,8 +84,13 @@ FEATURE_HELP = {
 
 @st.cache_data(show_spinner=False)
 def load_features() -> pd.DataFrame:
-    """Full preprocessed feature matrix (14,753 × 17)."""
-    return pd.read_csv(DATA_CSV)
+    """Full preprocessed feature matrix from v2 (legacy fallback)."""
+    for path in DATA_CSV_CANDIDATES:
+        if path.exists():
+            return pd.read_csv(path)
+    raise FileNotFoundError(
+        "Missing feature matrix CSV. Tried: " + ", ".join(str(p) for p in DATA_CSV_CANDIDATES)
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -91,28 +101,58 @@ def load_partition() -> dict[str, list[str]]:
 
 @st.cache_data(show_spinner=False)
 def load_within_results() -> dict[str, dict]:
+    def _read_for_condition(cond: str) -> dict:
+        candidates = (
+            RESULTS_V2_DIR / f"{cond}_results_v2.json",
+            RESULTS_DIR / f"{cond}_results_v2.json",
+            RESULTS_DIR / f"{cond}_results.json",
+        )
+        for path in candidates:
+            if path.exists():
+                return json.loads(path.read_text())
+        raise FileNotFoundError(
+            f"Missing within-condition results for '{cond}'. Tried: "
+            + ", ".join(str(p) for p in candidates)
+        )
+
     return {
-        c: json.loads((RESULTS_DIR / f"{c}_results.json").read_text())
+        c: _read_for_condition(c)
         for c in CONDITIONS
     }
 
 
 @st.cache_data(show_spinner=False)
 def load_cross_results() -> dict:
-    return json.loads((RESULTS_DIR / "cross_condition_results.json").read_text())
+    candidates = (
+        RESULTS_V2_DIR / "cross_condition_results_v2.json",
+        RESULTS_DIR / "cross_condition_results_v2.json",
+        RESULTS_DIR / "cross_condition_results.json",
+    )
+    for path in candidates:
+        if path.exists():
+            return json.loads(path.read_text())
+    raise FileNotFoundError(
+        "Missing cross-condition results JSON. Tried: "
+        + ", ".join(str(p) for p in candidates)
+    )
 
 
 @st.cache_data(show_spinner=False)
 def load_noise_results() -> dict:
-    path = RESULTS_DIR / "noise_robustness.json"
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text())
+    candidates = (
+        RESULTS_V2_DIR / "noise_robustness_v2.json",
+        RESULTS_DIR / "noise_robustness_v2.json",
+        RESULTS_DIR / "noise_robustness.json",
+    )
+    for path in candidates:
+        if path.exists():
+            return json.loads(path.read_text())
+    return {}
 
 
 @st.cache_data(show_spinner=False)
 def cohort_feature_stats() -> dict[str, pd.DataFrame]:
-    """Per-cohort p1/median/p99 for the 14 features, used for slider ranges."""
+    """Per-cohort p1/median/p99 for all features, used for slider ranges."""
     df = load_features()
     out: dict[str, pd.DataFrame] = {}
     partition = load_partition()
@@ -158,7 +198,7 @@ def tree_explainer(condition: str):
 
 @st.cache_resource(show_spinner=False)
 def fit_pca_projection():
-    """Step-6-identical scaler + PCA(2) fit on all 14,753 strides."""
+    """Step-6-identical scaler + PCA(2) fit on all available strides."""
     df = load_features()
     X = df[list(ALL_FEATURE_COLS)].to_numpy(dtype=np.float64)
     scaler = StandardScaler().fit(X)
@@ -192,13 +232,109 @@ def within_f1_with_ci(condition: str) -> tuple[float, float, float]:
     return float(clf["f1_macro"]), lo, hi
 
 
+def explain_mode_enabled() -> bool:
+    """Whether optional SHAP/live-noise mode is enabled by the user."""
+    return bool(st.session_state.get("enable_explain_mode", False))
+
+
+@st.cache_data(show_spinner=False)
+def cohort_pool_df(condition: str, control_group: str = "A") -> pd.DataFrame:
+    """
+    Condition pool with control split applied and row order preserved.
+    control_group='A' is used for within/noise.
+    control_group='B' is used for cross target lookup alignment.
+    """
+    if control_group not in {"A", "B"}:
+        raise ValueError("control_group must be 'A' or 'B'.")
+    df = load_features()
+    partition = load_partition()
+    controls = partition[f"control_{control_group}"]
+    pool = df[(df["condition"] == condition) | (df["subject_id"].isin(controls))].copy()
+    return pool.reset_index(drop=True)
+
+
+@st.cache_data(show_spinner=False)
+def validate_within_alignment(condition: str) -> tuple[bool, str]:
+    pool = cohort_pool_df(condition, control_group="A")
+    rf = load_within_results()[condition]["classifiers"]["rf"]
+    y_pred = rf.get("y_pred", [])
+    y_true = rf.get("y_true", [])
+    if len(pool) != len(y_pred):
+        return False, (
+            f"Length mismatch for {condition}: pool={len(pool)} vs y_pred={len(y_pred)}. "
+            "Stored prediction lookup is disabled for this condition."
+        )
+    if len(y_true) != len(y_pred):
+        return False, (
+            f"Length mismatch for {condition}: y_true={len(y_true)} vs y_pred={len(y_pred)}. "
+            "Stored prediction lookup is disabled for this condition."
+        )
+    return True, ""
+
+
+@st.cache_data(show_spinner=False)
+def validate_cross_alignment(source: str, target: str) -> tuple[bool, str]:
+    key = f"{source}_to_{target}"
+    cross = load_cross_results()
+    if key not in cross:
+        return False, f"Missing cross key: {key}"
+    pair = cross[key]
+    rf = pair["classifiers"]["rf"]
+    y_pred = rf.get("y_pred", [])
+    y_true = rf.get("y_true", [])
+    subj_ids = pair.get("target_subject_ids", [])
+    if len(subj_ids) != len(y_pred):
+        return False, (
+            f"Length mismatch for {key}: target_subject_ids={len(subj_ids)} vs y_pred={len(y_pred)}."
+        )
+    if len(y_true) != len(y_pred):
+        return False, (
+            f"Length mismatch for {key}: y_true={len(y_true)} vs y_pred={len(y_pred)}."
+        )
+    return True, ""
+
+
+def stored_within_prediction(condition: str, pool_index: int) -> tuple[int, int]:
+    rf = load_within_results()[condition]["classifiers"]["rf"]
+    pred = int(rf["y_pred"][pool_index])
+    true = int(rf["y_true"][pool_index])
+    return pred, true
+
+
+def _occurrence_index(pool_df: pd.DataFrame, pool_index: int) -> tuple[str, int]:
+    sid = str(pool_df.iloc[pool_index]["subject_id"])
+    occ = int((pool_df.loc[:pool_index, "subject_id"] == sid).sum() - 1)
+    return sid, occ
+
+
+def stored_cross_prediction(source: str, target: str, pool_df: pd.DataFrame, pool_index: int) -> tuple[int, int]:
+    key = f"{source}_to_{target}"
+    pair = load_cross_results()[key]
+    rf = pair["classifiers"]["rf"]
+    subj_ids = pair["target_subject_ids"]
+
+    sid, occ = _occurrence_index(pool_df, pool_index)
+    seen = -1
+    matched_idx: int | None = None
+    for i, s in enumerate(subj_ids):
+        if s == sid:
+            seen += 1
+            if seen == occ:
+                matched_idx = i
+                break
+    if matched_idx is None:
+        raise ValueError(
+            f"Could not map subject '{sid}' occurrence {occ} in cross target ids for {key}."
+        )
+    pred = int(rf["y_pred"][matched_idx])
+    true = int(rf["y_true"][matched_idx])
+    return pred, true
+
+
 # ── Input-mode helpers ───────────────────────────────────────────────────────
 
-def _pick_subject_stride(df: pd.DataFrame, condition: str, key: str) -> pd.DataFrame:
+def _pick_subject_stride(pool: pd.DataFrame, condition: str, key: str) -> pd.DataFrame:
     """Dropdown → subject → stride index slider. Returns a 1-row frame."""
-    partition = load_partition()
-    control_a = partition["control_A"]
-    pool = df[(df["condition"] == condition) | (df["subject_id"].isin(control_a))]
     subjects = sorted(pool["subject_id"].unique())
     default = next((s for s in subjects if s.startswith(("park", "hunt", "als"))), subjects[0])
     subj = st.selectbox(
@@ -208,20 +344,22 @@ def _pick_subject_stride(df: pd.DataFrame, condition: str, key: str) -> pd.DataF
         key=f"{key}_subj",
         help=f"Choose a subject from the {COND_SHORT[condition]} cohort (disease or Control A).",
     )
-    strides = pool[pool["subject_id"] == subj].reset_index(drop=True)
+    strides = pool[pool["subject_id"] == subj]
     idx = st.slider(
         "Stride index",
         min_value=0,
-        max_value=len(strides) - 1,
+        max_value=int(len(strides) - 1),
         value=0,
         key=f"{key}_idx",
     )
     st.caption(f"{len(strides)} strides available for **{subj}** (label={int(strides['label'].iloc[0])}).")
-    return strides.iloc[[idx]].reset_index(drop=True)
+    picked = strides.iloc[[idx]].copy()
+    picked["__pool_index"] = int(picked.index[0])
+    return picked.reset_index(drop=True)
 
 
 def _slider_inputs(condition: str, key: str) -> pd.DataFrame:
-    """14 feature sliders with cohort-median defaults, [p1, p99] ranges."""
+    """Feature sliders with cohort-median defaults, [p1, p99] ranges."""
     stats = cohort_feature_stats()[condition]
     cols = st.columns(2)
     values: dict[str, float] = {}
@@ -245,9 +383,9 @@ def _slider_inputs(condition: str, key: str) -> pd.DataFrame:
 
 
 def _csv_upload(key: str) -> pd.DataFrame | None:
-    """Accept a CSV with the 14 engineered feature columns (multi-stride OK)."""
+    """Accept a CSV with all engineered feature columns (multi-stride OK)."""
     up = st.file_uploader(
-        "Upload a pre-engineered feature CSV (14 columns: "
+        f"Upload a pre-engineered feature CSV ({len(ALL_FEATURE_COLS)} columns: "
         + ", ".join(ALL_FEATURE_COLS) + ")",
         type=["csv"],
         key=f"{key}_csv",
@@ -268,10 +406,10 @@ def _csv_upload(key: str) -> pd.DataFrame | None:
     return data[list(ALL_FEATURE_COLS)].copy()
 
 
-def collect_input(condition: str, key: str) -> pd.DataFrame | None:
+def collect_input(condition: str, key: str, control_group: str = "A") -> pd.DataFrame | None:
     """
     Unified input-mode selector: subject / sliders / CSV.
-    Returns a DataFrame with at least the 14 feature columns, or None if
+    Returns a DataFrame with at least all feature columns, or None if
     the user hasn't supplied valid input yet.
     """
     mode = st.radio(
@@ -280,9 +418,9 @@ def collect_input(condition: str, key: str) -> pd.DataFrame | None:
         horizontal=True,
         key=f"{key}_mode",
     )
-    df = load_features()
+    pool = cohort_pool_df(condition, control_group=control_group)
     if mode == "Pick an existing stride":
-        return _pick_subject_stride(df, condition, key)
+        return _pick_subject_stride(pool, condition, key)
     if mode == "Sliders (manual entry)":
         return _slider_inputs(condition, key)
     return _csv_upload(key)
@@ -290,7 +428,7 @@ def collect_input(condition: str, key: str) -> pd.DataFrame | None:
 
 # ── Rendering helpers ────────────────────────────────────────────────────────
 
-def render_prediction_card(condition: str, X: np.ndarray, title: str = "Prediction"):
+def render_prediction_card_live(condition: str, X: np.ndarray, title: str = "Prediction"):
     pipe = fit_rf(condition)
     proba = pipe.predict_proba(X)
     if len(X) == 1:
@@ -309,6 +447,17 @@ def render_prediction_card(condition: str, X: np.ndarray, title: str = "Predicti
         col_b.metric("mean P(disease)", f"{p_disease.mean():.3f}")
         col_c.metric("fraction predicted Disease", f"{frac:.2%}")
     return proba
+
+
+def render_stored_prediction_card(pred: int, true: int | None, title: str = "Prediction"):
+    label = "Disease" if pred == 1 else "Healthy control"
+    col_a, col_b = st.columns(2)
+    col_a.metric(f"{title} — predicted class", label)
+    if true is None:
+        col_b.metric("Ground truth", "N/A")
+    else:
+        truth_label = "Disease" if true == 1 else "Healthy control"
+        col_b.metric("Ground truth label", truth_label)
 
 
 def render_shap_waterfall(condition: str, x_row: np.ndarray):
@@ -383,7 +532,7 @@ def render_pca_scatter(x_row: np.ndarray, stride_condition: str | None = None):
 
 
 def render_cross_banner(source: str, target: str):
-    """ΔF1 degradation banner pulled from cross_condition_results.json."""
+    """ΔF1 degradation banner pulled from cross-condition results JSON."""
     within = load_within_results()
     cross = load_cross_results()
     within_f1 = float(within[source]["classifiers"]["rf"]["f1_macro"])
@@ -413,7 +562,7 @@ def render_cross_banner(source: str, target: str):
 def render_noise_curve(condition: str, x_row: np.ndarray, sigma_max: float, n_mc: int = 100):
     """
     Live P(disease) vs σ, Monte-Carlo over n_mc perturbations per σ grid point,
-    overlaid with the reference F1-vs-σ curve from noise_robustness.json.
+    overlaid with the reference F1-vs-σ curve from noise robustness results JSON.
     """
     pipe = fit_rf(condition)
     rng = np.random.default_rng(42)
@@ -465,11 +614,36 @@ def render_noise_curve(condition: str, x_row: np.ndarray, sigma_max: float, n_mc
         fig.update_xaxes(title="σ", row=1, col=2)
         fig.update_yaxes(title="F1 macro", range=[0, 1], row=1, col=2)
     else:
-        fig.add_annotation(text="noise_robustness.json unavailable", xref="x2", yref="y2",
+        fig.add_annotation(text="noise robustness results unavailable", xref="x2", yref="y2",
                            x=0.5, y=0.5, showarrow=False, row=1, col=2)
 
     fig.update_layout(height=380, margin=dict(l=10, r=10, t=60, b=10),
                       legend=dict(orientation="h", y=-0.15))
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render_noise_reference_curve(condition: str):
+    """Reference cohort F1 vs sigma from stored noise robustness results."""
+    ref = load_noise_results().get("within", {}).get(condition, {}).get("rf", {})
+    ref_sigma = sorted(float(k) for k in ref)
+    ref_mean = [float(np.mean(ref[f"{s:g}"])) if f"{s:g}" in ref else float(np.mean(ref[str(s)])) for s in ref_sigma]
+
+    fig = go.Figure()
+    if ref_sigma:
+        fig.add_trace(go.Scatter(
+            x=ref_sigma, y=ref_mean, mode="lines+markers", name="Cohort F1",
+            line=dict(color="#2ca02c", width=2),
+        ))
+    else:
+        fig.add_annotation(text="noise robustness results unavailable", x=0.5, y=0.5, showarrow=False)
+    fig.update_layout(
+        title=f"Reference cohort F1 vs sigma ({COND_SHORT[condition]} RF)",
+        xaxis_title="sigma",
+        yaxis_title="F1 macro",
+        yaxis_range=[0, 1],
+        height=350,
+        margin=dict(l=10, r=10, t=60, b=10),
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -479,9 +653,8 @@ def tab_within():
     st.subheader("Within-condition inference")
     st.markdown(
         "Select a cohort (PD / HD / ALS) and supply a stride. The cohort's "
-        "Step-2 Random Forest (trained on disease strides + Control Group A) "
-        "predicts disease vs control, and SHAP shows which of the 14 gait "
-        "features drove the decision."
+        "stored Step-2 Random Forest outputs show disease vs control. "
+        "Optional explain mode enables SHAP and live model inference."
     )
 
     condition = st.radio("Cohort", list(CONDITIONS), horizontal=True,
@@ -489,22 +662,39 @@ def tab_within():
     f1, lo, hi = within_f1_with_ci(condition)
     st.caption(f"Cohort LOSO F1 (RF): **{f1:.3f}**  —  stride-level 95% CI **[{lo:.3f}, {hi:.3f}]**")
 
-    inp = collect_input(condition, key="within")
+    ok, msg = validate_within_alignment(condition)
+    if not ok:
+        st.error(msg)
+        return
+
+    inp = collect_input(condition, key="within", control_group="A")
     if inp is None:
         return
     X = inp[list(ALL_FEATURE_COLS)].to_numpy(dtype=np.float64)
-
-    render_prediction_card(condition, X)
+    if "__pool_index" in inp.columns:
+        pool_index = int(inp["__pool_index"].iloc[0])
+        pred, true = stored_within_prediction(condition, pool_index)
+        render_stored_prediction_card(pred, true)
+    elif explain_mode_enabled():
+        render_prediction_card_live(condition, X)
+    else:
+        st.warning(
+            "Stored predictions are available only for existing cohort strides. "
+            "Enable explain mode to run live predictions for slider/CSV inputs."
+        )
+        return
 
     st.divider()
-    # Use the first stride for the per-stride explanations.
-    st.markdown("#### Local explanation (first stride)")
-    render_shap_waterfall(condition, X[[0]])
+    if explain_mode_enabled():
+        st.markdown("#### Local explanation (first stride)")
+        render_shap_waterfall(condition, X[[0]])
+    else:
+        st.info("SHAP is disabled in fast mode. Enable explain mode from the sidebar.")
 
     st.markdown("#### PCA placement in cohort feature space")
     render_pca_scatter(X[[0]], stride_condition=condition)
 
-    if len(X) > 1:
+    if len(X) > 1 and explain_mode_enabled():
         st.markdown("#### Per-stride predictions")
         pipe = fit_rf(condition)
         preds = pipe.predict(X)
@@ -520,10 +710,8 @@ def tab_cross():
     st.subheader("Cross-condition transfer")
     st.markdown(
         "Pick a **source** cohort to train on and a **target** cohort to "
-        "predict. This reproduces Step 3's zero-shot transfer protocol: the "
-        "RF fits on source + Control A strides and predicts on a stride from "
-        "the target cohort. The expected F1 drop (ΔF1) is pulled from the "
-        "stored cross-condition sweep."
+        "predict. This reproduces Step 3's zero-shot transfer protocol. "
+        "Expected F1 drop (ΔF1) is pulled from stored cross-condition results."
     )
 
     col_a, col_b = st.columns(2)
@@ -536,18 +724,37 @@ def tab_cross():
                           format_func=lambda c: COND_SHORT[c], key="cross_tgt")
 
     render_cross_banner(source, target)
+    ok, msg = validate_cross_alignment(source, target)
+    if not ok:
+        st.error(msg)
+        return
 
     st.markdown(f"#### Input stride ({COND_SHORT[target]} feature space)")
-    inp = collect_input(target, key="cross")
+    inp = collect_input(target, key="cross", control_group="B")
     if inp is None:
         return
     X = inp[list(ALL_FEATURE_COLS)].to_numpy(dtype=np.float64)
 
-    render_prediction_card(source, X, title=f"{COND_SHORT[source]}-RF on {COND_SHORT[target]} stride")
+    if "__pool_index" in inp.columns:
+        pool_df = cohort_pool_df(target, control_group="B")
+        pool_index = int(inp["__pool_index"].iloc[0])
+        pred, true = stored_cross_prediction(source, target, pool_df, pool_index)
+        render_stored_prediction_card(pred, true, title=f"{COND_SHORT[source]}-RF on {COND_SHORT[target]} stride")
+    elif explain_mode_enabled():
+        render_prediction_card_live(source, X, title=f"{COND_SHORT[source]}-RF on {COND_SHORT[target]} stride")
+    else:
+        st.warning(
+            "Stored cross predictions are available only for existing target strides. "
+            "Enable explain mode to run live predictions for slider/CSV inputs."
+        )
+        return
 
     st.divider()
-    st.markdown(f"#### Local explanation via {COND_SHORT[source]} RF")
-    render_shap_waterfall(source, X[[0]])
+    if explain_mode_enabled():
+        st.markdown(f"#### Local explanation via {COND_SHORT[source]} RF")
+        render_shap_waterfall(source, X[[0]])
+    else:
+        st.info("SHAP is disabled in fast mode. Enable explain mode from the sidebar.")
 
     st.markdown("#### PCA placement (all cohorts)")
     render_pca_scatter(X[[0]], stride_condition=target)
@@ -556,16 +763,18 @@ def tab_cross():
 def tab_noise():
     st.subheader("Noise robustness")
     st.markdown(
-        "Explore how additive Gaussian noise on the 14 gait features degrades "
-        "the cohort RF's confidence for a chosen stride. Per-feature noise "
-        "scale is σ × pooled feature std (same convention as the Step-5 "
-        "sweep). The right panel shows the **reference** F1 curve across "
-        "the full cohort from `noise_robustness.json`."
+        "Explore additive Gaussian noise behaviour. In fast mode, the app "
+        "shows stored reference F1-vs-sigma curves. Explain mode enables live "
+        "Monte-Carlo prediction drift for a selected stride."
     )
 
     condition = st.radio("Cohort", list(CONDITIONS), horizontal=True,
                          format_func=lambda c: COND_SHORT[c], key="noise_cond")
-    inp = collect_input(condition, key="noise")
+    ok, msg = validate_within_alignment(condition)
+    if not ok:
+        st.error(msg)
+        return
+    inp = collect_input(condition, key="noise", control_group="A")
     if inp is None:
         return
     X = inp[list(ALL_FEATURE_COLS)].to_numpy(dtype=np.float64)
@@ -576,8 +785,18 @@ def tab_noise():
         help="Sweep from σ = 0 up to this value; P(disease) is averaged over 100 MC draws per σ.",
     )
 
-    render_prediction_card(condition, X[[0]], title="Clean-stride baseline")
-    render_noise_curve(condition, X[[0]], sigma_max=sigma_max)
+    if explain_mode_enabled():
+        render_prediction_card_live(condition, X[[0]], title="Clean-stride baseline")
+        render_noise_curve(condition, X[[0]], sigma_max=sigma_max)
+    else:
+        if "__pool_index" in inp.columns:
+            pool_index = int(inp["__pool_index"].iloc[0])
+            pred, true = stored_within_prediction(condition, pool_index)
+            render_stored_prediction_card(pred, true, title="Stored clean-stride baseline")
+        else:
+            st.info("Fast mode uses stored results only. Pick an existing stride for baseline labels.")
+        render_noise_reference_curve(condition)
+        st.caption("Enable explain mode from the sidebar for live Monte-Carlo noise simulation.")
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
@@ -591,12 +810,24 @@ def _sidebar():
             "for Parkinson's, Huntington's, and ALS*."
         )
         st.divider()
-        st.markdown("**Models cached once per session**")
+        st.markdown("**Runtime mode**")
+        st.toggle(
+            "Enable SHAP + live noise (one-time RF fit per cohort)",
+            value=False,
+            key="enable_explain_mode",
+            help=(
+                "Off: fast read-only mode using stored v2 predictions. "
+                "On: fit RF once per cohort (cached) to power SHAP and live noise plots."
+            ),
+        )
+        st.markdown(
+            f"Current mode: **{'Explain mode (cached fit)' if explain_mode_enabled() else 'Fast mode (stored results)'}**"
+        )
+        st.divider()
+        st.markdown("**Model usage**")
         st.caption(
-            "Each cohort RF is re-fit from the Step-2 modal hyper-parameters "
-            "(stored in `experiments/results/{cond}_results.json`) on first "
-            "load, then cached — no re-training or re-processing runs on "
-            "subsequent interactions."
+            "Fast mode does not refit models. Explain mode refits each cohort RF "
+            "once per session from modal hyper-parameters and caches it."
         )
         st.divider()
         within = load_within_results()
@@ -622,7 +853,7 @@ def main():
         "This app demonstrates the Step-2 within-condition classifiers and "
         "the Step-3 zero-shot cross-condition transfer of this project, plus "
         "the Step-5 noise-robustness behaviour, all driven by the published "
-        "results in `experiments/results/`."
+        "results in `experiments/results/v2/` (legacy fallback supported)."
     )
     _sidebar()
 
@@ -640,11 +871,10 @@ def main():
 
     st.divider()
     st.caption(
-        "Models: Random Forest pipelines (SMOTE → RF) from `src/train.build_pipeline`, "
-        "fit in-process from modal hyper-parameters in "
-        "`experiments/results/{cond}_results.json`. SHAP: `shap.TreeExplainer` on the "
-        "underlying RF classifier. PCA: `StandardScaler → PCA(n_components=2)` fit on "
-        "all 14,753 strides (identical to Step 6)."
+        "Data source: `data/processed/v2/gait_features_v2.csv` and "
+        "`experiments/results/v2/*.json` (legacy fallback supported). "
+        "Fast mode uses stored predictions only. Explain mode enables one-time "
+        "cached RF fitting, SHAP (`shap.TreeExplainer`), and live noise simulation."
     )
 
 
