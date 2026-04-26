@@ -10,7 +10,8 @@ notebooks/*.pdf
 .codex
 logs/
 old/
-
+paper/
+plans/
 # Experiment outputs
 experiments/models/**/*.joblib
 experiments/results/**/*_smoke*.json
