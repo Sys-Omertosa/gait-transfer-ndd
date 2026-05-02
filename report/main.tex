@@ -1,0 +1,574 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{url}
+\usepackage[table]{xcolor}
+\usepackage[caption=false,font=footnotesize]{subfig}
+
+\graphicspath{{figures/v2/pdf/}{figures/}}
+\sisetup{
+  group-separator={,},
+  group-minimum-digits=4,
+  table-number-alignment=center,
+  input-symbols = {()},
+  table-align-text-post = false
+}
+
+\begin{document}
+
+\title{Does Gait Timing Knowledge Transfer Across Neurological Conditions? A Zero-Shot Transfer Benchmark with SHAP-Based Failure Diagnosis}
+
+\author{
+\IEEEauthorblockN{Ahmad Shahmeer}
+\IEEEauthorblockA{School of Electrical Engineering\\
+and Computer Science (SEECS)\\
+National University of Sciences\\
+and Technology (NUST)\\
+Islamabad, Pakistan\\
+ahmadshahmeer.work@gmail.com}
+\and
+\IEEEauthorblockN{Ali Aqdas}
+\IEEEauthorblockA{School of Electrical Engineering\\
+and Computer Science (SEECS)\\
+National University of Sciences\\
+and Technology (NUST)\\
+Islamabad, Pakistan\\
+info@aliaqdas.dev}
+}
+
+\maketitle
+
+\begin{abstract}
+We study whether gait-timing knowledge learned from one neurological condition transfers to another by evaluating seven classical machine-learning classifiers on the PhysioNet GAITNDD dataset and diagnosing failure with SHAP-based importance-shift analysis. Our cohort comprised 63 usable subjects, 15 with Parkinson's disease, 19 with Huntington's disease, 13 with amyotrophic lateral sclerosis, and 16 healthy controls, and every experiment used subject-level leave-one-subject-out cross-validation with a 17-feature stride-timing representation. Within condition, the best models were Decision Tree for Parkinson's disease with macro-$F_1=0.8668$, XGBoost for Huntington's disease with macro-$F_1=0.9562$, and K-Nearest Neighbors for amyotrophic lateral sclerosis with macro-$F_1=0.8300$. Under zero-shot transfer, Parkinson's disease to Huntington's disease was the only direction with negative mean $\Delta F_1$, at $-0.0171$, whereas Huntington's disease to amyotrophic lateral sclerosis produced the worst degradation, with Random Forest showing $\Delta F_1 = +0.2742$ and all six disease pairs showing directional asymmetry. SHAP analysis revealed that \texttt{cv\_swing} was the dominant transfer-failure feature, with mean $\delta_j=0.0415$ and rank-1 status in 34 of 42 direction-classifier pairs, while \texttt{dfa\_alpha\_stride} showed strong directional asymmetry, remaining high in PD-source transfer but near zero in HD-to-ALS. Subject-level bootstrap confidence intervals were 10 to 17 times wider than stride-level intervals, which exposed substantial between-subject variability. The benchmark, trained models, and the \(\delta_j\) diagnostic framework are publicly available.
+\end{abstract}
+
+\begin{IEEEkeywords}
+gait analysis, neurological disease classification, zero-shot transfer learning, SHAP explainability, Parkinson's disease, Huntington's disease, amyotrophic lateral sclerosis, leave-one-subject-out cross-validation, transfer-failure diagnosis
+\end{IEEEkeywords}
+
+\section{Introduction}
+Neurological gait disorders often converge at the level of observable stride-timing disruption while diverging in underlying mechanism. Parkinson's disease (PD), Huntington's disease (HD), and amyotrophic lateral sclerosis (ALS) all alter locomotor rhythm, yet they do so through different pathophysiological pathways and with different temporal signatures \cite{hausdorff1997fractal,hausdorff1998variability,hausdorff2000als}. Clinical gait-analysis tools are still usually developed within one condition at a time. That is understandable, but it leaves an important practical question unanswered: if a model learns useful timing structure from one neurological disorder, does any of that knowledge remain useful when the model is applied to another disorder without retraining or adaptation? We think that question matters especially in rare-disease settings, because collecting condition-specific labeled gait data for HD and ALS is costly, slow, and often infeasible at scale. Recent survey work in AI-based neurodegenerative gait diagnosis has, in fact, identified the need for more generalizable gait-learning models as an open direction \cite{rao2024gaitsurvey}.
+
+The gap is narrower, and more specific, than a generic lack of transfer learning in gait. Prior work on GAITNDD has already shown that strong within-condition classification is possible, whether through deep image representations \cite{erdas2024qr} or topological fluctuation features \cite{yan2020tma}. What remains unanswered is whether the gait-timing signatures that separate diseased from healthy gait inside one condition retain any diagnostic value when they are transported, without retraining, across disease boundaries such as PD to HD or HD to ALS. A second gap follows immediately from the first, because even when transfer succeeds or fails, standard feature-importance analysis does not reveal how model reliance changes under that shift. This paper therefore asks three linked questions. First, how well do classical machine-learning classifiers perform within each condition under a subject-level LOSO-CV protocol? Second, how do those condition-specific models transfer zero-shot across PD, HD, and ALS? Third, which gait-feature families shift most under transfer, as measured by \(\delta_j\), and what do those shifts reveal mechanistically about transfer success and failure?
+
+We address those questions with four contributions that are tightly coupled. We first construct, on the PhysioNet GAITNDD dataset, a six-direction zero-shot cross-condition benchmark that evaluates every bidirectional disease pair rather than only one transfer direction or one disease family. We then introduce the \(\delta_j\) importance-shift metric, which measures how much a model begins to rely on each feature differently once it leaves its training domain. The benchmark reveals one especially notable pattern: PD\(\rightarrow\)HD is the only direction with positive mean transfer, whereas HD\(\rightarrow\)ALS degrades most strongly, and the accompanying SHAP analysis supports a mechanistic interpretation grounded in variability features and fractal gait dynamics. Finally, we pair subject-level LOSO-CV with 10,000-resample bootstrap confidence intervals, which show that between-subject uncertainty is an order of magnitude larger than stride-level bootstrap intervals would suggest. The code, trained artifacts, and supplementary figures are available in the project repository \cite{gait-transfer-repo}, and the underlying dataset is available through PhysioNet \cite{physionet_gaitndd}.
+
+The remainder of this paper is organized as follows. Section II reviews the most relevant prior work and positions the present study against it. Section III describes the dataset, preprocessing steps, control partition, and feature engineering. Section IV presents the learning, transfer, and SHAP-based diagnostic methodology, and Section V details the evaluation protocol and uncertainty procedures. Section VI reports the within-condition, transfer, and robustness results. Section VII interprets those findings and states the study limitations. Section VIII concludes the paper.
+
+\section{Related Work}
+Existing machine-learning studies of neurological gait analysis fall mostly into two categories. The first trains within-condition classifiers, for example PD versus control or HD versus control, and often reports strong in-domain performance once the target population has already been seen during training. The second trains pooled multi-condition models, which can separate several labelled groups at once but necessarily blend disease-specific gait signatures into one shared decision rule. Interpretability work cuts across both categories, yet it usually explains models inside a fixed domain rather than under explicit disease-to-disease distribution shift. What is still missing is a direct test of whether condition-specific gait knowledge transfers across neurological boundaries without retraining.
+
+The closest predecessor on the same dataset is Erda\c{s} et al. \cite{erdas2024qr}, who transformed GAITNDD stride records into QR-code images and classified them with a CNN. Their experiments stayed entirely in-domain. Using 10-fold cross-validation on sample-level splits, they reported accuracies of 95.81\% for PD versus control, 93.56\% for HD versus control, 97.65\% for ALS versus control, 94.86\% for pooled neurodegenerative disease versus control, and 84.65\% for a four-class PD/HD/ALS/control task. We see that study as an important demonstration that the GAITNDD recordings contain strong disease information even after a radical representation change. Its scientific question is still different from ours. It uses deep image representations rather than clinical timing features, it evaluates training and testing within the same condition space, and it does not study how model reliance shifts when a learned boundary crosses a disease boundary.
+
+Khera et al. \cite{khera2025severity} move the literature in a more interpretable direction. They propose a hierarchical decision-tree framework, built on normalized gait features and a possibility-theoretic split criterion, that first separates healthy controls from neurodegenerative disease, then distinguishes PD, ALS, and HD, and finally grades severity on condition-specific clinical scales. Their contribution is not merely predictive. It is a clinically oriented severity-assessment pipeline that treats gait dynamics as meaningful structure rather than as opaque input alone. That emphasis overlaps with our own. The difference is that their interpretability remains tied to in-domain staging and tree-structured relevance, whereas we use SHAP and, more specifically, the \(\delta_j\) metric to examine how feature reliance changes after out-of-domain transfer.
+
+Broader classical-ML gait work reinforces the same pattern. Mittal et al. \cite{mittal2025pd} compare decision trees, random forests, XGBoost, and LightGBM on PD gait datasets from PhysioNet and Figshare, and then use XAI to inspect the best LightGBM classifier for severity prediction. Navita et al. \cite{navita2025force} likewise remain within PD, using VGRF-derived features, recursive feature elimination, and a dual-stage random-forest-plus-regression pipeline for detection and severity assessment. Both studies show that well-tuned ensemble models can be very effective on gait signals, yet both keep the task inside a single disease label. Fiaz et al. \cite{fiaz2026gaitphase}, although focused on gait phase detection rather than neurodegenerative diagnosis, reach a related methodological conclusion on wearable-sensor data: carefully tuned tree ensembles can remain highly competitive without relying on deep architectures. These papers help justify our model family choices, but they do not answer whether disease-specific gait knowledge transfers across diagnoses.
+
+Two additional references define the methodological space around our work. Yan et al. \cite{yan2020tma} use the same GAITNDD resource but analyze it through topological motion analysis, persistent homology, and random-forest classification. Their best reported AUCs, 0.9135 for HC versus ALS, 0.9906 for HC versus HD, and 0.9667 for HC versus PD, show that structurally rich representations can capture disease-specific gait fluctuations very effectively. Even so, their experiments remain within-domain binary comparisons against healthy controls, not disease-to-disease transfer tests. Xiang et al. \cite{xiang2025xai} survey 31 XAI studies in gait analysis and show that SHAP, LIME, Grad-CAM, attention mechanisms, and related tools are increasingly used to bridge predictive performance and interpretability, which we read as strong motivation for explanation and as evidence that current gait XAI still operates largely inside fixed domains rather than under explicit disease-to-disease distribution shift.
+
+For that reason, we do not treat prior work as a leaderboard against which our within-condition scores should be ranked directly. The protocols differ too much for that to be scientifically clean. Our study instead addresses a narrower and, to our knowledge, untested gap: no prior GAITNDD study has asked whether a classifier trained on one neurological condition can classify strides from another condition in a zero-shot setting, and no prior gait-analysis study we reviewed has proposed a feature-level diagnostic that measures how model reliance shifts under that transfer. We address both gaps together with a six-direction zero-shot benchmark and the \(\delta_j\) importance-shift metric. Table~\ref{tab:prior-work} summarizes that positioning.
+
+\begin{table*}[t]
+\caption{Prior-work positioning and the specific gap addressed by this study.}
+\label{tab:prior-work}
+\centering
+\footnotesize
+\begingroup
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{0.20\linewidth}p{0.19\linewidth}p{0.12\linewidth}p{0.14\linewidth}p{0.12\linewidth}p{0.16\linewidth}}
+\toprule
+Study & Dataset / Task & Subject Grouping & Explainability & Cross-Condition Transfer & Gap Relative to This Study \\
+\midrule
+Erda\c{s} et al. (2024) & GAITNDD; CNN classification from QR-coded gait representations & 10-fold sample-level CV; in-domain PD/HD/ALS versus control plus pooled 4-class task & None reported & None & Same dataset, but no subject-level LOSO, no zero-shot transfer, and no SHAP-based reliance-shift diagnosis \\
+Khera et al. (2025) & Neurological gait data; hierarchical DT framework for disorder detection, subtype separation, and severity grading & Hierarchical in-domain grouping, HC versus NDD, then PD/ALS/HD, then condition-specific severity & Possibilistic DT structure and feature relevance & None & Severity staging within observed classes; no cross-condition generalization or SHAP-style shift metric \\
+Mittal et al. (2025) & PD gait datasets from PhysioNet and Figshare; detection and H\&Y severity classification with classical ML & PD only, within-condition & XAI inspection of the LightGBM decision pathway & None & Single-condition PD setting; no HD or ALS transfer analysis \\
+Navita et al. (2025) & VGRF-based PD gait; dual-stage PD/non-PD classification and severity regression & PD only, within-condition & Partial, via recursive feature elimination and selected gait-feature analysis & None & Single-condition PD pipeline; no cross-disease transfer and no importance-shift analysis \\
+Yan et al. (2020) & GAITNDD; topological motion analysis of stride, stance, and swing fluctuations & Leave-one-out HC versus ALS, HC versus HD, and HC versus PD binary tasks & Implicit through topological feature engineering & None & Same dataset, but only in-domain HC-versus-disease comparisons; no disease-to-disease transfer or SHAP diagnosis \\
+Xiang et al. (2025) & Systematic review of XAI in gait analysis across clinical populations & Review scope, multiple datasets and disorders & Yes, review focus on SHAP, LIME, Grad-CAM, attention, and related tools & Not studied & Review paper; identifies interpretability challenges but does not provide an original transfer benchmark or a \(\delta_j\)-style shift metric \\
+Fiaz et al. (2026) & Lower-limb wearable-sensor gait-phase detection with classical and ensemble ML & Multi-subject k-fold CV; healthy locomotion task & None reported & None & Strong broader gait-ML baseline, but not an NDD dataset and not a cross-disease transfer study \\
+\bottomrule
+\end{tabular}%
+}
+\endgroup
+\end{table*}
+
+\section{Dataset and Preprocessing}
+
+\subsection{PhysioNet GAITNDD Cohort and Exclusion Rules}
+We use the PhysioNet Gait in Neuro-Degenerative Disease Database (GAITNDD) \cite{physionet_gaitndd}, distributed through the PhysioBank infrastructure \cite{goldberger2000physiobank}. The database contains force-sensitive resistor recordings acquired during overground walking, with one \texttt{.ts} file per subject. Each file is a tab-separated stride-time table with 13 columns: elapsed time and 12 temporal gait variables describing left and right stride, swing, stance, and double-support timing. The dataset was originally motivated by the gait-dynamics studies of Hausdorff and colleagues, who examined altered fractal structure in Huntington's disease, stride-to-stride variability in Parkinson's disease and Huntington's disease, and altered gait rhythm in amyotrophic lateral sclerosis \cite{hausdorff1997fractal,hausdorff1998variability,hausdorff2000als}.
+
+Before exclusion, the cohort comprised 64 subjects: 15 with Parkinson's disease (PD), 20 with Huntington's disease (HD), 13 with amyotrophic lateral sclerosis (ALS), and 16 healthy controls. The raw repository contained 15,160 stride rows. We then applied two artifact filters in a fixed order. The first removed any row with \texttt{left\_stride\_s} $> 3.0$ s or \texttt{right\_stride\_s} $> 3.0$ s. This conservative stride-duration filter removed 276 rows, including all 238 rows of \texttt{hunt20}. Inspection of that file showed complete right-foot sensor failure, with \texttt{right\_stride\_s} frozen between 19.6433~s and 58.3867~s throughout the recording, so the subject contributed no usable HD strides after cleaning. The second filter removed any row with \texttt{double\_support\_pct} $> 100$, because such values are physically impossible for a percentage-of-stride measure and indicate corrupted event timing. This step removed 131 additional rows. Most of those rows came from partial sensor malfunction in \texttt{als5} and \texttt{als7}, which contributed 90 and 36 removed rows, respectively.
+
+After both filters, the final clean cohort contained 14,753 strides across 63 usable subjects, with final subject counts of PD~=~15, HD~=~19, ALS~=~13, and Control~=~16. The complete implementation, pre-trained models, and supplementary diagnostic figures are publicly available at the project repository \cite{gait-transfer-repo}; the PhysioNet GAITNDD dataset is accessible at \cite{physionet_gaitndd}. One known limitation remains. Two \texttt{park14} rows with negative \texttt{double\_support\_s} and negative \texttt{double\_support\_pct} values survive both filters. These values are physiologically impossible and therefore represent residual artifact that the current two-filter design does not catch. Table~\ref{tab:dataset-summary} summarizes the cohort, exclusions, and control partition.
+
+\begin{table*}[t]
+\caption{Dataset composition, exclusions, and disjoint control partitioning.}
+\label{tab:dataset-summary}
+\centering
+\footnotesize
+\begin{tabular}{p{0.28\linewidth}p{0.18\linewidth}p{0.42\linewidth}}
+\toprule
+Item & Value & Notes \\
+\midrule
+Raw cohort & 64 subjects & 15 PD, 20 HD, 13 ALS, 16 controls \\
+Final clean cohort & 63 subjects / 14,753 strides & \texttt{hunt20} fully removed \\
+PD subjects & 15 & No subject-level exclusions \\
+HD subjects (usable) & 19 & 20 enrolled, 19 retained after cleaning \\
+ALS subjects & 13 & All subjects retained after row-level filtering \\
+Control subjects & 16 & No subject-level exclusions \\
+\midrule
+\texttt{hunt20} removal & 238 rows & Complete right-foot sensor failure; \texttt{right\_stride\_s} frozen at 19.6433 to 58.3867 s \\
+Stride $>$ 3.0 s filter & 276 rows & Applied to \texttt{left\_stride\_s} or \texttt{right\_stride\_s} \\
+\texttt{double\_support\_pct} $>$ 100 filter & 131 rows & 90 rows from \texttt{als5}, 36 rows from \texttt{als7}, 5 rows from other subjects \\
+\texttt{park14} negative double support & 2 rows survive & Residual artifact not caught by current filters \\
+\midrule
+Control Group A & \texttt{control1} through \texttt{control8} & Training controls only \\
+Control Group B & \texttt{control9} through \texttt{control16} & Transfer-evaluation controls only \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Disjoint Control Partitioning}
+We partitioned the healthy controls into two fixed groups so that a control subject could never appear in both source-model training and target-domain evaluation. This separation is essential for the transfer experiment. If the same control subjects were reused on both sides, a classifier could exploit repeated control-stride characteristics and achieve inflated cross-condition performance even when transfer to the disease domain was poor. The disjoint design therefore prevents leakage through the control class, which would otherwise be the only class shared across all transfer directions.
+
+We partitioned controls deterministically. Control subjects were sorted lexicographically by identifier and split once into two non-overlapping sets. Control Group~A consisted of \texttt{control1} through \texttt{control8} and was used exclusively in source-condition training pools. Control Group~B consisted of \texttt{control9} through \texttt{control16} and was reserved exclusively for target-condition evaluation pools. The split was fixed before any model fitting and was never resampled or optimized.
+
+This design introduces two explicit limitations. First, the split is deterministic rather than demographically matched. Based on the dataset subject-description file, Group~A is younger and faster on average than Group~B, with mean ages of 34.4 and 44.3 years, respectively, and mean gait speeds of 1.43 and 1.28~m/s. Consequently, some apparent cross-condition degradation may, at least in part, reflect a shift in the control sub-population rather than a pure disease-domain shift. Second, the same eight Group~B controls appear in all six transfer evaluation pools. The transfer directions are therefore not statistically independent experiments, because each target set shares the same healthy comparison cohort. Future work should address both issues through stratified or matched control partitioning.
+
+\subsection{Feature Engineering and Known Feature-Space Limitations}
+Our preprocessing pipeline produces 17 features per clean stride from the 12 raw timing columns in the \texttt{.ts} files. The per-stride features are \texttt{left\_stride\_s}, \texttt{right\_stride\_s}, \texttt{left\_swing\_s}, \texttt{right\_swing\_s}, \texttt{left\_swing\_pct}, \texttt{right\_swing\_pct}, \texttt{left\_stance\_s}, \texttt{right\_stance\_s}, \texttt{left\_stance\_pct}, \texttt{right\_stance\_pct}, \texttt{double\_support\_s}, \texttt{double\_support\_pct}, \texttt{asymmetry\_index}, and \texttt{stride\_asymmetry\_signed}. Three subject-level aggregate descriptors are then computed once per subject and broadcast to all clean strides from that subject: \texttt{cv\_stride}, \texttt{cv\_swing}, and \texttt{dfa\_alpha\_stride}.
+
+The per-stride asymmetry index is defined exactly as implemented in \texttt{src/features.py}:
+\begin{equation}
+\mathrm{AI}_j = \frac{|L_j - R_j|}{0.5\,(L_j + R_j) + \epsilon}, \qquad \epsilon = 10^{-8},
+\end{equation}
+where $L_j$ and $R_j$ denote the left and right stride times for stride $j$. The signed laterality feature is
+\begin{equation}
+\mathrm{SAI}_j = \frac{L_j - R_j}{L_j + R_j + \epsilon}.
+\end{equation}
+We compute subject-level stride variability from the left-foot sequence only:
+\begin{equation}
+\mathrm{CV}_{\text{stride}} =
+\frac{\mathrm{std}(\texttt{left\_stride\_s})}
+     {\mathrm{mean}(\texttt{left\_stride\_s})}.
+\end{equation}
+\begin{equation}
+\mathrm{CV}_{\text{swing}} =
+\frac{\mathrm{std}(\texttt{left\_swing\_s})}
+     {\mathrm{mean}(\texttt{left\_swing\_s})}.
+\end{equation}
+Using one foot for both \texttt{cv\_stride} and \texttt{cv\_swing} avoids adding a second near-duplicate bilateral aggregate while retaining the subject-level variability signal. The left foot was used consistently for all subjects so that the aggregate descriptor did not depend on an arbitrary laterality choice.
+The \texttt{dfa\_alpha\_stride} feature is the detrended fluctuation analysis scaling exponent $\alpha$ estimated from the left stride-time series, with $\alpha$ obtained as the slope of the linear fit between $\log s$ and $\log F(s)$, following the neurological gait-fractal framework introduced by Hausdorff et al. \cite{hausdorff1997fractal}. In the present implementation, box sizes are log-spaced from 4 to $\lfloor n/4 \rfloor$ with 10 points on the log scale, linear detrending is performed within each window, and valid estimation requires at least 100 clean strides and at least 8 usable scales.
+
+The current feature space has three limitations that must be stated explicitly. First, \texttt{left\_swing\_pct} + \texttt{left\_stance\_pct}~=~100 and \texttt{right\_swing\_pct} + \texttt{right\_stance\_pct}~=~100 by construction, so each pair contains exact complements. These duplicates add no new information and can split SHAP importance arbitrarily, which is why the present paper interprets them at the feature-family level. Second, the raw timing block is strongly collinear: stride time equals stance time plus swing time by definition, and a post hoc variance-inflation audit yielded values in the millions for the raw timing cluster. That does not invalidate prediction, especially for tree-based models, but it weakens any claim that one member of the block has uniquely interpretable importance. Third, \texttt{stride\_asymmetry\_signed}, while mechanistically reasonable, showed near-zero disease-versus-control Cohen's $d$ across all three conditions ($|d| < 0.05$), indicating negligible discriminative value in the present cohort.
+
+\section{Methodology}
+
+\subsection{Within-Condition Disease-vs-Control Classification}
+We formulated within-condition learning as three independent binary classification problems. For each disease condition, the positive class comprised all clean strides from that condition and the negative class comprised all clean strides from Control Group~A. The resulting pools were PD~+~Control~A, HD~+~Control~A, and ALS~+~Control~A, each represented by the full 17-feature set described in Section~III-C. Labels were encoded as disease~=~1 and control~=~0. Importantly, the positive label remained condition-specific. An HD-positive stride therefore meant ``stride from an HD subject,'' not ``stride from a neurological subject in general.''
+
+The three pools were built separately so that each classifier learned a condition-specific disease-versus-control boundary rather than a pooled disease detector. This distinction matters because the paper's transfer experiment asks whether a source-condition decision boundary generalizes beyond its training disease. The within-condition setting therefore served two roles: it identified the best model family and resampling choice for each condition, and it established the reference ceiling against which cross-condition degradation was measured.
+
+In all three source pools, the disease class outnumbered the control class because only the eight Group~A controls contributed healthy strides, whereas the disease pools contained 13 to 19 subjects. Control was therefore, perhaps counterintuitively for a neurological disease dataset, the minority class throughout the within-condition experiments. Whenever \texttt{SMOTE} was enabled, it interpolated additional control strides inside the training folds only \cite{chawla2002smote}. This point is easy to misstate in neurological datasets, where the disease cohort is often assumed to be the minority class; here the imbalance direction was the opposite by design because the control set was intentionally restricted to Group~A.
+
+\subsection{Model Families and Hyperparameter Search}
+We compared seven classical machine-learning classifiers: Random Forest (RF), K-Nearest Neighbors (KNN), Support Vector Machine (SVM), Decision Tree (DT), Quadratic Discriminant Analysis (QDA), XGBoost, and LightGBM. This set spans bagged trees, boosted trees, distance-based classification, a kernel margin method, and a Gaussian generative model, which makes it broad enough to test whether transfer behavior is tied to a particular algorithm family or recurs across modelling assumptions.
+
+The search spaces were defined exactly as implemented in \texttt{src/train.py}. RF tuned \texttt{n\_estimators} $\in \{100, 300\}$, \texttt{max\_depth} $\in \{\texttt{None}, 10, 20\}$, \texttt{max\_features} $\in \{\texttt{sqrt}, \texttt{None}\}$, and \texttt{min\_samples\_leaf} $\in \{1, 2, 5\}$. KNN tuned \texttt{n\_neighbors} $\in \{3, 5, 7, 9, 11, 15, 21\}$, \texttt{weights} $\in \{\texttt{distance}, \texttt{uniform}\}$, and \texttt{metric} $\in \{\texttt{euclidean}, \texttt{manhattan}\}$. SVM was instantiated with \texttt{probability=True} and a fixed RBF kernel; tuning covered \texttt{C} $\in \{0.1, 1, 10, 100\}$ and \texttt{gamma} $\in \{\texttt{scale}, \texttt{auto}, 0.001, 0.01, 0.1\}$.
+
+The boosted models, in particular, warranted the widest grids because depth, learning rate, and subsampling jointly control how sharply a source-condition boundary can specialize to one disease. DT tuned \texttt{max\_depth} $\in \{\texttt{None}, 5, 10, 20\}$, \texttt{min\_samples\_leaf} $\in \{1, 2, 5\}$, and \texttt{criterion} $\in \{\texttt{gini}, \texttt{entropy}\}$. QDA tuned \texttt{reg\_param} $\in \{0.001, 0.01, 0.1, 0.5, 0.9\}$. XGBoost tuned \texttt{n\_estimators} $\in \{100, 200\}$, \texttt{max\_depth} $\in \{3, 5\}$, \texttt{learning\_rate} $\in \{0.01, 0.1, 0.3\}$, \texttt{subsample} $\in \{0.8, 1.0\}$, and \texttt{colsample\_bytree} $\in \{0.8, 1.0\}$. LightGBM tuned \texttt{n\_estimators} $\in \{100, 200\}$, \texttt{max\_depth} $\in \{-1, 5\}$, \texttt{learning\_rate} $\in \{0.01, 0.1, 0.3\}$, \texttt{num\_leaves} $= 31$, \texttt{subsample} $\in \{0.8, 1.0\}$, \texttt{feature\_fraction} $\in \{0.8, 1.0\}$, \texttt{min\_child\_samples} $= 20$, and \texttt{subsample\_freq} $= 1$. These grids yield 36 RF configurations, 28 KNN configurations, 20 SVM configurations, 24 DT configurations, 5 QDA configurations, 48 XGBoost configurations, and 24 LightGBM configurations, so the per-classifier search burden ranges from 5 to 48 candidate settings before the \texttt{SMOTE}-ablation split is considered.
+
+We placed \texttt{RobustScaler} inside the pipeline for SVM and KNN only, because both families are directly distorted by unequal feature scales. Tree-based models and QDA were fitted in the original feature space. To avoid OpenMP oversubscription inside the Modal gVisor environment, RF, XGBoost, and LightGBM were instantiated with \texttt{n\_jobs=1}; search-level parallelism was retained through \texttt{GridSearchCV(n\_jobs=-1)}. All stochastic components, including \texttt{SMOTE} and model initialization where applicable, used a fixed random state of 42.
+
+\subsection{Zero-Shot Cross-Condition Transfer Protocol}
+Our transfer experiment asked whether a classifier trained on one neurological condition could be applied directly to a different condition without any retraining, calibration, or target-side tuning. This is a strict zero-shot protocol: the source model is selected within its own condition and then evaluated unchanged on the target condition. We evaluated all six directed transfers, namely PD$\rightarrow$HD, HD$\rightarrow$PD, PD$\rightarrow$ALS, ALS$\rightarrow$PD, HD$\rightarrow$ALS, and ALS$\rightarrow$HD. Evaluating both directions for each disease pair makes asymmetric transfer visible, which is central to the paper's clinical interpretation.
+
+For each source condition, the authoritative within-condition results provided two pieces of information for every classifier: the modal hyperparameter configuration selected across outer LOSO folds, and the preferred resampling arm, \texttt{SMOTE} or no-SMOTE. We then reconstructed the source pipeline with those choices and refitted it once on the full source pool, consisting of source-condition disease strides and Control Group~A strides. We applied the fitted source model without modification to the target pool, which consisted of target-condition disease strides and Control Group~B strides.
+
+Keeping Control Groups~A and~B disjoint is essential. If the same healthy subjects appeared in both source training and target evaluation, cross-condition performance could be inflated by repeated control-stride structure even when disease-side transfer failed. The present design forces both sides of the transfer experiment to change simultaneously on the healthy cohort and on the disease cohort, so any gain or loss in target performance reflects genuine out-of-domain generalization rather than control leakage. We quantified transfer degradation as
+\[
+\Delta F_1 = F_1^{\text{within}} - F_1^{\text{cross}},
+\]
+so positive $\Delta F_1$ indicates worse performance under transfer and negative $\Delta F_1$ indicates the rare case in which the source model performs better on the target condition than on its own source condition.
+
+\subsection{Transfer-Failure Diagnosis via the {$\delta_j$} Metric}
+\begin{equation}
+\delta_j =
+\left|
+\overline{\left|\phi^{\text{within}}_j\right|}
+-
+\overline{\left|\phi^{\text{cross}}_j\right|}
+\right|
+\label{eq:delta-j-raw}
+\end{equation}
+
+\begin{equation}
+\widetilde{\delta}_j =
+\min\!\left(
+\frac{\delta_j}
+     {\overline{\left|\phi^{\text{within}}_j\right|} + \epsilon},
+\; C
+\right),
+\qquad
+\epsilon = 10^{-10},\; C = 10
+\label{eq:delta-j-normalized}
+\end{equation}
+Overall transfer performance does not by itself reveal which feature dimensions the model began using differently outside its training domain. The proposed $\delta_j$ metric addresses that question by comparing feature reliance before and after transfer at the SHAP level \cite{lundberg2017shap}. In (\ref{eq:delta-j-raw}), $\overline{\left|\phi^{\text{within}}_j\right|}$ denotes the mean absolute SHAP value of feature $j$ across the within-condition source pool, and $\overline{\left|\phi^{\text{cross}}_j\right|}$ denotes the corresponding quantity on the cross-condition target pool. Mean absolute SHAP values were used rather than signed means so that positive and negative contributions could not cancel.
+
+The normalized form in (\ref{eq:delta-j-normalized}) scales the shift by the within-condition reliance on the same feature. This normalization makes shifts more comparable across classifier families whose raw SHAP magnitudes live on different numeric scales. The cap $C=10$, by construction, prevents division by a near-zero baseline from producing unbounded values. A feature was classified as \emph{emerged} when its within-condition mean absolute SHAP value was below $10^{-3}$, meaning the model effectively ignored it in-domain, but $\delta_j > 0$, meaning the model began relying on it under transfer. The cap $C=10$ specifically bounds the case where a feature has negligible within-condition importance, which makes the denominator effectively zero, but non-zero cross-condition importance, which would otherwise allow one numerically unstable feature to dominate the normalized ranking. The $10^{-3}$ threshold for emerged features is, in this setting, a practical cutoff below which the within-condition mean absolute SHAP value is indistinguishable from numerical noise given the finite background set and the approximate nature of kernel-based SHAP estimation.
+
+Standard mean absolute SHAP importance answers the question ``how much does the model use feature $j$ on this dataset?'' The proposed $\delta_j$ metric answers a different question: ``how much does the model's use of feature $j$ shift when it is evaluated out of domain?'' A feature can therefore have high SHAP importance but low $\delta_j$, indicating stable reliance across domains, or low within-condition importance but high $\delta_j$, indicating a transfer-triggered reliance shift. In that sense, $\delta_j$ is a diagnostic for transfer failure rather than a conventional feature-importance ranking. The metric was computed for all 17 features across all 6 transfer directions and all 7 classifiers, yielding a $17 \times 6 \times 7$ diagnostic tensor.
+
+\subsection{SHAP Explainer Assignment and Background Construction}
+We assigned explainers by fitted model family. RF and DT used \texttt{shap.TreeExplainer} in its default tree-path-dependent mode, which returned class-probability SHAP values directly for these classifiers. XGBoost and LightGBM also used \texttt{TreeExplainer}, but with \texttt{feature\_perturbation='interventional'} and \texttt{model\_output='probability'}. This override was necessary because the default tree-path-dependent mode for these boosted models returns log-odds-scale attributions, which are not directly comparable with the probability-scale outputs used for RF and DT. SVM, QDA, and KNN used \texttt{shap.KernelExplainer} \cite{lundberg2017shap}, with the full fitted \texttt{ImbPipeline.predict\_proba} function passed as the model. That choice preserved explanations in the original 17-dimensional feature space while absorbing internal scaling for SVM and KNN inside the pipeline call.
+
+For each source pool, we constructed a class-balanced background of 100 reference points before any SHAP computation. Equal numbers of disease and control strides were first sampled from the source pool to form a balanced intermediate pool, and \texttt{shap.sample} then drew the final 100-point background set from that already-balanced pool. This step was important because the source pools are disease-heavy. Without balancing, the background drifts toward the disease region and pushes the expected probability for interventional explainers toward the disease prior, approximately 0.88 rather than a neutral value near 0.50. A balanced background keeps waterfall plots and cross-classifier base values interpretable.
+
+KernelExplainer was the computational bottleneck because it iterates over explained samples in a Python loop. To reduce wall time, the explained set was partitioned into per-core batches and dispatched with \texttt{joblib.Parallel} using the \texttt{loky} backend. The \texttt{loky} backend was chosen because Modal's gVisor sandbox restricts fork-based multiprocessing. Each worker therefore loaded its own serialized pipeline from disk and computed SHAP values for one batch independently.
+
+Completeness was checked for every explainer type. For RF and DT, the reconstructed probability, base value plus the sum of all SHAP values, was required to match the predicted probability with maximum absolute error below $10^{-4}$. For XGBoost and LightGBM, deviations above $10^{-4}$ triggered a warning and deviations at or above $0.05$ raised an assertion, because finite interventional backgrounds can introduce small residual error, particularly for LightGBM. For KernelExplainer classifiers, exact completeness was not expected, so the median absolute reconstruction error across explained strides was reported instead.
+
+\section{Experimental Setup}
+
+\subsection{Subject-Level LOSO-CV Design}
+We evaluated all within-condition baselines with subject-level leave-one-subject-out cross-validation (LOSO-CV). In each outer fold, one subject was held out in full and all strides from that subject formed the test set, while the remaining subjects formed the training set. No subject was ever split across folds. This distinction is essential for gait data, because stride-level random splits would allow a model to train on earlier strides from a subject and then test on later strides from the same subject. Such reuse creates within-subject leakage and would overestimate deployment performance on genuinely unseen patients. The present LOSO design removes that shortcut completely.
+
+Hyperparameter selection was nested inside the outer evaluation loop. For every outer training set, a fresh \texttt{GridSearchCV} object was fitted with \texttt{LeaveOneGroupOut} as the inner cross-validator and macro-averaged $F_1$ as the scoring metric. The inner loop therefore saw only training-fold subjects, and the outer held-out subject was never exposed during tuning. After all outer folds were completed, the modal hyperparameter configuration was extracted as the parameter combination selected most frequently across folds; ties were resolved by the mean inner-loop score of the tied configurations. That modal configuration was later reused to refit each source model on its full source pool for the zero-shot transfer experiment in Section~IV-C.
+
+Macro-$F_1$ was computed over the concatenated out-of-fold predictions rather than averaged fold by fold. This choice follows directly from the data geometry. Each held-out subject contributes a different number of strides, and each outer fold contains only one biological class because one subject belongs either to the disease group or to the control group. A per-fold macro-$F_1$ average would therefore be both unstable and conceptually awkward. Concatenation yields one aggregate prediction vector over all held-out subjects and produces a single clinically interpretable within-condition score. QDA required particular care under this design because some LOSO training folds produce nearly singular covariance estimates. The regularization grid over \texttt{reg\_param} was included specifically to keep QDA numerically stable in those small-subject settings.
+
+\subsection{Resampling Ablation and Pipeline Construction}
+We implemented resampling inside an \texttt{ImbPipeline} from \texttt{imbalanced-learn}. When enabled, the pipeline order was scaler, if required, then \texttt{SMOTE}, then the classifier. This ordering is important for valid evaluation. Because \texttt{SMOTE} is part of the fold-specific pipeline, it is fitted only on the training portion of each LOSO split and is never applied to the held-out subject. The test subject therefore always consists of real strides only. For SVM and KNN, \texttt{RobustScaler} was prepended before \texttt{SMOTE} and before the classifier, so feature scaling was also estimated strictly from training data. Tree-based models and QDA were left in the original feature space.
+
+Each within-condition experiment was run twice per classifier: once with SMOTE and once without it. The authoritative arm was selected separately for every condition-classifier pair by comparing macro-$F_1$ on the concatenated out-of-fold predictions. This selection was locked before any cross-condition evaluation began. The no-SMOTE arm was not a naive unweighted baseline. RF, DT, and SVM retained \texttt{class\_weight='balanced'} in their base configuration; LightGBM received balanced class weights in the no-SMOTE variant; and XGBoost received balanced per-sample weights at fit time because the installed wrapper did not expose an equivalent \texttt{class\_weight} argument. The ablation therefore compared synthetic minority-control augmentation against model-native imbalance correction rather than against an uncorrected baseline.
+
+The experimental outcomes were strongly condition dependent. In the HD pool, all seven classifiers selected no-SMOTE. In the ALS pool, all seven selected SMOTE. PD produced a mixed pattern, with SMOTE selected for RF, DT, and QDA, and no-SMOTE selected for KNN, SVM, XGBoost, and LightGBM. This asymmetry is consistent with the within-condition geometry of the three pools. HD is already highly separable, reaching $F_1=0.9562$ for its best XGBoost model, so interpolating additional control points does not improve a boundary that is already near its attainable in-domain ceiling. ALS, by contrast, benefits from minority-control augmentation across all seven model families, which indicates that its disease-versus-control boundary is harder to learn from the raw imbalanced pool alone. PD therefore appears to occupy, in practical terms, an intermediate separability regime in which the value of augmentation depends on how the classifier represents the boundary.
+
+PD received an additional robustness check through a dedicated no-SMOTE rerun stored separately for reproducibility. That rerun reproduced the authoritative no-SMOTE values exactly for KNN, SVM, XGBoost, and LightGBM, and it remained lower than the authoritative SMOTE arm for RF, DT, and QDA. For example, DT dropped from the authoritative $F_1=0.8668$ to $0.7616$ under the no-SMOTE rerun, and RF dropped from $0.7730$ to $0.7497$. The mixed PD selection is therefore a stable empirical finding rather than an artifact of one random initialization.
+
+\subsection{Statistical Validation and Uncertainty Estimation}
+Cross-condition performance was accompanied by two complementary uncertainty procedures and one null-hypothesis significance test, all defined on macro-$F_1$. For each of the 42 direction-classifier pairs, a one-sided permutation test evaluated the null hypothesis that the fitted source model performed at chance on the target pool. The true target labels were permuted 1,000 times, macro-$F_1$ was recomputed for each shuffled label vector, and the $p$-value was taken as the fraction of permuted scores that equalled or exceeded the observed cross-condition macro-$F_1$. All 42 stored permutation $p$-values were exactly $0.0000$, which confirms that every transfer model remained above chance despite the zero-shot setting.
+
+Uncertainty was first estimated with a stride-level bootstrap. For every direction-classifier pair, 1,000 bootstrap resamples were drawn from the stride-level prediction vector, macro-$F_1$ was recomputed on each resample, and the 2.5th and 97.5th percentiles defined the 95\% confidence interval. This interval is useful as a computationally cheap description of predictive variability, but it treats strides as independent units and therefore ignores within-subject correlation.
+
+The more scientifically appropriate interval was a subject-level bootstrap, implemented directly in \texttt{src/train.py}. Here the resampling unit was the subject rather than the stride. One bootstrap draw sampled the same number of subjects as in the original target pool, with replacement, and then concatenated all strides belonging to each sampled subject. The current implementation uses 10,000 accepted resamples per pair. Degenerate draws whose \texttt{y\_true} vector collapsed to a single class were rejected and resampled. This event was extremely rare: across the 42 transfer pairs, the maximum observed rejection rate was $0.019996\%$, with many pairs showing no rejections at all.
+
+The substantive consequence of subject-level resampling is large interval inflation relative to the stride bootstrap. Across all 42 transfer pairs, stride-level confidence-interval widths ranged from 0.0175 to 0.0287, whereas subject-level widths ranged from 0.2336 to 0.4537. The subject-level intervals were therefore wider by 0.2105 to 0.4258 macro-$F_1$ units, or about 10.2 to 17.2 times in multiplicative terms. This difference reflects genuine between-subject variability that a stride bootstrap suppresses. Macro-$F_1$ was the primary summary metric throughout, while accuracy, precision, and recall were also retained for the transfer tables. Per-class recall was examined separately in the stored results to distinguish disease false negatives from control false positives, but permutation testing and bootstrap uncertainty were computed on macro-$F_1$ alone.
+
+\section{Results}
+
+\subsection{Within-Condition Baselines and Resampling Outcomes}
+\begin{table*}[t]
+\caption{Within-condition performance and SMOTE-ablation outcomes under subject-level LOSO-CV.}
+\label{tab:within-condition}
+\centering
+\footnotesize
+\begin{tabular}{lccccccccc}
+\toprule
+\multirow{2}{*}{Classifier} &
+\multicolumn{3}{c}{PD} &
+\multicolumn{3}{c}{HD} &
+\multicolumn{3}{c}{ALS} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+ & F1 & Selected & Alt. Arm &
+F1 & Selected & Alt. Arm &
+F1 & Selected & Alt. Arm \\
+\midrule
+RF & 0.7730 & SMOTE & 0.7497 & 0.9530 & No SMOTE & 0.8795 & 0.7401 & SMOTE & 0.7041 \\
+KNN & 0.7584 & No SMOTE & 0.7552 & 0.8046 & No SMOTE & 0.7919 & 0.8300 & SMOTE & 0.8220 \\
+SVM & 0.7353 & No SMOTE & 0.7087 & 0.8720 & No SMOTE & 0.8268 & 0.7098 & SMOTE & 0.7078 \\
+DT & 0.8668 & SMOTE & 0.7616 & 0.9053 & No SMOTE & 0.7781 & 0.6901 & SMOTE & 0.6517 \\
+QDA & 0.7391 & SMOTE & 0.7352 & 0.7648 & No SMOTE & 0.7611 & 0.8209 & SMOTE & 0.8137 \\
+XGBoost & 0.7351 & No SMOTE & 0.7266 & 0.9562 & No SMOTE & 0.8639 & 0.7148 & SMOTE & 0.7131 \\
+LightGBM & 0.8186 & No SMOTE & 0.7730 & 0.8626 & No SMOTE & 0.7838 & 0.7520 & SMOTE & 0.7119 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{f1_within_condition_heatmap.pdf}
+\caption{Macro-F1 across seven classifiers summarizes the within-condition baselines under subject-level LOSO-CV.}
+\label{fig:within-condition-heatmap}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{smote_ablation_by_classifier.pdf}
+\caption{SMOTE versus no-SMOTE performance differs by condition and classifier, with PD mixed, HD uniformly no-SMOTE, and ALS uniformly SMOTE.}
+\label{fig:smote-ablation}
+\end{figure*}
+
+We summarize the authoritative within-condition baselines in Table~\ref{tab:within-condition} and Fig.~\ref{fig:within-condition-heatmap}. These results define the in-domain reference ceilings against which all zero-shot transfer outcomes are measured. The best PD model was DT with macro-$F_1=0.8668$, the best HD model was XGBoost with macro-$F_1=0.9562$, and the best ALS model was KNN with macro-$F_1=0.8300$. These three scores quantify the best disease-versus-control separation achievable when training and evaluation remain within the same neurological condition under subject-level LOSO-CV.
+
+The full seven-classifier comparison shows that HD is the most separable condition in the present 17-feature space. All seven HD models exceeded macro-$F_1=0.75$, ranging from $0.7648$ for QDA to $0.9562$ for XGBoost, with RF close behind at $0.9530$. PD exhibited the largest spread across algorithm families, from $0.7351$ for XGBoost and $0.7353$ for SVM up to $0.8668$ for DT, with LightGBM reaching a comparatively strong $0.8186$. ALS occupied an intermediate regime. Its best KNN and QDA models reached $0.8300$ and $0.8209$, respectively, while DT remained lowest at $0.6901$. This pattern matters for the transfer experiment because a source model with a high within-condition ceiling can still fail out of domain if the source boundary is disease-specific rather than disease-general.
+
+Figure~\ref{fig:smote-ablation} and Table~\ref{tab:within-condition} show that the SMOTE ablation outcome was not uniform across diseases. HD selected no-SMOTE for all seven classifiers. This is consistent with its near-ceiling separability in the raw imbalanced pool, where the minority control boundary is already learned well enough that synthetic control interpolation adds little value and can even blur an already stable class boundary. ALS showed the opposite pattern: all seven classifiers preferred SMOTE. This indicates that ALS disease-versus-control separation is harder to recover from the imbalanced raw pool alone, and that augmenting the minority control manifold consistently improves the learned decision surface across model families.
+
+PD lay between these two extremes. RF, DT, and QDA selected SMOTE, whereas KNN, SVM, XGBoost, and LightGBM selected no-SMOTE. The condition therefore appears to occupy an intermediate separability regime in which the value of minority-control augmentation depends on the inductive bias of the classifier. Tree-based models with flexible local partitioning, especially DT, benefited most clearly from the augmented control manifold. A dedicated no-SMOTE sensitivity rerun confirmed that this result is not an initialization artifact. For the PD DT model, removing SMOTE lowered macro-$F_1$ from $0.8668$ to $0.7616$. The corresponding RF result dropped from $0.7730$ to $0.7497$, whereas the no-SMOTE winners, such as LightGBM at $0.8186$ and KNN at $0.7584$, reproduced their authoritative values as expected.
+
+Normalized confusion matrices for the best classifier per condition, namely \texttt{cm\_pd\_dt.pdf}, \texttt{cm\_hd\_xgb.pdf}, and \texttt{cm\_als\_knn.pdf}, are available in the project repository \cite{gait-transfer-repo}. The full set of normalized confusion matrices for all seven classifiers per condition is also provided there for readers who want to inspect class-specific error structure beyond the macro-$F_1$ summary.
+
+\subsection{Zero-Shot Cross-Condition Transfer Performance}
+\begin{table*}[t]
+\caption{Cross-condition transfer results with subject-level bootstrap confidence intervals.}
+\label{tab:cross-condition}
+\centering
+\scriptsize
+\subfloat[Table III-A. PD-source transfer results. Source best baseline: DT, $F_1 = 0.8668$.]{
+\begin{minipage}{\textwidth}
+\centering
+\begin{tabular}{llccccc}
+\toprule
+Direction & Classifier & Cross F1 & $\Delta F_1$ & CI Lower & CI Upper & $p$ \\
+\midrule
+PD $\rightarrow$ HD & RF & 0.8682 & -0.0952 & 0.7094 & 0.9856 & 0.0000 \\
+PD $\rightarrow$ HD & KNN & 0.7019 & +0.0565 & 0.5442 & 0.8248 & 0.0000 \\
+PD $\rightarrow$ HD & SVM & 0.8192 & -0.0839 & 0.6353 & 0.9425 & 0.0000 \\
+PD $\rightarrow$ HD & DT & 0.8313 & +0.0355 & 0.6467 & 0.9623 & 0.0000 \\
+PD $\rightarrow$ HD & QDA & 0.7438 & -0.0047 & 0.5709 & 0.8707 & 0.0000 \\
+PD $\rightarrow$ HD & XGBoost & 0.7615 & -0.0265 & 0.5233 & 0.9276 & 0.0000 \\
+PD $\rightarrow$ HD & LightGBM & 0.8200 & -0.0014 & 0.6103 & 0.9600 & 0.0000 \\
+PD $\rightarrow$ ALS & RF & 0.8257 & -0.0527 & 0.6325 & 0.9737 & 0.0000 \\
+PD $\rightarrow$ ALS & KNN & 0.8245 & -0.0661 & 0.6908 & 0.9243 & 0.0000 \\
+PD $\rightarrow$ ALS & SVM & 0.7105 & +0.0248 & 0.4932 & 0.8820 & 0.0000 \\
+PD $\rightarrow$ ALS & DT & 0.7398 & +0.1270 & 0.5240 & 0.9113 & 0.0000 \\
+PD $\rightarrow$ ALS & QDA & 0.7781 & -0.0390 & 0.5969 & 0.9136 & 0.0000 \\
+PD $\rightarrow$ ALS & XGBoost & 0.6642 & +0.0708 & 0.4098 & 0.8634 & 0.0000 \\
+PD $\rightarrow$ ALS & LightGBM & 0.7279 & +0.0907 & 0.4940 & 0.9122 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+}
+
+\vspace{0.75em}
+
+\subfloat[Table III-B. HD-source transfer results. Source best baseline: XGBoost, $F_1 = 0.9562$.]{
+\begin{minipage}{\textwidth}
+\centering
+\begin{tabular}{llccccc}
+\toprule
+Direction & Classifier & Cross F1 & $\Delta F_1$ & CI Lower & CI Upper & $p$ \\
+\midrule
+HD $\rightarrow$ PD & RF & 0.7252 & +0.2278 & 0.5000 & 0.8983 & 0.0000 \\
+HD $\rightarrow$ PD & KNN & 0.6974 & +0.1072 & 0.5066 & 0.8388 & 0.0000 \\
+HD $\rightarrow$ PD & SVM & 0.7112 & +0.1608 & 0.4981 & 0.8745 & 0.0000 \\
+HD $\rightarrow$ PD & DT & 0.8274 & +0.0779 & 0.6380 & 0.9606 & 0.0000 \\
+HD $\rightarrow$ PD & QDA & 0.6419 & +0.1229 & 0.4630 & 0.7899 & 0.0000 \\
+HD $\rightarrow$ PD & XGBoost & 0.7785 & +0.1777 & 0.5674 & 0.9406 & 0.0000 \\
+HD $\rightarrow$ PD & LightGBM & 0.8147 & +0.0479 & 0.6127 & 0.9571 & 0.0000 \\
+HD $\rightarrow$ ALS & RF & 0.6788 & +0.2742 & 0.4390 & 0.8839 & 0.0000 \\
+HD $\rightarrow$ ALS & KNN & 0.7209 & +0.0837 & 0.5096 & 0.8830 & 0.0000 \\
+HD $\rightarrow$ ALS & SVM & 0.6980 & +0.1740 & 0.4751 & 0.8719 & 0.0000 \\
+HD $\rightarrow$ ALS & DT & 0.7433 & +0.1619 & 0.5286 & 0.9056 & 0.0000 \\
+HD $\rightarrow$ ALS & QDA & 0.7564 & +0.0084 & 0.5718 & 0.8982 & 0.0000 \\
+HD $\rightarrow$ ALS & XGBoost & 0.7374 & +0.2188 & 0.5121 & 0.9106 & 0.0000 \\
+HD $\rightarrow$ ALS & LightGBM & 0.6881 & +0.1745 & 0.4608 & 0.8880 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+}
+
+\vspace{0.75em}
+
+\subfloat[Table III-C. ALS-source transfer results. Source best baseline: KNN, $F_1 = 0.8300$.]{
+\begin{minipage}{\textwidth}
+\centering
+\begin{tabular}{llccccc}
+\toprule
+Direction & Classifier & Cross F1 & $\Delta F_1$ & CI Lower & CI Upper & $p$ \\
+\midrule
+% Verified against authoritative JSON: ALS->PD RF and SVM deltas differ at
+% six decimals (+0.011675 vs +0.011697) but both correctly round to +0.0117.
+ALS $\rightarrow$ PD & RF & 0.7284 & +0.0117 & 0.5457 & 0.8666 & 0.0000 \\
+ALS $\rightarrow$ PD & KNN & 0.6578 & +0.1721 & 0.4785 & 0.8051 & 0.0000 \\
+ALS $\rightarrow$ PD & SVM & 0.6981 & +0.0117 & 0.5263 & 0.8351 & 0.0000 \\
+ALS $\rightarrow$ PD & DT & 0.6836 & +0.0065 & 0.4949 & 0.8382 & 0.0000 \\
+ALS $\rightarrow$ PD & QDA & 0.7092 & +0.1117 & 0.5436 & 0.8383 & 0.0000 \\
+ALS $\rightarrow$ PD & XGBoost & 0.7671 & -0.0523 & 0.5837 & 0.9158 & 0.0000 \\
+ALS $\rightarrow$ PD & LightGBM & 0.6368 & +0.1152 & 0.4316 & 0.8098 & 0.0000 \\
+ALS $\rightarrow$ HD & RF & 0.7880 & -0.0480 & 0.6171 & 0.9116 & 0.0000 \\
+ALS $\rightarrow$ HD & KNN & 0.6278 & +0.2022 & 0.4561 & 0.7706 & 0.0000 \\
+ALS $\rightarrow$ HD & SVM & 0.6900 & +0.0197 & 0.5207 & 0.8264 & 0.0000 \\
+ALS $\rightarrow$ HD & DT & 0.7117 & -0.0216 & 0.5419 & 0.8446 & 0.0000 \\
+ALS $\rightarrow$ HD & QDA & 0.7285 & +0.0924 & 0.5559 & 0.8584 & 0.0000 \\
+ALS $\rightarrow$ HD & XGBoost & 0.8334 & -0.1186 & 0.6721 & 0.9592 & 0.0000 \\
+ALS $\rightarrow$ HD & LightGBM & 0.7949 & -0.0430 & 0.6212 & 0.9248 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+}
+\end{table*}
+
+We summarize all 42 direction-classifier transfer outcomes in Table~\ref{tab:cross-condition}, and Fig.~\ref{fig:degradation-heatmap} visualizes the associated degradation from the within-condition reference ceiling. Before considering degradation magnitude, one result is common to every transfer setting: all 42 permutation $p$-values were exactly $0.0000$. Even without any target-side adaptation, every source model performed above chance on every target domain. The important question is therefore not whether transfer collapses to randomness, which it clearly does not, but how far it falls from the corresponding within-condition ceiling and whether that fall is symmetric across disease pairs.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{degradation_heatmap.pdf}
+\caption{Transfer degradation from within-condition performance reveals positive PD-to-HD transfer and severe HD-to-ALS failure.}
+\label{fig:degradation-heatmap}
+\end{figure*}
+
+The primary result is that PD$\rightarrow$HD is the only direction with negative mean $\Delta F_1$, specifically $\Delta F_1=-0.0171$ when averaged across the seven classifiers. In this direction, five of the seven source models improved under transfer: RF improved by $0.0952$ macro-$F_1$ units relative to its PD baseline, SVM by $0.0839$, QDA by $0.0047$, XGBoost by $0.0265$, and LightGBM by $0.0014$. Only KNN and DT degraded, and both degradations were small in magnitude at $+0.0565$ and $+0.0355$, respectively. This finding is not a marginal artifact of one model family. It spans bagging, kernel, discriminant, and boosting models, which indicates that the PD-trained boundary captures a disease-general timing-variability signal that transfers positively to HD in the present experiment.
+
+The strongest failure mode is HD$\rightarrow$ALS. Its mean degradation was $+0.1565$ across the seven classifiers, and the RF model produced the single largest degradation in the entire study at $\Delta F_1=+0.2742$. The same direction also produced large degradations for XGBoost ($+0.2188$), LightGBM ($+0.1745$), SVM ($+0.1740$), and DT ($+0.1619$). This concentration of large positive $\Delta F_1$ values identifies HD-source transfer, especially toward ALS, as the least portable source-domain configuration in the benchmark.
+
+Figure~\ref{fig:delta-f1-asymmetry} makes the bidirectional asymmetry explicit. For the PD/HD pair, PD$\rightarrow$HD yielded mean $\Delta F_1=-0.0171$, whereas HD$\rightarrow$PD yielded mean $\Delta F_1=+0.1317$, a directional gap of $0.1488$ macro-$F_1$ units. For the ALS/HD pair, ALS$\rightarrow$HD yielded mean $\Delta F_1=+0.0119$, whereas HD$\rightarrow$ALS yielded mean $\Delta F_1=+0.1565$, a directional gap of $0.1446$. The PD/ALS pair was milder but still asymmetric, with PD$\rightarrow$ALS at $+0.0222$ and ALS$\rightarrow$PD at $+0.0538$. Cross-condition generalization is therefore not a property of the disease pair alone. It depends strongly on which condition supplies the source model and which condition supplies the target data.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{delta_f1_asymmetry_pairs.pdf}
+\caption{Bidirectional transfer gaps differ sharply across paired directions, demonstrating asymmetric cross-condition generalization.}
+\label{fig:delta-f1-asymmetry}
+\end{figure}
+
+Figure~\ref{fig:wilcoxon} adds a matched seven-classifier significance view. The one-sided Wilcoxon signed-rank test asked whether within-condition macro-$F_1$ exceeded cross-condition macro-$F_1$ across the seven paired classifiers for each direction. The two HD-source directions were significant under this test, with HD$\rightarrow$PD and HD$\rightarrow$ALS both yielding $p=0.0078$. The other four directions were not significant at conventional thresholds, namely PD$\rightarrow$HD ($p=0.8125$ under the within-greater-than-cross alternative), PD$\rightarrow$ALS ($p=0.2344$), ALS$\rightarrow$PD ($p=0.0547$), and ALS$\rightarrow$HD ($p=0.5938$). The signed-rank analysis therefore agrees with the effect-size view in Fig.~\ref{fig:degradation-heatmap}: the strongest and most systematic degradation occurs when HD supplies the source model.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{wilcoxon_test.pdf}
+\caption{Wilcoxon signed-rank results summarize the direction-wise significance of transfer degradation relative to within-condition baselines.}
+\label{fig:wilcoxon}
+\end{figure}
+
+Subject-level uncertainty provides an important second interpretation layer for these point estimates. The subject-level bootstrap confidence intervals reported in Table~\ref{tab:cross-condition} were consistently wider than the stride-level intervals, by 0.2105 to 0.4258 macro-$F_1$ units across the 42 pairs. Figure~\ref{fig:ci-width-comparison}, discussed further in Section~VII, visualizes this inflation directly. The widening reflects genuine between-subject heterogeneity that the stride bootstrap suppresses. For that reason, the transfer results should be interpreted through their subject-level confidence bounds rather than through point estimates alone.
+
+Per-subject accuracy breakdowns for all six transfer directions are provided in the supplementary \texttt{per\_subject\_accuracy.pdf} figure in the project repository \cite{gait-transfer-repo}. When direction-specific confusion structure is of interest, the same repository also provides \texttt{cross\_condition\_cms.pdf}, which complements the aggregate macro-$F_1$ and $\Delta F_1$ summaries reported here.
+
+\subsection{SHAP-Based Transfer-Failure Diagnosis}
+\begin{table}[t]
+\caption{Summary of the dominant SHAP importance-shift feature families under transfer.}
+\label{tab:delta-j-summary}
+\centering
+\footnotesize
+\begin{tabular}{p{0.31\linewidth}cp{0.48\linewidth}}
+\toprule
+Feature family / feature & Mean $\delta_j$ & Notes \\
+\midrule
+\texttt{cv\_swing} & 0.0415 & Rank-1 in 34/42 direction-classifier pairs; dominant transfer-failure feature across all seven classifier families \\
+\texttt{cv\_stride} & 0.0172 & Secondary variability-block feature; feature-value Pearson $r=0.8834$ with \texttt{cv\_swing} across the full feature matrix \\
+\texttt{dfa\_alpha\_stride} & 0.0122 & Directional asymmetry, high in PD-source transfer and near-zero for RF in HD $\rightarrow$ ALS \\
+\texttt{left\_stance\_s} & 0.0089 & ALS stance-prolongation signature; repeatedly rank-2 in ALS-source transfer for RF, DT, XGBoost, and LightGBM \\
+\midrule
+RF \texttt{dfa\_alpha\_stride}, PD $\rightarrow$ HD & 0.0305 & Large shift when the PD-trained RF model encounters HD \\
+RF \texttt{dfa\_alpha\_stride}, PD $\rightarrow$ ALS & 0.0416 & Largest RF \texttt{dfa\_alpha\_stride} shift among the six directions \\
+RF \texttt{dfa\_alpha\_stride}, HD $\rightarrow$ ALS & 0.0002 & Near-zero shift despite severe aggregate transfer degradation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We summarize the feature-level transfer-failure diagnosis in Fig.~\ref{fig:delta-j-heatmap} and Table~\ref{tab:delta-j-summary}. The dominant result is the emergence of \texttt{cv\_swing} as the leading importance-shift feature. Across all 42 direction-classifier pairs, \texttt{cv\_swing} had mean $\delta_j=0.0415$, which is more than double the next feature, \texttt{cv\_stride} at $0.0172$. It ranked first in 34 of the 42 pairs, and every classifier family contributed at least one direction in which \texttt{cv\_swing} was the top-ranked importance-shift feature. This pattern makes the finding robust across modelling assumptions rather than an artifact of one explainer or one classifier class. The dominant transfer effect in the present study is therefore not a generic change in gait timing, but a shift in how models rely on stride-to-stride swing-phase variability.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{delta_j_heatmap.pdf}
+\caption{Mean $\delta_j$ across transfer directions and classifiers identifies \texttt{cv\_swing} as the dominant transfer-failure feature family.}
+\label{fig:delta-j-heatmap}
+\end{figure*}
+
+The next most informative result is that \texttt{cv\_swing} and \texttt{cv\_stride} behave as a coupled variability block rather than as two unrelated discoveries. The second feature, \texttt{cv\_stride}, had mean $\delta_j=0.0172$. In the full feature matrix, the subject-broadcast feature values of \texttt{cv\_swing} and \texttt{cv\_stride} were strongly correlated, with Pearson $r=0.8834$ across all stride rows. Their SHAP shift signals should therefore be interpreted jointly as evidence that gait rhythm variability is re-weighted under transfer. The paper does not claim that the two aggregates encode fully independent pathophysiology.
+
+The most mechanistically specific feature is \texttt{dfa\_alpha\_stride}, whose mean $\delta_j$ was $0.0122$ overall but whose directional asymmetry was far more informative than its grand mean. Figure~\ref{fig:dfa-directionality} shows the RF values across all six directions: PD$\rightarrow$HD $=0.0305$, HD$\rightarrow$PD $=0.0019$, PD$\rightarrow$ALS $=0.0416$, ALS$\rightarrow$PD $=0.0043$, HD$\rightarrow$ALS $=0.0002$, and ALS$\rightarrow$HD $=0.0031$. The contrast is striking. PD-source models shift their reliance on \texttt{dfa\_alpha\_stride} substantially when they encounter HD or ALS, whereas the HD$\rightarrow$ALS model shows almost no reliance shift on the same feature. Interpreted alongside the original fractal-gait literature \cite{hausdorff1997fractal}, this suggests that PD-trained models encounter a stronger long-range temporal-correlation disruption than they were optimized for and therefore reweight the feature under transfer. HD-trained models, by contrast, do not need to change their reliance on \texttt{dfa\_alpha\_stride} when moving to ALS because that fractal-dynamics signal is not expressed in the same way.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{dfa_alpha_stride_directionality.pdf}
+\caption{Directional $\delta_j$ for \texttt{dfa\_alpha\_stride} is elevated in PD-source transfer but near zero in HD-to-ALS, indicating asymmetric fractal-dynamics mismatch.}
+\label{fig:dfa-directionality}
+\end{figure}
+
+\texttt{left\_stance\_s} provides the clearest ALS-related signature. Its mean $\delta_j$ was $0.0089$, placing it fourth overall, and it appeared as a top-two feature repeatedly in ALS-source transfer. In particular, it ranked second in both ALS-source directions for RF, DT, XGBoost, and LightGBM, and it also ranked second for KNN in ALS$\rightarrow$HD. This pattern supports the interpretation that ALS-trained models encode a stance-prolongation cue that must be reweighted when they are applied to PD or HD subjects, whose stride timing abnormalities do not present through the same sustained-stance mechanism.
+
+The link between feature-reliance shift and aggregate performance degradation was weaker than one might expect. When the maximum normalized $\widetilde{\delta}_j$ value for each direction-classifier pair was compared against $\Delta F_1$, the overall association was negative but not significant: Spearman $\rho=-0.2159$ with $p=0.1696$, and Pearson $r=-0.1457$ with $p=0.3571$. A large SHAP shift therefore does not guarantee a large loss in macro-$F_1$, and a noticeable loss in macro-$F_1$ does not require a correspondingly large shift in the dominant feature. This partial decoupling is, we believe, itself informative. Some models appear able to recover target-domain performance by shifting toward a new useful cue, whereas others degrade because the same source features no longer separate the target classes even if their relative importance profile changes little.
+
+These feature-level findings must be interpreted at the feature-family level whenever the design induces exact or near-exact collinearity. The complement pairs \texttt{left\_swing\_pct}/\texttt{left\_stance\_pct} and \texttt{right\_swing\_pct}/\texttt{right\_stance\_pct} can split SHAP attribution arbitrarily, and the raw timing block is biomechanically constrained by construction. For that reason, the present paper treats the \texttt{cv\_swing} plus \texttt{cv\_stride} signal as a variability family and treats timing-block shifts collectively unless a feature shows a clear, repeated directional pattern such as the ALS-linked \texttt{left\_stance\_s} effect.
+
+Waterfall plots for the three most confidently misclassified PD$\rightarrow$HD strides are available as supplementary figures \texttt{waterfall\_pd\_to\_hd\_case\_1.pdf}, \texttt{waterfall\_pd\_to\_hd\_case\_2.pdf}, and \texttt{waterfall\_pd\_to\_hd\_case\_3.pdf} in the project repository \cite{gait-transfer-repo}. The same repository also includes \texttt{delta\_j\_vs\_degradation.pdf}, which visualizes the weak global coupling between importance shift and $\Delta F_1$, together with the wider set of SHAP diagnostic figures retained from the present analysis.
+
+\subsection{Robustness, Separability, and Unsupervised Structure}
+The robustness and separability analyses described here use the LOSO-CV model configurations selected under the protocol in Section~V-A and the 17-feature set from Section~III-C. This analysis uses $30$ stochastic draws per robustness cell, and it reports a $95\%$ confidence interval (CI) for each primary estimate.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig6_noise_robustness.pdf}
+\caption{Noise-robustness analysis quantifies the stability of the pipeline under controlled perturbation.}
+\label{fig:noise-robustness}
+\end{figure*}
+
+For additive Gaussian noise with standard deviation $\sigma$, the global macro-$F_1$ mean is $0.8146$ at $\sigma=0$, $0.7786$ at $\sigma=0.2$, and $0.6973$ at $\sigma=0.5$ (see Fig.~\ref{fig:noise-robustness}). At $\sigma=0.2$, HD has the largest drop, $0.0775$ (95\% CI $[0.0713, 0.0837]$), PD has a moderate drop, $0.0226$ (95\% CI $[0.0206, 0.0245]$), and ALS has the smallest drop, $0.0081$ (95\% CI $[0.0054, 0.0109]$), with $n=210$ per condition. Pooled one-sample tests show significance in all three conditions at $\sigma=0.2$ ($p<10^{-8}$). At the model level, K-nearest neighbors (KNN) and support vector machine (SVM) are most stable at $\sigma=0.2$, with mean drops $0.0034$ and $0.0189$, while Extreme Gradient Boosting (XGBoost) and decision tree (DT) have larger drops, $0.0679$ and $0.0520$. The HD$\rightarrow$XGBoost pair drops by $0.1517$ at $\sigma=0.2$ (95\% CI $[0.1499, 0.1535]$), and by $0.2793$ at $\sigma=0.5$ (95\% CI $[0.2773, 0.2813]$), which identifies this pair as the most sensitive setting in the sweep.
+
+For structured corruption, five families are used at light, medium, and heavy levels: sensor dropout, gain and bias drift, per-stride jitter, missing strides, and label noise (see Fig.~\ref{fig:noise-robustness}). At heavy level, pooled drops are $0.1338$ for label noise, $0.1176$ for jitter, $0.0907$ for gain and bias drift, $0.0371$ for sensor dropout, and $0.0003$ for missing strides. The disease-wise pattern is consistent with the Gaussian sweep. HD shows the largest heavy jitter effect, $0.2108$ (95\% CI $[0.2006, 0.2210]$), and a large heavy gain and bias drift effect, $0.1248$ (95\% CI $[0.1110, 0.1386]$). PD shows heavy jitter $0.0718$ (95\% CI $[0.0654, 0.0782]$), and ALS shows heavy gain and bias drift $0.0780$ (95\% CI $[0.0632, 0.0928]$), with $n=210$ per condition. Missing stride effects remain near $0$, and the CI crosses $0$ for PD and ALS, which indicates limited sensitivity to random stride removal in these two groups.
+
+For split-conformal prediction (SCP), least ambiguous class (LAC) and adaptive prediction sets (APS) are evaluated at $\alpha\in\{0.05, 0.10, 0.20\}$, with operating point $\alpha=0.10$ (see Fig.~\ref{fig:noise-robustness}). Under LAC at $\alpha=0.10$, pooled marginal coverage is $0.9030$ (95\% CI $[0.8858, 0.9202]$), and pooled mean set size is $1.3281$ (95\% CI $[1.1851, 1.4710]$), with $n=21$ condition-model pairs. Condition-level coverage is $0.8985$ for PD (95\% CI $[0.8645, 0.9325]$), $0.9130$ for HD (95\% CI $[0.8926, 0.9333]$), and $0.8975$ for ALS (95\% CI $[0.8614, 0.9337]$). The stride-aggregation singleton rate is $1.0000$ at $n=1$, $0.8332$ at $n=10$, and $0.7736$ at $n=50$.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig5_pca_kmeans.pdf}
+\caption{PCA projection of the feature space illustrates condition overlap and separability relevant to transfer behavior.}
+\label{fig:pca-kmeans}
+\end{figure*}
+
+\begin{table}[t]
+\caption{Unsupervised clustering summary for the refreshed Step 7 analysis.}
+\label{tab:clustering-summary}
+\centering
+\footnotesize
+\begin{tabular}{p{0.27\linewidth}p{0.18\linewidth}p{0.38\linewidth}}
+\toprule
+Analysis item & Metric & Notes \\
+\midrule
+Number of clusters & $k=3$ & $K$-means solution selected by elbow and silhouette diagnostics \\
+Internal validity score & ARI $=0.0338$; ARI $=0.1678$ & Against condition labels; against the six-class condition-plus-control mapping \\
+Condition enrichment pattern & Cluster 2 occupancy & 98.1\% of controls, 59.7\% of ALS, 60.4\% of HD, and 56.3\% of PD \\
+Clinical interpretation hook & High cluster overlap & Supports strong within-condition disease-versus-control classification but limited cross-condition disease-identity transfer \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For unsupervised structure, principal component analysis (PCA) gives $\mathrm{PC1}+\mathrm{PC2}=0.5801$, with $\mathrm{PC1}=0.3750$ and $\mathrm{PC2}=0.2051$ (see Fig.~\ref{fig:pca-kmeans}). The $K$-means result at $k=3$ gives adjusted Rand index (ARI) $0.0338$ against condition labels, and ARI $0.1678$ against the six-class condition-plus-control mapping (see Table~\ref{tab:clustering-summary}). Table~\ref{tab:clustering-summary} also shows that cluster $2$ contains $98.1\%$ of controls, $59.7\%$ of ALS, $60.4\%$ of HD, and $56.3\%$ of PD. This overlap supports the interpretation that disease-versus-control classification can remain strong within each condition, while disease identity transfer across conditions remains limited.
+
+
+\section{Discussion}
+In this section, we interpret the three main findings of the study, namely asymmetric zero-shot transfer, feature-level transfer-failure diagnosis through $\delta_j$, and the large gap between stride-level and subject-level uncertainty. We also state the study's limitations directly, because the value of a benchmark like this depends as much on what it cannot yet resolve as on what it does reveal. Our aim here is therefore not to restate Tables~\ref{tab:within-condition} through \ref{tab:delta-j-summary}, but to explain what those results may mean in the broader neurological gait setting.
+
+% cv_swing RF delta_j values verified against shap_results_v2.json
+We believe the positive or near-neutral PD$\rightarrow$HD transfer pattern is the most clinically and scientifically interesting result in the paper. At the aggregate level, it is the only direction with a negative mean $\Delta F_1$, yet its interpretation becomes clearer only when we place the transfer scores beside the SHAP shifts. The \texttt{cv\_swing} signal changes in both directions across the PD/HD boundary, with RF $\delta_j=0.0320$ for PD$\rightarrow$HD and $0.0289$ for HD$\rightarrow$PD, which suggests that both source models encounter a variability shift when they cross from one disorder to the other. The asymmetry emerges when we look at \texttt{dfa\_alpha\_stride}. For RF, the PD$\rightarrow$HD shift is $0.0305$, whereas the HD$\rightarrow$PD shift is only $0.0019$. We interpret this as evidence that the PD-trained model must actively reweight its reliance on fractal gait dynamics when it encounters HD, because HD expresses a stronger disruption of long-range temporal correlations than PD does \cite{hausdorff1997fractal}. That interpretation is also clinically plausible. HD can present with prominent ataxic gait and, in individual cases, can even masquerade as spinocerebellar ataxia before genetic confirmation \cite{rodriguezquiroga2013hd}. More broadly, clinical reviews and cohort studies describe HD as a disorder in which ataxia-like gait features are common and sometimes underestimated \cite{franklin2020ataxia,roos2010hdreview}. The HD-trained model does not need to make the same adjustment in reverse. PD still contains part of that signal, only in a weaker form, so the HD source boundary arrives in a target domain that is reduced rather than structurally alien. This is why we do not view PD$\rightarrow$HD as a coincidental numerical exception. We view it as a directional reweighting phenomenon that the $\delta_j$ analysis was specifically designed to uncover.
+
+The poorest transfer, by contrast, occurs when HD supplies the source model and ALS supplies the target data. We think this failure is best understood as over-specialization rather than simple underperformance. HD produced the strongest within-condition baseline in the study, with XGBoost reaching macro-$F_1=0.9562$, which means the HD source boundary is highly effective in-domain but may also be highly condition-specific. The RF result makes this particularly clear. In HD$\rightarrow$ALS, macro-$F_1$ degrades by $0.2742$, the largest single drop in the benchmark, yet RF \texttt{dfa\_alpha\_stride} $\delta_j$ is only $0.0002$. In other words, the model does not meaningfully shift its reliance on fractal dynamics when it encounters ALS. It simply carries the HD-shaped boundary into a target condition where that signal does not organize the classes in the same way. We therefore read the severe HD-source degradation as a rigidity problem. The source model is not exploring a new target-domain cue, even though the old cue is no longer sufficient. The ALS-side SHAP findings strengthen this interpretation. \texttt{left\_stance\_s}, which repeatedly appears among the dominant ALS-source shift features, suggests that ALS is characterized by stance prolongation in a way that PD and HD do not reproduce in the same form. A model shaped around HD fractal dynamics is therefore poorly prepared for an ALS target that asks, at least in part, a different biomechanical question.
+
+The weak $\delta_j$ versus $\Delta F_1$ association helps us make sense of why these two transfer stories look so different. The overall Spearman correlation is $\rho=-0.2159$ with $p=0.1696$, which is weak and non-significant. We do not see that as a failed auxiliary analysis. We see it as evidence that importance shift and performance change are only partially coupled. A model can shift its feature reliance substantially and still preserve, or even improve, its aggregate macro-$F_1$ if the target domain offers an alternative useful cue, as several PD$\rightarrow$HD classifiers appear to do. The opposite can also happen. A model can degrade sharply while its SHAP profile changes very little, as in HD$\rightarrow$ALS, because the source-domain features remain salient but no longer separate the target classes effectively. In that sense, $\delta_j$ and $\Delta F_1$ are complementary rather than redundant. $\Delta F_1$ tells us whether transfer succeeds. $\delta_j$ tells us how the model's internal reliance pattern changed on the way there.
+
+We should also state the limitations of the study plainly. The first limitation lies in the feature space itself. Two percentage pairs, \texttt{left\_swing\_pct}/\texttt{left\_stance\_pct} and \texttt{right\_swing\_pct}/\texttt{right\_stance\_pct}, are exact complements by definition, and the raw timing block is strongly collinear because stride time is biomechanically constrained by stance plus swing time. As a result, $\delta_j$ at the level of an individual feature inside these correlated clusters is less trustworthy than $\delta_j$ at the level of the broader feature family. We have therefore framed our SHAP conclusions at the family level, especially for the variability block and the timing block, rather than presenting isolated single-feature claims where the attribution could be split arbitrarily across near-duplicate variables.
+
+The second limitation concerns the control partition. Group~A and Group~B were intentionally disjoint, which was necessary to avoid leakage through shared control subjects, but they were not demographically matched. Group~A has mean age 34.4 years and mean gait speed 1.43~m/s, whereas Group~B has mean age 44.3 years and mean gait speed 1.28~m/s. Some apparent transfer degradation may therefore reflect, at least in part, a shift in the healthy comparison cohort rather than a pure disease-domain shift. We cannot fully disentangle those two effects with the current design. A related structural issue is that the same eight Group~B controls appear in all six target evaluation pools. The transfer directions are therefore not six fully independent experiments. They share the same healthy anchor on the target side, which induces dependence across the reported transfer outcomes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{ci_width_comparison.pdf}
+\caption{Subject-level bootstrap confidence intervals are consistently wider than stride-level intervals across transfer directions.}
+\label{fig:ci-width-comparison}
+\end{figure}
+
+The third limitation is sample size. We ultimately analyze 15 PD subjects, 19 HD subjects, and 13 ALS subjects, and the subject-level confidence intervals in Fig.~\ref{fig:ci-width-comparison} reflect that directly. With widths spanning roughly 0.23 to 0.45 macro-$F_1$ units, those intervals are too broad to support overconfident deployment claims. We think the current benchmark is most useful as a directional study of transfer behavior and feature reweighting, not as a definitive estimate of clinical performance. The fourth limitation is residual artifact handling. Two \texttt{park14} rows with negative \texttt{double\_support\_s} and \texttt{double\_support\_pct} values survive our two-filter preprocessing chain. Their practical effect appears small, but the preprocessing chain is not complete. The fifth limitation is methodological rather than data-cleaning related. Our \texttt{dfa\_alpha\_stride} implementation uses a pragmatic box-size schedule from 4 to $\lfloor n/4 \rfloor$ with 10 log-spaced points. We believe this preserves the same qualitative gait-fractal signal emphasized by Hausdorff and colleagues \cite{hausdorff1997fractal}, but it is not numerically identical to the original protocol. Direct comparison of our absolute $\alpha$ values with published Hausdorff estimates is therefore not warranted.
+
+Despite those limitations, we think the benchmark offers one cautious clinical implication and several clear next steps. The positive PD$\rightarrow$HD result suggests that when HD-specific training data are scarce, a PD-trained stride-timing classifier may provide a useful starting point for gait-based assessment, particularly if the goal is screening or hypothesis generation rather than final diagnosis. We do not claim deployment readiness. We do think the directional asymmetry is worth validating prospectively. The most immediate methodological next step is a cleaner feature set that removes the complement pairs and drops \texttt{stride\_asymmetry\_signed}, which contributed little discriminative value here. Larger cohorts are also essential, and subject-level normalization of the raw timing features should be explored before the next transfer study so that inter-subject timing baselines do not dominate what ought to be disease-specific structure. More broadly, the $\delta_j$ framework is not restricted to PD, HD, and ALS. We expect it could be useful anywhere a clinical gait model is transported across disease groups and one needs to know not only whether performance changed, but also which features the model began to trust differently.
+
+\section{Conclusion}
+We draw three main conclusions from this study. First, the within-condition baselines show that stride-timing features remain strongly informative under a subject-level LOSO-CV protocol, with DT reaching macro-$F_1=0.8668$ for PD, XGBoost reaching $0.9562$ for HD, and KNN reaching $0.8300$ for ALS. Second, zero-shot transfer is clearly asymmetric rather than uniformly poor. PD$\rightarrow$HD is the only direction with positive mean transfer, whereas HD$\rightarrow$ALS produces the strongest degradation, which indicates that portability depends strongly on source condition as well as target condition. Third, the \(\delta_j\) diagnostic reveals that transfer failure is centered on variability features, especially \texttt{cv\_swing}, while \texttt{dfa\_alpha\_stride} exposes a directional asymmetry that helps explain why some disease boundaries travel more effectively than others.
+
+Several next steps follow directly from these results. A cleaner feature set, which we expect to implement next, should remove the exact complement pairs and drop \texttt{stride\_asymmetry\_signed}, whose contribution was negligible in the present cohort. Larger prospective cohorts are also needed, and subject-level normalization of the raw timing variables should be evaluated before the next transfer study so that baseline inter-subject timing differences do not overshadow disease-specific structure. More broadly, we believe the \(\delta_j\) framework can be applied beyond PD, HD, and ALS whenever one needs to understand not only whether a clinical gait model transfers, but also how its feature reliance changes when it leaves its training domain.
+
+A Streamlit-based interactive inference application is provided in the project repository \cite{gait-transfer-repo} as a practical deployment artifact for exploratory clinical use. The full codebase, trained models, and result artifacts are publicly available at \cite{gait-transfer-repo}. The underlying dataset is accessible through PhysioNet \cite{physionet_gaitndd,goldberger2000physiobank}.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

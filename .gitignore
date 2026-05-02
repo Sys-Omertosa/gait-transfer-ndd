@@ -10,6 +10,7 @@ notebooks/*.pdf
 .codex
 logs/
 old/
+IEEE-conference-template-062824/
 
 # Experiment outputs
 experiments/models/**/*.joblib
@@ -35,3 +36,12 @@ Thumbs.db
 desktop.ini
 .vscode/
 .DS_Store
+
+# LaTeX build artifacts
+report/main.aux
+report/main.bbl
+report/main.blg
+report/main.fdb_latexmk
+report/main.fls
+report/main.log
+report/main.synctex.gz
