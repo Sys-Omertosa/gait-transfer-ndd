@@ -7,9 +7,11 @@ Runs the full (non-reduced) sweep defined in src/robustness.py:
   - all 7 classifiers
 
 Writes to Modal volume (/results):
-  - noise_robustness.json
-  - feature_sensitivity.json
-  - subject_sensitivity.json
+  - noise_robustness_v2.json
+  - feature_sensitivity_v2.json
+  - subject_sensitivity_v2.json
+  - corruption_robustness_v2.json
+  - conformal_v2.json
 
 Usage (from repo root with venv active):
     modal run scripts/training/run_noise_robustness_modal.py
@@ -79,6 +81,7 @@ def run_step5_full(
     cross_results: dict = json.loads(cross_condition_results_json)
 
     results_dir = _Path("/results")
+    models_dir = _Path("/results/models_v2")
     results_dir.mkdir(parents=True, exist_ok=True)
 
     print("Step 5 full run started (Modal).", flush=True)
@@ -98,10 +101,10 @@ def run_step5_full(
         src, tgt = rb.direction_key_to_pair(direction_key)
         print(f"  cross {direction_key} ...", flush=True)
         noise_out["cross"][direction_key] = rb.evaluate_noise_sweep_cross(
-            src, tgt, df, control_a, control_b, results_dir
+            src, tgt, df, control_a, control_b, models_dir
         )
 
-    noise_path = results_dir / "noise_robustness.json"
+    noise_path = results_dir / "noise_robustness_v2.json"
     with open(noise_path, "w") as f:
         json.dump(noise_out, f, indent=2)
     print(f"Wrote {noise_path}", flush=True)
@@ -129,10 +132,10 @@ def run_step5_full(
         }
         print(f"  cross {direction_key} ...", flush=True)
         feat_out["cross"][direction_key] = rb.permutation_importance_cross(
-            src, tgt, df, control_a, control_b, results_dir, baseline
+            src, tgt, df, control_a, control_b, models_dir, baseline
         )
 
-    feat_path = results_dir / "feature_sensitivity.json"
+    feat_path = results_dir / "feature_sensitivity_v2.json"
     with open(feat_path, "w") as f:
         json.dump(feat_out, f, indent=2)
     print(f"Wrote {feat_path}", flush=True)
@@ -142,10 +145,48 @@ def run_step5_full(
     subj_out = rb.build_subject_sensitivity_json(
         ("pd", "hd", "als"), df, control_a, within_by, cross_results
     )
-    subj_path = results_dir / "subject_sensitivity.json"
+    subj_path = results_dir / "subject_sensitivity_v2.json"
     with open(subj_path, "w") as f:
         json.dump(subj_out, f, indent=2)
     print(f"Wrote {subj_path}", flush=True)
+
+    # Structured corruption benchmark
+    print("Structured corruption benchmark...", flush=True)
+    corr_out: dict = {"within": {}, "cross": {}}
+    for cond in ("pd", "hd", "als"):
+        print(f"  within {cond.upper()} ...", flush=True)
+        corr_out["within"][cond] = rb.evaluate_corruption_sweep_within(
+            cond, df, control_a, within_by[cond]
+        )
+    for direction_key in cross_results:
+        src, tgt = rb.direction_key_to_pair(direction_key)
+        print(f"  cross {direction_key} ...", flush=True)
+        corr_out["cross"][direction_key] = rb.evaluate_corruption_sweep_cross(
+            src, tgt, df, control_a, control_b, models_dir
+        )
+    corr_path = results_dir / "corruption_robustness_v2.json"
+    with open(corr_path, "w") as f:
+        json.dump(corr_out, f, indent=2)
+    print(f"Wrote {corr_path}", flush=True)
+
+    # Split conformal diagnostics
+    print("Split conformal diagnostics...", flush=True)
+    conf_out: dict = {"within": {}, "cross": {}}
+    for cond in ("pd", "hd", "als"):
+        print(f"  within {cond.upper()} ...", flush=True)
+        conf_out["within"][cond] = rb.evaluate_conformal_within(
+            cond, df, control_a, within_by[cond]
+        )
+    for direction_key in cross_results:
+        src, tgt = rb.direction_key_to_pair(direction_key)
+        print(f"  cross {direction_key} ...", flush=True)
+        conf_out["cross"][direction_key] = rb.evaluate_conformal_cross(
+            src, tgt, df, control_a, control_b, models_dir
+        )
+    conf_path = results_dir / "conformal_v2.json"
+    with open(conf_path, "w") as f:
+        json.dump(conf_out, f, indent=2)
+    print(f"Wrote {conf_path}", flush=True)
 
     elapsed = time.time() - t0
     print(f"Total wall time: {elapsed:.0f}s", flush=True)
@@ -154,6 +195,8 @@ def run_step5_full(
         "noise_robustness_path": str(noise_path),
         "feature_sensitivity_path": str(feat_path),
         "subject_sensitivity_path": str(subj_path),
+        "corruption_robustness_path": str(corr_path),
+        "conformal_path": str(conf_path),
         "elapsed_seconds": round(elapsed, 2),
         "sigma_levels": list(rb.SIGMA_LEVELS),
         "repeats": rb.N_NOISE_REPEATS,
@@ -166,15 +209,17 @@ def main():
     repo_root = Path(__file__).resolve().parent.parent.parent
 
     print("Reading Step 5 inputs from local repository...", flush=True)
-    features_bytes = (repo_root / "data/processed/gait_features.csv").read_bytes()
+    features_bytes = (
+        repo_root / "data/processed/v2/gait_features_v2.csv"
+    ).read_bytes()
     partition_bytes = (
         repo_root / "data/processed/control_partition.json"
     ).read_bytes()
-    pd_bytes = (repo_root / "experiments/results/pd_results.json").read_bytes()
-    hd_bytes = (repo_root / "experiments/results/hd_results.json").read_bytes()
-    als_bytes = (repo_root / "experiments/results/als_results.json").read_bytes()
+    pd_bytes = (repo_root / "experiments/results/v2/pd_results_v2.json").read_bytes()
+    hd_bytes = (repo_root / "experiments/results/v2/hd_results_v2.json").read_bytes()
+    als_bytes = (repo_root / "experiments/results/v2/als_results_v2.json").read_bytes()
     cross_bytes = (
-        repo_root / "experiments/results/cross_condition_results.json"
+        repo_root / "experiments/results/v2/cross_condition_results_v2.json"
     ).read_bytes()
 
     print("Submitting full Step 5 run to Modal...", flush=True)
@@ -193,6 +238,8 @@ def main():
     print("Step 5 run complete.", flush=True)
     print(summary_json, flush=True)
     print("\nDownload outputs:", flush=True)
-    print("  modal volume get gait-results noise_robustness.json", flush=True)
-    print("  modal volume get gait-results feature_sensitivity.json", flush=True)
-    print("  modal volume get gait-results subject_sensitivity.json", flush=True)
+    print("  modal volume get gait-results noise_robustness_v2.json", flush=True)
+    print("  modal volume get gait-results feature_sensitivity_v2.json", flush=True)
+    print("  modal volume get gait-results subject_sensitivity_v2.json", flush=True)
+    print("  modal volume get gait-results corruption_robustness_v2.json", flush=True)
+    print("  modal volume get gait-results conformal_v2.json", flush=True)

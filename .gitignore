@@ -11,6 +11,9 @@ notebooks/*.pdf
 logs/
 old/
 IEEE-conference-template-062824/
+.tmp_ipython/
+.tmp_jupyter/
+explanations/
 
 # Experiment outputs
 experiments/models/**/*.joblib
