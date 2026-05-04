@@ -1,0 +1,546 @@
+{
+  "feature_set_version": "v3",
+  "filter_strategy": "v3",
+  "feature_cols": [
+    "left_stride_s",
+    "right_stride_s",
+    "left_swing_s",
+    "right_swing_s",
+    "left_swing_pct",
+    "right_swing_pct",
+    "right_stance_s",
+    "double_support_s",
+    "double_support_pct",
+    "asymmetry_index",
+    "cv_stride",
+    "cv_swing",
+    "dfa_alpha_stride"
+  ],
+  "n_features": 13,
+  "output_filename": "gait_features_v3_timing_sensitivity.csv",
+  "partition_output_filename": "control_partition_v3.json",
+  "raw_rows": 15160,
+  "final_rows": 13765,
+  "n_subjects": 63,
+  "control_partition": {
+    "control_A": [
+      "control1",
+      "control2",
+      "control3",
+      "control4",
+      "control6",
+      "control7",
+      "control11",
+      "control16"
+    ],
+    "control_B": [
+      "control5",
+      "control8",
+      "control9",
+      "control10",
+      "control12",
+      "control13",
+      "control14",
+      "control15"
+    ]
+  },
+  "control_partition_summary": {
+    "control_A": {
+      "subjects": [
+        "control1",
+        "control2",
+        "control3",
+        "control4",
+        "control6",
+        "control7",
+        "control11",
+        "control16"
+      ],
+      "n_subjects": 8,
+      "mean_age_years": 39.375,
+      "mean_gait_speed_m_per_s": 1.3525,
+      "mean_height_m": 1.8275000000000001,
+      "mean_weight_kg": 69.25,
+      "male_count": 1,
+      "female_count": 7
+    },
+    "control_B": {
+      "subjects": [
+        "control5",
+        "control8",
+        "control9",
+        "control10",
+        "control12",
+        "control13",
+        "control14",
+        "control15"
+      ],
+      "n_subjects": 8,
+      "mean_age_years": 39.25,
+      "mean_gait_speed_m_per_s": 1.35625,
+      "mean_height_m": 1.8375,
+      "mean_weight_kg": 64.375,
+      "male_count": 1,
+      "female_count": 7
+    },
+    "between_group_deltas": {
+      "age_years": 0.125,
+      "gait_speed_m_per_s": 0.00374999999999992
+    }
+  },
+  "dfa_scale_mode": "pragmatic",
+  "filter_stats": {
+    "raw_rows": 15160,
+    "rows_after_hard_filter": 14751,
+    "rows_after_robust_filter": 13765,
+    "rows_removed_hard_filter": 409,
+    "rows_removed_robust_filter": 986,
+    "subjects_skipped_robust_filter": [
+      "als5"
+    ],
+    "negative_double_support_rows_removed": 239,
+    "per_subject_robust_stats": [
+      {
+        "subject_id": "als1",
+        "rows_before_robust": 193,
+        "rows_after_robust": 188,
+        "rows_removed_robust": 5,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als10",
+        "rows_before_robust": 246,
+        "rows_after_robust": 234,
+        "rows_removed_robust": 12,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als11",
+        "rows_before_robust": 229,
+        "rows_after_robust": 213,
+        "rows_removed_robust": 16,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als12",
+        "rows_before_robust": 116,
+        "rows_after_robust": 105,
+        "rows_removed_robust": 11,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als13",
+        "rows_before_robust": 183,
+        "rows_after_robust": 162,
+        "rows_removed_robust": 21,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als2",
+        "rows_before_robust": 242,
+        "rows_after_robust": 235,
+        "rows_removed_robust": 7,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als3",
+        "rows_before_robust": 209,
+        "rows_after_robust": 202,
+        "rows_removed_robust": 7,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als4",
+        "rows_before_robust": 129,
+        "rows_after_robust": 125,
+        "rows_removed_robust": 4,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als5",
+        "rows_before_robust": 114,
+        "rows_after_robust": 114,
+        "rows_removed_robust": 0,
+        "robust_filter_applied": false
+      },
+      {
+        "subject_id": "als6",
+        "rows_before_robust": 176,
+        "rows_after_robust": 163,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als7",
+        "rows_before_robust": 123,
+        "rows_after_robust": 119,
+        "rows_removed_robust": 4,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als8",
+        "rows_before_robust": 232,
+        "rows_after_robust": 219,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "als9",
+        "rows_before_robust": 212,
+        "rows_after_robust": 206,
+        "rows_removed_robust": 6,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control1",
+        "rows_before_robust": 259,
+        "rows_after_robust": 239,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control10",
+        "rows_before_robust": 277,
+        "rows_after_robust": 252,
+        "rows_removed_robust": 25,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control11",
+        "rows_before_robust": 269,
+        "rows_after_robust": 254,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control12",
+        "rows_before_robust": 244,
+        "rows_after_robust": 225,
+        "rows_removed_robust": 19,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control13",
+        "rows_before_robust": 251,
+        "rows_after_robust": 238,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control14",
+        "rows_before_robust": 249,
+        "rows_after_robust": 235,
+        "rows_removed_robust": 14,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control15",
+        "rows_before_robust": 198,
+        "rows_after_robust": 188,
+        "rows_removed_robust": 10,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control16",
+        "rows_before_robust": 250,
+        "rows_after_robust": 231,
+        "rows_removed_robust": 19,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control2",
+        "rows_before_robust": 241,
+        "rows_after_robust": 223,
+        "rows_removed_robust": 18,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control3",
+        "rows_before_robust": 255,
+        "rows_after_robust": 238,
+        "rows_removed_robust": 17,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control4",
+        "rows_before_robust": 267,
+        "rows_after_robust": 249,
+        "rows_removed_robust": 18,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control5",
+        "rows_before_robust": 250,
+        "rows_after_robust": 214,
+        "rows_removed_robust": 36,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control6",
+        "rows_before_robust": 270,
+        "rows_after_robust": 259,
+        "rows_removed_robust": 11,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control7",
+        "rows_before_robust": 260,
+        "rows_after_robust": 241,
+        "rows_removed_robust": 19,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control8",
+        "rows_before_robust": 261,
+        "rows_after_robust": 246,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "control9",
+        "rows_before_robust": 275,
+        "rows_after_robust": 254,
+        "rows_removed_robust": 21,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt1",
+        "rows_before_robust": 310,
+        "rows_after_robust": 288,
+        "rows_removed_robust": 22,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt10",
+        "rows_before_robust": 220,
+        "rows_after_robust": 210,
+        "rows_removed_robust": 10,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt11",
+        "rows_before_robust": 239,
+        "rows_after_robust": 226,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt12",
+        "rows_before_robust": 258,
+        "rows_after_robust": 236,
+        "rows_removed_robust": 22,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt13",
+        "rows_before_robust": 164,
+        "rows_after_robust": 145,
+        "rows_removed_robust": 19,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt14",
+        "rows_before_robust": 254,
+        "rows_after_robust": 239,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt15",
+        "rows_before_robust": 216,
+        "rows_after_robust": 189,
+        "rows_removed_robust": 27,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt16",
+        "rows_before_robust": 188,
+        "rows_after_robust": 169,
+        "rows_removed_robust": 19,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt17",
+        "rows_before_robust": 248,
+        "rows_after_robust": 234,
+        "rows_removed_robust": 14,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt18",
+        "rows_before_robust": 249,
+        "rows_after_robust": 229,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt19",
+        "rows_before_robust": 243,
+        "rows_after_robust": 239,
+        "rows_removed_robust": 4,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt2",
+        "rows_before_robust": 225,
+        "rows_after_robust": 214,
+        "rows_removed_robust": 11,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt3",
+        "rows_before_robust": 232,
+        "rows_after_robust": 224,
+        "rows_removed_robust": 8,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt4",
+        "rows_before_robust": 268,
+        "rows_after_robust": 255,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt5",
+        "rows_before_robust": 263,
+        "rows_after_robust": 234,
+        "rows_removed_robust": 29,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt6",
+        "rows_before_robust": 263,
+        "rows_after_robust": 241,
+        "rows_removed_robust": 22,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt7",
+        "rows_before_robust": 232,
+        "rows_after_robust": 217,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt8",
+        "rows_before_robust": 256,
+        "rows_after_robust": 241,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "hunt9",
+        "rows_before_robust": 270,
+        "rows_after_robust": 250,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park1",
+        "rows_before_robust": 245,
+        "rows_after_robust": 230,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park10",
+        "rows_before_robust": 288,
+        "rows_after_robust": 273,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park11",
+        "rows_before_robust": 222,
+        "rows_after_robust": 209,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park12",
+        "rows_before_robust": 247,
+        "rows_after_robust": 235,
+        "rows_removed_robust": 12,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park13",
+        "rows_before_robust": 251,
+        "rows_after_robust": 238,
+        "rows_removed_robust": 13,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park14",
+        "rows_before_robust": 274,
+        "rows_after_robust": 247,
+        "rows_removed_robust": 27,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park15",
+        "rows_before_robust": 237,
+        "rows_after_robust": 217,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park2",
+        "rows_before_robust": 277,
+        "rows_after_robust": 245,
+        "rows_removed_robust": 32,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park3",
+        "rows_before_robust": 230,
+        "rows_after_robust": 210,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park4",
+        "rows_before_robust": 222,
+        "rows_after_robust": 206,
+        "rows_removed_robust": 16,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park5",
+        "rows_before_robust": 263,
+        "rows_after_robust": 248,
+        "rows_removed_robust": 15,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park6",
+        "rows_before_robust": 269,
+        "rows_after_robust": 253,
+        "rows_removed_robust": 16,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park7",
+        "rows_before_robust": 223,
+        "rows_after_robust": 209,
+        "rows_removed_robust": 14,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park8",
+        "rows_before_robust": 203,
+        "rows_after_robust": 192,
+        "rows_removed_robust": 11,
+        "robust_filter_applied": true
+      },
+      {
+        "subject_id": "park9",
+        "rows_before_robust": 222,
+        "rows_after_robust": 202,
+        "rows_removed_robust": 20,
+        "robust_filter_applied": true
+      }
+    ]
+  }
+}
