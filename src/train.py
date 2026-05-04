@@ -72,6 +72,7 @@ warnings.filterwarnings(
 DEFAULT_FEATURE_MATRIX_FILE = 'v2/gait_features_v2.csv'
 DEFAULT_FEATURE_SET_VERSION = 'v2'
 DEFAULT_NORMALIZATION = 'none'
+IMBALANCE_STRATEGIES = ('synthetic', 'balanced', 'raw')
 
 # ── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -106,25 +107,83 @@ def _balanced_sample_weight(y: np.ndarray) -> np.ndarray:
     return np.where(y == 0, weight_0, weight_1).astype(float)
 
 
+def _subject_level_metrics(
+    *,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    subject_ids: np.ndarray | list[str],
+) -> dict[str, Any]:
+    """
+    Collapse stride-level outputs to one decision per subject via mean probability.
+
+    Each subject contributes the mean predicted disease probability across all of
+    their strides. The subject-level class prediction is then thresholded at 0.5.
+    This supplements the stride-level benchmark with a deployment-relevant view
+    where each unseen patient receives a single final label.
+    """
+    subject_arr = np.asarray(subject_ids)
+    unique_subjects = list(dict.fromkeys(subject_arr.tolist()))
+
+    subj_true: list[int] = []
+    subj_pred: list[int] = []
+    subj_prob: list[float] = []
+
+    for subject_id in unique_subjects:
+        idx = np.where(subject_arr == subject_id)[0]
+        true_vals = y_true[idx]
+        assert len(np.unique(true_vals)) == 1, (
+            f'Subject {subject_id} has mixed true labels, which should be impossible'
+        )
+        prob_mean = float(np.mean(y_prob[idx]))
+        subj_true.append(int(true_vals[0]))
+        subj_prob.append(prob_mean)
+        subj_pred.append(int(prob_mean >= 0.5))
+
+    subj_true_arr = np.asarray(subj_true, dtype=int)
+    subj_pred_arr = np.asarray(subj_pred, dtype=int)
+    subj_prob_arr = np.asarray(subj_prob, dtype=float)
+
+    return {
+        'n_subjects': int(len(unique_subjects)),
+        'subject_ids': unique_subjects,
+        'y_true': subj_true_arr.tolist(),
+        'y_pred': subj_pred_arr.tolist(),
+        'y_prob_mean': subj_prob_arr.round(6).tolist(),
+        'f1_macro': round(float(f1_score(subj_true_arr, subj_pred_arr, average='macro')), 6),
+        'accuracy': round(float(accuracy_score(subj_true_arr, subj_pred_arr)), 6),
+        'recall_disease': round(float(recall_score(
+            subj_true_arr, subj_pred_arr, pos_label=1, zero_division=0
+        )), 6),
+        'recall_control': round(float(recall_score(
+            subj_true_arr, subj_pred_arr, pos_label=0, zero_division=0
+        )), 6),
+    }
+
+
 def _configure_classifier_for_resampling(
     classifier_name: str,
     clf: Any,
-    use_smote: bool,
+    imbalance_strategy: str,
 ) -> Any:
     """
     Clone a classifier and apply any resampling-specific fixed parameters.
 
-    Most classifiers already carry their appropriate class balancing in the
-    base config. LightGBM receives class_weight='balanced' only for the
-    no-SMOTE ablation so the minority control class is upweighted without
-    generating synthetic control strides. XGBoost uses balanced sample weights
-    at fit time because the installed sklearn wrapper does not expose
-    class_weight.
+    The authoritative v3 rerun compares synthetic minority-control augmentation
+    against non-synthetic balancing and a raw sanity arm. To keep those arms
+    interpretable, the base classifier configs are unweighted; any class
+    weighting is applied here only for the 'balanced' arm.
     """
     configured = clone(clf)
     name = classifier_name.lower()
 
-    if not use_smote and name == 'lgbm':
+    if imbalance_strategy not in IMBALANCE_STRATEGIES:
+        raise ValueError(
+            f"Unknown imbalance strategy '{imbalance_strategy}'. "
+            f'Expected one of {IMBALANCE_STRATEGIES}.'
+        )
+
+    if imbalance_strategy == 'balanced' and name in {'rf', 'svm', 'dt', 'lgbm'}:
         configured.set_params(class_weight='balanced')
 
     return configured
@@ -133,19 +192,17 @@ def _configure_classifier_for_resampling(
 def _get_fit_kwargs(
     classifier_name: str,
     y_fit: np.ndarray,
-    use_smote: bool,
+    imbalance_strategy: str,
 ) -> dict[str, Any]:
     """
     Build fit kwargs for classifiers that need per-fit balancing metadata.
 
     XGBoost does not expose sklearn-style class_weight in this environment, so
-    the no-SMOTE ablation uses balanced per-sample weights as the closest
-    equivalent. In the current within-condition pools this upweights the
-    minority control class rather than the disease class. GridSearchCV will
-    subset these weights correctly inside the inner LOSO folds because the
-    array length matches the outer training fold.
+    the non-synthetic balanced arm uses balanced per-sample weights as the
+    closest equivalent. GridSearchCV will subset these weights correctly inside
+    the inner LOSO folds because the array length matches the outer training fold.
     """
-    if not use_smote and classifier_name.lower() == 'xgb':
+    if imbalance_strategy == 'balanced' and classifier_name.lower() == 'xgb':
         return {'clf__sample_weight': _balanced_sample_weight(y_fit)}
     return {}
 
@@ -228,6 +285,7 @@ def build_pipeline(
     classifier_name: str,
     clf: Any,
     use_smote: bool = True,
+    imbalance_strategy: str | None = None,
 ) -> ImbPipeline:
     """
     Construct an ImbPipeline for a given classifier.
@@ -245,8 +303,9 @@ def build_pipeline(
         classifier_name: One of 'rf', 'knn', 'svm', 'dt', 'qda', 'xgb', 'lgbm'.
                          Case-insensitive.
         clf: An instantiated sklearn-compatible classifier object.
-        use_smote: Whether to include the SMOTE step inside the pipeline for
-                   minority-control augmentation on the training folds.
+        use_smote: Legacy compatibility flag. When provided, True maps to the
+                   'synthetic' arm and False maps to the 'balanced' arm.
+        imbalance_strategy: One of 'synthetic', 'balanced', or 'raw'.
 
     Returns:
         ImbPipeline with steps appropriate for the given classifier.
@@ -254,9 +313,17 @@ def build_pipeline(
     name = classifier_name.lower()
     steps: list[tuple[str, Any]] = []
 
+    if imbalance_strategy is None:
+        imbalance_strategy = 'synthetic' if use_smote else 'balanced'
+    if imbalance_strategy not in IMBALANCE_STRATEGIES:
+        raise ValueError(
+            f"Unknown imbalance strategy '{imbalance_strategy}'. "
+            f'Expected one of {IMBALANCE_STRATEGIES}.'
+        )
+
     if name in _SCALE_REQUIRED:
         steps.append(('scaler', RobustScaler()))
-    if use_smote:
+    if imbalance_strategy == 'synthetic':
         steps.append(('smote', SMOTE(random_state=42)))
     steps.append(('clf', clf))
 
@@ -271,6 +338,7 @@ def run_nested_loso(
     param_grid: dict[str, list],
     classifier_name: str,
     use_smote: bool = True,
+    imbalance_strategy: str | None = None,
 ) -> dict[str, Any]:
     """
     Outer LOSO-CV loop with inner GridSearchCV on the training fold only.
@@ -290,7 +358,8 @@ def run_nested_loso(
         pipeline: ImbPipeline produced by build_pipeline().
         param_grid: Dict mapping pipeline step param names to value lists.
         classifier_name: Short classifier name used to derive fit kwargs.
-        use_smote: Whether the pipeline includes SMOTE.
+        use_smote: Legacy compatibility flag for older callers.
+        imbalance_strategy: Explicit imbalance-handling arm for this run.
 
     Returns:
         Dict with aggregate F1, concatenated labels/predictions, concatenated
@@ -298,8 +367,12 @@ def run_nested_loso(
     """
     outer_loso = LeaveOneGroupOut()
 
+    if imbalance_strategy is None:
+        imbalance_strategy = 'synthetic' if use_smote else 'balanced'
+
     y_true_all: list[np.ndarray] = []
     y_pred_all: list[np.ndarray] = []
+    y_prob_all: list[np.ndarray] = []
     subject_ids_all: list[np.ndarray] = []
     fold_params: list[dict] = []
     fold_best_scores: list[float] = []
@@ -322,25 +395,29 @@ def run_nested_loso(
             n_jobs=-1,
             refit=True,
         )
-        fit_kwargs = _get_fit_kwargs(classifier_name, y_train, use_smote)
+        fit_kwargs = _get_fit_kwargs(classifier_name, y_train, imbalance_strategy)
         grid.fit(X_train, y_train, groups=groups_train, **fit_kwargs)
 
         y_pred = grid.predict(X_test)
+        y_prob = grid.predict_proba(X_test)[:, 1]
 
         y_true_all.append(y_test)
         y_pred_all.append(y_pred)
+        y_prob_all.append(y_prob)
         subject_ids_all.append(groups_test)
         fold_params.append(grid.best_params_)
         fold_best_scores.append(float(grid.best_score_))
 
     y_true_concat = np.concatenate(y_true_all)
     y_pred_concat = np.concatenate(y_pred_all)
+    y_prob_concat = np.concatenate(y_prob_all)
     subject_ids_concat = np.concatenate(subject_ids_all)
 
     return {
         'f1_macro':         f1_score(y_true_concat, y_pred_concat, average='macro'),
         'y_true_all':       y_true_concat,
         'y_pred_all':       y_pred_concat,
+        'y_prob_all':       y_prob_concat,
         'subject_ids_all':  subject_ids_concat,
         'fold_params':      fold_params,
         'fold_best_scores': fold_best_scores,
@@ -399,7 +476,6 @@ def get_classifier_configs() -> dict[str, dict[str, Any]]:
     configs: dict[str, dict[str, Any]] = {
         'rf': {
             'clf': RandomForestClassifier(
-                class_weight='balanced',
                 random_state=42,
                 n_jobs=1,
             ),
@@ -422,7 +498,6 @@ def get_classifier_configs() -> dict[str, dict[str, Any]]:
             'clf': SVC(
                 kernel='rbf',
                 probability=True,
-                class_weight='balanced',
                 random_state=42,
             ),
             'param_grid': {
@@ -432,7 +507,6 @@ def get_classifier_configs() -> dict[str, dict[str, Any]]:
         },
         'dt': {
             'clf': DecisionTreeClassifier(
-                class_weight='balanced',
                 random_state=42,
             ),
             'param_grid': {
@@ -483,6 +557,17 @@ def get_classifier_configs() -> dict[str, dict[str, Any]]:
     return configs
 
 
+def _strategy_to_legacy_label(imbalance_strategy: str) -> str:
+    """Map the explicit v3 imbalance strategy to the legacy v2 JSON label."""
+    if imbalance_strategy == 'synthetic':
+        return 'smote'
+    if imbalance_strategy == 'balanced':
+        return 'no_smote'
+    if imbalance_strategy == 'raw':
+        return 'raw_unbalanced'
+    raise ValueError(f"Unknown imbalance strategy '{imbalance_strategy}'")
+
+
 def _evaluate_within_condition_classifier(
     clf_name: str,
     clf: Any,
@@ -490,19 +575,28 @@ def _evaluate_within_condition_classifier(
     X: np.ndarray,
     y: np.ndarray,
     groups: np.ndarray,
-    use_smote: bool,
+    imbalance_strategy: str,
 ) -> dict[str, Any]:
     """
     Run one within-condition classifier evaluation variant and package its outputs.
 
     The returned dict is JSON-ready and contains only the fields needed to
-    select the authoritative winner between the SMOTE and no-SMOTE variants.
-    When use_smote=True, the oversampled class is healthy control rather than
-    disease because Control Group A is the minority side of every source pool.
+    select the authoritative winner between the synthetic and non-synthetic
+    imbalance-handling arms. In all current source pools, the oversampled class
+    is healthy control rather than disease because Control Group A is the
+    minority side of every source pool.
     """
-    clf_variant = _configure_classifier_for_resampling(clf_name, clf, use_smote)
-    pipeline = build_pipeline(clf_name, clf_variant, use_smote=use_smote)
-    variant_label = 'smote' if use_smote else 'no_smote'
+    clf_variant = _configure_classifier_for_resampling(
+        clf_name,
+        clf,
+        imbalance_strategy,
+    )
+    pipeline = build_pipeline(
+        clf_name,
+        clf_variant,
+        imbalance_strategy=imbalance_strategy,
+    )
+    variant_label = imbalance_strategy
 
     t_start = time.time()
     start_ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -515,7 +609,7 @@ def _evaluate_within_condition_classifier(
         pipeline,
         param_grid,
         classifier_name=clf_name,
-        use_smote=use_smote,
+        imbalance_strategy=imbalance_strategy,
     )
 
     elapsed = time.time() - t_start
@@ -534,6 +628,7 @@ def _evaluate_within_condition_classifier(
     f1_stored = round(float(loso_out['f1_macro']), 6)
     y_true = loso_out['y_true_all']
     y_pred = loso_out['y_pred_all']
+    y_prob = loso_out['y_prob_all']
 
     # Verify the stored lists reproduce the stored F1 exactly.
     assert abs(f1_score(y_true, y_pred, average='macro') - f1_stored) < 1e-6, (
@@ -547,6 +642,12 @@ def _evaluate_within_condition_classifier(
         subject_ids=loso_out['subject_ids_all'],
         rng=ci_rng,
         n_resamples=10_000,
+    )
+    subject_metrics = _subject_level_metrics(
+        y_true=y_true,
+        y_pred=y_pred,
+        y_prob=y_prob,
+        subject_ids=loso_out['subject_ids_all'],
     )
 
     if n_rejected > 0:
@@ -569,8 +670,10 @@ def _evaluate_within_condition_classifier(
         'f1_macro_ci_upper': round(ci_upper, 6),
         'modal_params': modal,
         'modal_frequency': modal_frequency,
+        'subject_metrics': subject_metrics,
         'y_true': y_true.tolist(),
         'y_pred': y_pred.tolist(),
+        'y_prob': np.round(y_prob, 6).tolist(),
     }
 
 
@@ -615,6 +718,8 @@ def run_within_condition(
     results_filename: str | None = None,
     classifier_names: list[str] | None = None,
     classifier_configs: dict[str, dict[str, Any]] | None = None,
+    imbalance_arms: tuple[str, ...] = ('synthetic', 'balanced'),
+    selection_arms: tuple[str, ...] = ('synthetic', 'balanced'),
 ) -> dict[str, Any]:
     """
     Orchestrate the full within-condition experiment for one disease condition.
@@ -623,20 +728,13 @@ def run_within_condition(
     strides), runs nested LOSO-CV with GridSearchCV tuning for all 7
     classifiers, and saves results to a JSON file.
 
-    PD, HD, and ALS additionally run a no-SMOTE ablation after the main SMOTE
-    pass. Because the healthy controls are the minority class in all three
-    source pools, SMOTE augments synthetic control strides rather than disease
-    strides. The authoritative stored outputs are whichever variant achieves
-    the higher macro-F1, while the JSON also records both SMOTE and no-SMOTE
-    scores so the ablation remains explicit and backward-compatible.
+    The publication-track rerun separates imbalance handling into explicit arms:
+      - synthetic: SMOTE inside the training folds
+      - balanced: non-synthetic class/sample weighting
+      - raw: optional unbalanced sanity arm
 
-    Current interpretation of the v2 results: HD universally prefers no-SMOTE
-    because the 8 real Control Group A subjects already provide sufficient
-    boundary definition against HD's distinctly choreiform gait, so synthetic
-    control interpolation adds boundary noise; ALS shows modest SMOTE benefit
-    because its 1.17:1 source pool is closest to balanced; PD was initially
-    omitted from the ablation under an incorrect disease-minority assumption
-    and is now evaluated with the same source-side sensitivity logic.
+    The authoritative winner is chosen only among `selection_arms`, which by
+    default compares synthetic versus non-synthetic balancing.
     """
     if control_subjects is not None:
         if control_a is not None and control_subjects != control_a:
@@ -661,8 +759,18 @@ def run_within_condition(
     y = pool['label'].to_numpy().astype(int)
     groups = pool['subject_id'].to_numpy()
 
+    for arm in imbalance_arms:
+        if arm not in IMBALANCE_STRATEGIES:
+            raise ValueError(
+                f"Unknown imbalance arm '{arm}'. Expected one of {IMBALANCE_STRATEGIES}."
+            )
+    for arm in selection_arms:
+        if arm not in imbalance_arms:
+            raise ValueError(
+                f"Selection arm '{arm}' is not present in imbalance_arms {imbalance_arms}."
+            )
+
     clf_results: dict[str, dict[str, Any]] = {}
-    run_no_smote_ablation = condition in {'pd', 'hd', 'als'}
     configs = classifier_configs or get_classifier_configs()
     if classifier_names is not None:
         classifier_name_set = set(classifier_names)
@@ -682,41 +790,24 @@ def run_within_condition(
     for clf_name, config in configs.items():
         clf = config['clf']
         param_grid = config['param_grid']
-        smote_result = _evaluate_within_condition_classifier(
-            clf_name=clf_name,
-            clf=clf,
-            param_grid=param_grid,
-            X=X,
-            y=y,
-            groups=groups,
-            use_smote=True,
-        )
-
-        no_smote_result: dict[str, Any] | None = None
-        if run_no_smote_ablation:
-            no_smote_result = _evaluate_within_condition_classifier(
+        arm_results: dict[str, dict[str, Any]] = {}
+        for arm in imbalance_arms:
+            arm_results[arm] = _evaluate_within_condition_classifier(
                 clf_name=clf_name,
                 clf=clf,
                 param_grid=param_grid,
                 X=X,
                 y=y,
                 groups=groups,
-                use_smote=False,
+                imbalance_strategy=arm,
             )
 
-        selected_resampling = 'smote'
-        winner = smote_result
-        if (
-            no_smote_result is not None
-            and no_smote_result['f1_macro'] > smote_result['f1_macro']
-        ):
-            selected_resampling = 'no_smote'
-            winner = no_smote_result
-
-        if selected_resampling == 'no_smote':
-            assert no_smote_result is not None, (
-                f'{clf_name}: selected_resampling=no_smote but no ablation result exists'
-            )
+        winner_arm = max(
+            selection_arms,
+            key=lambda arm: arm_results[arm]['f1_macro'],
+        )
+        winner = arm_results[winner_arm]
+        selected_resampling = _strategy_to_legacy_label(winner_arm)
 
         clf_results[clf_name] = {
             'f1_macro': winner['f1_macro'],
@@ -724,13 +815,24 @@ def run_within_condition(
             'f1_macro_ci_upper': winner['f1_macro_ci_upper'],
             'modal_params': winner['modal_params'],
             'modal_frequency': winner['modal_frequency'],
+            'subject_metrics': winner['subject_metrics'],
             'y_true': winner['y_true'],
             'y_pred': winner['y_pred'],
-            'f1_macro_smote': smote_result['f1_macro'],
-            'f1_macro_no_smote': (
-                no_smote_result['f1_macro'] if no_smote_result is not None else None
-            ),
+            'y_prob': winner['y_prob'],
+            'f1_macro_smote': arm_results.get('synthetic', {}).get('f1_macro'),
+            'f1_macro_no_smote': arm_results.get('balanced', {}).get('f1_macro'),
+            'f1_macro_raw': arm_results.get('raw', {}).get('f1_macro'),
             'selected_resampling': selected_resampling,
+            'selected_imbalance_strategy': winner_arm,
+            'imbalance_arms': {
+                arm: {
+                    'f1_macro': result['f1_macro'],
+                    'f1_macro_ci_lower': result['f1_macro_ci_lower'],
+                    'f1_macro_ci_upper': result['f1_macro_ci_upper'],
+                    'subject_metrics': result['subject_metrics'],
+                }
+                for arm, result in arm_results.items()
+            },
         }
 
         partial_output = _build_within_condition_output(
@@ -841,7 +943,7 @@ def run_cross_condition(
 
     X_target = target_pool.select(selected_feature_cols).to_numpy().astype(np.float64)
     y_target = target_pool['label'].to_numpy().astype(int)
-    target_subject_ids = target_pool['subject_id'].to_list()
+    target_subject_ids = target_pool['subject_id'].to_numpy()
 
     assert len(np.unique(y_target)) == 2, (
         f'Target pool ({target_condition} + Control B) contains only one class. '
@@ -856,14 +958,21 @@ def run_cross_condition(
         clf_source = source_results['classifiers'][clf_name]
         modal_params = clf_source['modal_params']
         selected_resampling = clf_source.get('selected_resampling', 'smote')
-        use_smote = selected_resampling != 'no_smote'
+        selected_imbalance_strategy = clf_source.get(
+            'selected_imbalance_strategy',
+            'synthetic' if selected_resampling == 'smote' else 'balanced',
+        )
 
         clf_variant = _configure_classifier_for_resampling(
             clf_name,
             clf_instance,
-            use_smote=use_smote,
+            imbalance_strategy=selected_imbalance_strategy,
         )
-        pipeline = build_pipeline(clf_name, clf_variant, use_smote=use_smote)
+        pipeline = build_pipeline(
+            clf_name,
+            clf_variant,
+            imbalance_strategy=selected_imbalance_strategy,
+        )
         pipeline.set_params(**modal_params)
 
         model_path = models_dir / f'{source_condition}_{clf_name}.joblib'
@@ -872,6 +981,7 @@ def run_cross_condition(
         if model_path.exists():
             loaded_pipeline = joblib.load(model_path)
             loaded_has_smote = 'smote' in loaded_pipeline.named_steps
+            expected_has_smote = selected_imbalance_strategy == 'synthetic'
             params_match = all(
                 loaded_pipeline.get_params().get(k) == v
                 for k, v in modal_params.items()
@@ -879,16 +989,21 @@ def run_cross_condition(
             feature_count_match = (
                 _fitted_pipeline_feature_count(loaded_pipeline) == len(selected_feature_cols)
             )
-            if loaded_has_smote == use_smote and params_match and feature_count_match:
+            if loaded_has_smote == expected_has_smote and params_match and feature_count_match:
                 pipeline = loaded_pipeline
                 should_refit = False
 
         if should_refit:
-            fit_kwargs = _get_fit_kwargs(clf_name, y_source, use_smote)
+            fit_kwargs = _get_fit_kwargs(
+                clf_name,
+                y_source,
+                selected_imbalance_strategy,
+            )
             pipeline.fit(X_source, y_source, **fit_kwargs)
             joblib.dump(pipeline, model_path)
 
         y_pred = pipeline.predict(X_target)
+        y_prob = pipeline.predict_proba(X_target)[:, 1]
         y_true = y_target
 
         f1_val = round(float(f1_score(y_true, y_pred, average='macro')), 6)
@@ -931,6 +1046,13 @@ def run_cross_condition(
                 flush=True,
             )
 
+        subject_metrics = _subject_level_metrics(
+            y_true=y_true,
+            y_pred=y_pred,
+            y_prob=y_prob,
+            subject_ids=target_subject_ids,
+        )
+
         clf_results[clf_name] = {
             'f1_macro':               f1_val,
             'precision_macro':        precision_val,
@@ -943,8 +1065,11 @@ def run_cross_condition(
             'permutation_p_value':    p_value,
             'source_modal_params':    modal_params,
             'selected_resampling':    selected_resampling,
+            'selected_imbalance_strategy': selected_imbalance_strategy,
+            'subject_metrics':        subject_metrics,
             'y_true':                 y_true.tolist(),
             'y_pred':                 y_pred.tolist(),
+            'y_prob':                 np.round(y_prob, 6).tolist(),
         }
 
         print(
@@ -963,7 +1088,7 @@ def run_cross_condition(
         'source_pool_strides':  source_pool_strides,
         'target_pool_subjects': target_pool_subjects,
         'target_pool_strides':  target_pool_strides,
-        'target_subject_ids':   target_subject_ids,
+        'target_subject_ids':   target_subject_ids.tolist(),
         'feature_cols':         selected_feature_cols,
         'n_features':           len(selected_feature_cols),
         'feature_matrix_file':  feature_matrix_file,
