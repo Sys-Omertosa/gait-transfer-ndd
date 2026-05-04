@@ -2,18 +2,33 @@
 src/features.py: Per-stride and per-subject feature engineering, and full Step 1 pipeline orchestration.
 """
 
+import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import polars as pl
 
-from src.preprocessing import (
-    FEATURE_COLS,
-    assign_labels,
-    filter_pause_events,
-    load_raw_data,
-    partition_controls,
-)
+try:
+    from src.preprocessing import (
+        FEATURE_COLS,
+        assign_labels,
+        filter_artifact_rows_v3,
+        filter_pause_events,
+        load_raw_data,
+        partition_controls,
+        summarize_control_partition,
+    )
+except ModuleNotFoundError:
+    from preprocessing import (  # type: ignore
+        FEATURE_COLS,
+        assign_labels,
+        filter_artifact_rows_v3,
+        filter_pause_events,
+        load_raw_data,
+        partition_controls,
+        summarize_control_partition,
+    )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / 'data' / 'raw' / 'gait-in-neurodegenerative-disease-database-1.0.0'
@@ -35,8 +50,26 @@ V2_FEATURE_COLS: list[str] = ORIGINAL_FEATURE_COLS + [
     'dfa_alpha_stride',
 ]
 
+# Publication-track v3 feature set: remove exact percentage complements and the
+# empirically negligible signed stride asymmetry feature.
+V3_FEATURE_COLS: list[str] = [
+    col for col in V2_FEATURE_COLS
+    if col not in {'left_stance_pct', 'right_stance_pct', 'stride_asymmetry_signed'}
+]
+
 # The default feature set used by the v2 rerun path.
 ALL_FEATURE_COLS: list[str] = V2_FEATURE_COLS
+
+
+def get_feature_cols(feature_set_version: str = 'v2') -> list[str]:
+    """Return the configured feature columns for the requested experiment version."""
+    if feature_set_version == 'v1':
+        return list(ORIGINAL_FEATURE_COLS)
+    if feature_set_version == 'v2':
+        return list(V2_FEATURE_COLS)
+    if feature_set_version == 'v3':
+        return list(V3_FEATURE_COLS)
+    raise ValueError(f"Unknown feature_set_version '{feature_set_version}'")
 
 
 # ── Functions ─────────────────────────────────────────────────────────────────
@@ -151,6 +184,8 @@ def _dfa_alpha_from_stride_sequence(
     *,
     min_strides: int = 100,
     min_scales: int = 8,
+    scale_mode: str = 'pragmatic',
+    custom_scales: np.ndarray | None = None,
 ) -> tuple[float, int]:
     """
     Estimate the DFA exponent alpha for one stride-time sequence.
@@ -158,6 +193,10 @@ def _dfa_alpha_from_stride_sequence(
     A conservative scale range is used to keep the estimate stable on the shorter
     GAITNDD stride sequences: log-spaced window sizes from 4 to floor(n/4),
     requiring at least 100 strides and at least 8 usable scales.
+
+    The default `scale_mode='pragmatic'` reproduces the current v2/v3 DFA path.
+    A custom scale array can be supplied for sensitivity studies, including a
+    closer Hausdorff-style schedule once the final target protocol is locked.
 
     Args:
         sequence: 1D array of clean left-stride durations for one subject.
@@ -177,11 +216,16 @@ def _dfa_alpha_from_stride_sequence(
 
     y = np.cumsum(x - x.mean())
     max_scale = n // 4
-    scales = np.unique(
-        np.floor(
-            np.logspace(np.log10(4), np.log10(max_scale), num=10)
-        ).astype(int)
-    )
+    if custom_scales is not None:
+        scales = np.asarray(custom_scales, dtype=int)
+    elif scale_mode == 'pragmatic':
+        scales = np.unique(
+            np.floor(
+                np.logspace(np.log10(4), np.log10(max_scale), num=10)
+            ).astype(int)
+        )
+    else:
+        raise ValueError(f"Unknown DFA scale_mode '{scale_mode}'")
     scales = scales[(scales >= 4) & (scales <= max_scale)]
 
     fluctuation: list[float] = []
@@ -217,7 +261,12 @@ def _dfa_alpha_from_stride_sequence(
     return alpha, len(used_scales)
 
 
-def compute_dfa_alpha_stride(df: pl.DataFrame) -> pl.DataFrame:
+def compute_dfa_alpha_stride(
+    df: pl.DataFrame,
+    *,
+    dfa_scale_mode: str = 'pragmatic',
+    dfa_custom_scales: np.ndarray | None = None,
+) -> pl.DataFrame:
     """
     Add the per-subject DFA exponent of the left stride-time sequence.
 
@@ -240,7 +289,11 @@ def compute_dfa_alpha_stride(df: pl.DataFrame) -> pl.DataFrame:
         .iter_rows()
     ):
         sequence = np.asarray(seq, dtype=np.float64)
-        alpha, n_scales = _dfa_alpha_from_stride_sequence(sequence)
+        alpha, n_scales = _dfa_alpha_from_stride_sequence(
+            sequence,
+            scale_mode=dfa_scale_mode,
+            custom_scales=dfa_custom_scales,
+        )
         rows.append({
             'subject_id': subject_id,
             'dfa_alpha_stride': alpha,
@@ -275,27 +328,32 @@ def build_feature_matrix(
     processed_dir: str | Path | None = None,
     output_filename: str = DEFAULT_FEATURES_FILENAME,
     feature_cols: list[str] | None = None,
+    *,
+    feature_set_version: str = 'v2',
+    filter_strategy: str = 'v2',
+    control_partition_version: str = 'v2',
+    control_partition: dict[str, list[str]] | None = None,
+    partition_output_filename: str = 'control_partition.json',
+    manifest_filename: str | None = None,
+    dfa_scale_mode: str = 'pragmatic',
+    dfa_custom_scales: np.ndarray | None = None,
 ) -> tuple[pl.DataFrame, dict[str, list[str]]]:
     """
     Orchestrate the full Step 1 pipeline and write outputs to processed_dir.
 
     Pipeline order:
-        1. load_raw_data                 -- load all 64 .ts files (15,160 raw strides)
-        2. filter_pause_events           -- remove artifact rows (407 removed, 14,753 remain)
+        1. load_raw_data                  -- load all 64 .ts files (15,160 raw strides)
+        2. filter_*                      -- artifact filtering (strategy-dependent)
         3. assign_labels                 -- add binary label column (0=control, 1=pathological)
-        4. partition_controls            -- define and save the 8/8 control partition JSON
+        4. partition_controls            -- define and save the control partition JSON
         5. compute_asymmetry_index       -- add per-stride asymmetry_index column
         6. compute_stride_asymmetry_signed -- add per-stride signed asymmetry
         7. compute_cv_stride             -- add per-subject cv_stride column
         8. compute_cv_swing              -- add per-subject cv_swing column
         9. compute_dfa_alpha_stride      -- add per-subject DFA alpha column
 
-    Outputs written to processed_dir:
-        v2/gait_features_v2.csv -- full feature matrix (14,753 rows x 20 columns)
-        control_partition.json  -- fixed Group A / Group B subject lists
-
-    The saved CSV contains all 20 columns:
-        17 feature columns + subject_id + condition + label
+    The saved CSV contains:
+        len(feature_cols) feature columns + subject_id + condition + label
 
     Args:
         data_dir:      Path to the raw .ts file directory. Defaults to the repo's
@@ -303,11 +361,11 @@ def build_feature_matrix(
         processed_dir: Path to write the feature matrix and control partition.
                        Defaults to the repo's data/processed directory.
         output_filename: Name of the feature-matrix CSV written to processed_dir.
-        feature_cols: Optional explicit feature list to write. Defaults to
-                      the v2 feature set defined in ALL_FEATURE_COLS.
+        feature_cols: Optional explicit feature list to write. Defaults to the
+                      feature list resolved from feature_set_version.
     Returns:
         Tuple of:
-            - Final Polars DataFrame (14,753 x 20 for the default v2 path).
+            - Final Polars DataFrame.
             - Control partition dict with keys 'control_A' and 'control_B'.
     """
     data_path = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
@@ -318,22 +376,44 @@ def build_feature_matrix(
 
     # Steps 1-2: load and filter (filter must be first operation on raw data)
     raw = load_raw_data(str(data_path))
-    clean = filter_pause_events(raw)
+
+    selected_feature_cols = (
+        list(feature_cols)
+        if feature_cols is not None else
+        get_feature_cols(feature_set_version)
+    )
+
+    # Steps 5-9: feature engineering
+    filter_stats: dict[str, Any] | None = None
+    if filter_strategy == 'v2':
+        clean = filter_pause_events(raw)
+    elif filter_strategy == 'v3':
+        clean, filter_stats = filter_artifact_rows_v3(raw, return_stats=True)
+    else:
+        raise ValueError(f"Unknown filter_strategy '{filter_strategy}'")
 
     # Step 3: binary labels
     labeled = assign_labels(clean)
 
     # Step 4: save control partition (defines train/test split for all experiments)
-    partition = partition_controls(str(processed_path / 'control_partition.json'))
+    partition = partition_controls(
+        str(processed_path / partition_output_filename),
+        version=control_partition_version,
+        custom_partition=control_partition,
+    )
 
-    selected_feature_cols = list(feature_cols) if feature_cols is not None else ALL_FEATURE_COLS
-
-    # Steps 5-9: feature engineering
     with_asym = compute_asymmetry_index(labeled)
-    with_stride_features = compute_stride_asymmetry_signed(with_asym)
+    if 'stride_asymmetry_signed' in selected_feature_cols:
+        with_stride_features = compute_stride_asymmetry_signed(with_asym)
+    else:
+        with_stride_features = with_asym
     with_cv_stride = compute_cv_stride(with_stride_features)
     with_cv_swing = compute_cv_swing(with_cv_stride)
-    with_dfa = compute_dfa_alpha_stride(with_cv_swing)
+    with_dfa = compute_dfa_alpha_stride(
+        with_cv_swing,
+        dfa_scale_mode=dfa_scale_mode,
+        dfa_custom_scales=dfa_custom_scales,
+    )
 
     # Select final column order: features first, then metadata
     output_cols = selected_feature_cols + ['subject_id', 'condition', 'label']
@@ -342,5 +422,28 @@ def build_feature_matrix(
     output_path = processed_path / output_filename
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output.write_csv(str(output_path))
+
+    if manifest_filename is not None:
+        manifest_path = processed_path / manifest_filename
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        control_summary = summarize_control_partition(partition)
+        manifest = {
+            'feature_set_version': feature_set_version,
+            'filter_strategy': filter_strategy,
+            'feature_cols': selected_feature_cols,
+            'n_features': len(selected_feature_cols),
+            'output_filename': output_filename,
+            'partition_output_filename': partition_output_filename,
+            'raw_rows': int(raw.height),
+            'final_rows': int(output.height),
+            'n_subjects': int(output.n_unique('subject_id')),
+            'control_partition': partition,
+            'control_partition_summary': control_summary,
+            'dfa_scale_mode': dfa_scale_mode,
+        }
+        if filter_stats is not None:
+            manifest['filter_stats'] = filter_stats
+        with open(manifest_path, 'w') as f:
+            json.dump(manifest, f, indent=2)
 
     return output, partition
