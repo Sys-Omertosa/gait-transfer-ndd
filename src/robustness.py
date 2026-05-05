@@ -43,8 +43,8 @@ SIGMA_LEVELS: tuple[float, ...] = (0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50)
 N_NOISE_REPEATS: int = 30
 
 _SCALE_REQUIRED = frozenset({"svm", "knn"})
-_LEFT_COL_HINTS = ("left_stride_s", "left_swing_s", "left_swing_pct", "left_stance_s", "left_stance_pct")
-_RIGHT_COL_HINTS = ("right_stride_s", "right_swing_s", "right_swing_pct", "right_stance_s", "right_stance_pct")
+_LEFT_COL_HINTS = ("left_stride_s", "left_swing_s", "left_swing_pct", "left_stance_s")
+_RIGHT_COL_HINTS = ("right_stride_s", "right_swing_s", "right_swing_pct", "right_stance_s")
 
 _COND_IDX = {"pd": 0, "hd": 1, "als": 2}
 
@@ -288,7 +288,12 @@ def evaluate_noise_sweep_within(
     for ci, clf_name in enumerate(CLF_ORDER):
         clf_res = within_results["classifiers"][clf_name]
         modal = clf_res["modal_params"]
-        use_smote = clf_res.get("selected_resampling", "smote") != "no_smote"
+        strategy = clf_res.get(
+            "selected_imbalance_strategy",
+            "synthetic" if clf_res.get("selected_resampling", "smote") == "smote"
+            else "balanced"
+        )
+        use_smote = strategy == "synthetic"
         fitted_folds = loso_fit_all_folds_fixed(
             X, y, groups, clf_name, modal, use_smote=use_smote
         )
@@ -382,7 +387,12 @@ def permutation_importance_within(
     for ci, clf_name in enumerate(CLF_ORDER):
         clf_res = within_results["classifiers"][clf_name]
         modal = clf_res["modal_params"]
-        use_smote = clf_res.get("selected_resampling", "smote") != "no_smote"
+        strategy = clf_res.get(
+            "selected_imbalance_strategy",
+            "synthetic" if clf_res.get("selected_resampling", "smote") == "smote"
+            else "balanced"
+        )
+        use_smote = strategy == "synthetic"
         base = baseline_f1[clf_name]
         fitted_folds = loso_fit_all_folds_fixed(
             X, y, groups, clf_name, modal, use_smote=use_smote
@@ -614,7 +624,12 @@ def evaluate_corruption_sweep_within(
     for clf_name in CLF_ORDER:
         clf_res = within_results["classifiers"][clf_name]
         modal = clf_res["modal_params"]
-        use_smote = clf_res.get("selected_resampling", "smote") != "no_smote"
+        strategy = clf_res.get(
+            "selected_imbalance_strategy",
+            "synthetic" if clf_res.get("selected_resampling", "smote") == "smote"
+            else "balanced"
+        )
+        use_smote = strategy == "synthetic"
         fitted_by_clf[clf_name] = loso_fit_all_folds_fixed(
             X, y, groups, clf_name, modal, use_smote=use_smote
         )
@@ -805,7 +820,12 @@ def evaluate_conformal_within(
     for clf_name in CLF_ORDER:
         clf_res = within_results["classifiers"][clf_name]
         modal = clf_res["modal_params"]
-        use_smote = clf_res.get("selected_resampling", "smote") != "no_smote"
+        strategy = clf_res.get(
+            "selected_imbalance_strategy",
+            "synthetic" if clf_res.get("selected_resampling", "smote") == "smote"
+            else "balanced"
+        )
+        use_smote = strategy == "synthetic"
         fitted_folds = loso_fit_all_folds_fixed(X, y, groups, clf_name, modal, use_smote=use_smote)
         fold_probs: list[np.ndarray] = []
         fold_true: list[np.ndarray] = []

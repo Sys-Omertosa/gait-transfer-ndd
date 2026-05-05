@@ -58,7 +58,7 @@ import polars as pl
 import shap
 from joblib import Parallel, delayed as jl_delayed
 
-from features import ALL_FEATURE_COLS
+from features import ALL_FEATURE_COLS, get_feature_cols
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
@@ -89,6 +89,28 @@ _KERNEL_NSAMPLES = 1024
 _DELTA_J_NORM_CAP = 10.0
 _EMERGED_THRESHOLD = 1e-3   # mean(|phi_within|) below this → "emerged"
 _EPS = 1e-10                # numerical floor for division
+_STABILITY_N_RESAMPLES = 200
+
+
+def infer_feature_family(feature_name: str) -> str:
+    """Map an individual feature name to a coarser interpretation family."""
+    if feature_name in {'cv_stride', 'cv_swing'}:
+        return 'variability'
+    if feature_name == 'dfa_alpha_stride':
+        return 'fractal'
+    if 'asymmetry' in feature_name:
+        return 'asymmetry'
+    if feature_name.endswith('_pct'):
+        return 'phase_percentage'
+    return 'raw_timing'
+
+
+def get_feature_families(feature_cols: list[str]) -> dict[str, list[int]]:
+    """Group feature indices into interpretation families."""
+    families: dict[str, list[int]] = {}
+    for idx, feature_name in enumerate(feature_cols):
+        families.setdefault(infer_feature_family(feature_name), []).append(idx)
+    return families
 
 
 def get_shap_config(clf_name: str) -> dict[str, Any]:
@@ -350,8 +372,10 @@ def compute_shap_values(
     pipeline: Any,
     X: np.ndarray,
     y: np.ndarray,
+    subject_ids: np.ndarray,
     background: Any,
     sample_indices: np.ndarray,
+    feature_cols: list[str],
     pipeline_path: str | Path | None = None,
 ) -> dict[str, Any]:
     """
@@ -393,13 +417,15 @@ def compute_shap_values(
                         this is the stratified subsample.
         y:              True labels, shape (n,). Stored in .npz for downstream
                         waterfall and misclassification analysis.
-        background:     numpy array from get_background_data(), shape (k, 14).
+        subject_ids:    Subject IDs aligned to X and y.
+        background:     numpy array from get_background_data(), shape (k, n_features).
                         Used as data= for interventional TreeExplainer and as
                         background for KernelExplainer.
         sample_indices: Original row indices of X within the full pool. For
                         tree classifiers this is np.arange(n); for kernel
                         classifiers it is the indices returned by
                         subsample_stratified().
+        feature_cols:   Feature names aligned to the columns of X.
         pipeline_path:  Path to the .joblib file for this pipeline. Required for
                         kernel classifiers (each worker process loads its own copy).
                         Unused for tree classifiers and may be None.
@@ -411,6 +437,7 @@ def compute_shap_values(
           'X_explained'        — np.ndarray, shape (n, 14), the feature values
                                  that were explained (same as X)
           'y_true'             — np.ndarray, shape (n,), true labels
+          'subject_ids'        — np.ndarray, shape (n,), subject IDs
           'sample_indices'     — np.ndarray, shape (n,), original indices
           'explainer_type'     — str, one of 'tree_tpd', 'tree_int', 'kernel'
           'completeness_error' — float, max absolute error (tree) or median
@@ -455,7 +482,7 @@ def compute_shap_values(
             data=bg_array,
             model_output='probability',
             feature_perturbation='interventional',
-            feature_names=ALL_FEATURE_COLS,
+            feature_names=feature_cols,
         )
         sv_raw = explainer.shap_values(X)
         base_value = _extract_base_value(explainer.expected_value)
@@ -535,6 +562,7 @@ def compute_shap_values(
         'base_value':         base_value,
         'X_explained':        X,
         'y_true':             y,
+        'subject_ids':        subject_ids,
         'sample_indices':     sample_indices,
         'explainer_type':     explainer_type,
         'completeness_error': completeness_error,
@@ -612,6 +640,78 @@ def compute_delta_j(
     }
 
 
+def compute_family_delta_j(
+    *,
+    feature_cols: list[str],
+    mean_abs_within: np.ndarray,
+    mean_abs_cross: np.ndarray,
+) -> dict[str, dict[str, Any]]:
+    """Aggregate per-feature SHAP reliance to coarser interpretation families."""
+    family_map = get_feature_families(feature_cols)
+    family_summary: dict[str, dict[str, Any]] = {}
+    for family_name, idxs in family_map.items():
+        within_sum = float(np.sum(mean_abs_within[idxs]))
+        cross_sum = float(np.sum(mean_abs_cross[idxs]))
+        family_summary[family_name] = {
+            'features': [feature_cols[idx] for idx in idxs],
+            'mean_abs_within_sum': round(within_sum, 6),
+            'mean_abs_cross_sum': round(cross_sum, 6),
+            'delta_j_sum': round(abs(within_sum - cross_sum), 6),
+        }
+    return family_summary
+
+
+def compute_delta_j_stability(
+    *,
+    shap_within: np.ndarray,
+    shap_cross: np.ndarray,
+    subject_ids_within: np.ndarray,
+    subject_ids_cross: np.ndarray,
+    rng: np.random.Generator,
+    n_resamples: int = _STABILITY_N_RESAMPLES,
+) -> dict[str, Any]:
+    """
+    Subject-bootstrap stability summary for δj without recomputing SHAP values.
+
+    Subjects are resampled with replacement within the source and target pools
+    separately, preserving the within-subject clustering of strides.
+    """
+    n_features = shap_within.shape[1]
+    top1_counts = np.zeros(n_features, dtype=int)
+    top3_counts = np.zeros(n_features, dtype=int)
+    delta_boot = np.empty((n_resamples, n_features), dtype=np.float64)
+
+    within_subject_ids = np.asarray(subject_ids_within)
+    cross_subject_ids = np.asarray(subject_ids_cross)
+    unique_within = list(dict.fromkeys(within_subject_ids.tolist()))
+    unique_cross = list(dict.fromkeys(cross_subject_ids.tolist()))
+    within_rows = {s: np.where(within_subject_ids == s)[0] for s in unique_within}
+    cross_rows = {s: np.where(cross_subject_ids == s)[0] for s in unique_cross}
+
+    for resample_idx in range(n_resamples):
+        chosen_within = rng.choice(unique_within, size=len(unique_within), replace=True)
+        chosen_cross = rng.choice(unique_cross, size=len(unique_cross), replace=True)
+        idx_within = np.concatenate([within_rows[s] for s in chosen_within])
+        idx_cross = np.concatenate([cross_rows[s] for s in chosen_cross])
+
+        mean_abs_within = np.mean(np.abs(shap_within[idx_within]), axis=0)
+        mean_abs_cross = np.mean(np.abs(shap_cross[idx_cross]), axis=0)
+        delta = np.abs(mean_abs_within - mean_abs_cross)
+        delta_boot[resample_idx] = delta
+
+        rank_desc = np.argsort(delta)[::-1]
+        top1_counts[rank_desc[0]] += 1
+        top3_counts[rank_desc[:3]] += 1
+
+    return {
+        'n_resamples': n_resamples,
+        'delta_j_ci_lower': np.percentile(delta_boot, 2.5, axis=0).round(6).tolist(),
+        'delta_j_ci_upper': np.percentile(delta_boot, 97.5, axis=0).round(6).tolist(),
+        'top1_frequency': (top1_counts / n_resamples).round(6).tolist(),
+        'top3_frequency': (top3_counts / n_resamples).round(6).tolist(),
+    }
+
+
 # ── Persistence ───────────────────────────────────────────────────────────────
 
 def save_shap_npz(
@@ -639,6 +739,7 @@ def save_shap_npz(
         base_value=np.float64(shap_result['base_value']),
         X_explained=shap_result['X_explained'].astype(np.float32),
         y_true=shap_result['y_true'].astype(np.int32),
+        subject_ids=shap_result['subject_ids'].astype(str),
         sample_indices=shap_result['sample_indices'].astype(np.int64),
     )
 
@@ -654,6 +755,9 @@ def run_shap_for_direction(
     models_dir: str | Path,
     shap_dir: str | Path,
     reuse_within: bool = True,
+    feature_cols: list[str] | None = None,
+    feature_set_version: str = 'v2',
+    stability_n_resamples: int = _STABILITY_N_RESAMPLES,
 ) -> dict[str, Any]:
     """
     Compute SHAP values and δj for all 7 classifiers for one transfer direction.
@@ -741,18 +845,25 @@ def run_shap_for_direction(
         pl.col('subject_id').is_in(control_b)
     )
 
+    selected_feature_cols = (
+        list(feature_cols) if feature_cols is not None
+        else get_feature_cols(feature_set_version)
+    )
     X_source = source_pool.select(
-        ALL_FEATURE_COLS).to_numpy().astype(np.float64)
+        selected_feature_cols).to_numpy().astype(np.float64)
     y_source = source_pool['label'].to_numpy().astype(int)
+    source_subject_ids = source_pool['subject_id'].to_numpy()
     X_target = target_pool.select(
-        ALL_FEATURE_COLS).to_numpy().astype(np.float64)
+        selected_feature_cols).to_numpy().astype(np.float64)
     y_target = target_pool['label'].to_numpy().astype(int)
+    target_subject_ids = target_pool['subject_id'].to_numpy()
 
     # Class-balanced background computed once from source pool, shared across all 7
     # classifiers. local_rng seeds the balanced sampling deterministically per direction.
     background = get_background_data(X_source, y_source, k=100, rng=local_rng)
 
     clf_names = ['rf', 'knn', 'svm', 'dt', 'qda', 'xgb', 'lgbm']
+    clf_seed_offset = {name: idx for idx, name in enumerate(clf_names)}
     direction_results: dict[str, Any] = {}
 
     for clf_name in clf_names:
@@ -778,6 +889,7 @@ def run_shap_for_direction(
             within_shap = loaded_w['shap_values'].astype(np.float64)
             base_within = float(loaded_w['base_value'])
             X_within_loaded = loaded_w['X_explained'].astype(np.float64)
+            within_subject_ids = loaded_w['subject_ids'].astype(str)
             predicted_w = pipeline.predict_proba(X_within_loaded)[:, 1]
             reconstructed_w = base_within + within_shap.sum(axis=1)
             errors_w = np.abs(reconstructed_w - predicted_w)
@@ -791,19 +903,23 @@ def run_shap_for_direction(
                 X_w, y_w, idx_w = subsample_stratified(
                     X_source, y_source, config['n_explained'], local_rng
                 )
+                subject_ids_w = source_subject_ids[idx_w]
             else:
                 X_w = X_source
                 y_w = y_source
                 idx_w = np.arange(len(y_source))
+                subject_ids_w = source_subject_ids
 
             result_within = compute_shap_values(
-                clf_name, pipeline, X_w, y_w, background, idx_w,
+                clf_name, pipeline, X_w, y_w, subject_ids_w, background, idx_w,
+                selected_feature_cols,
                 pipeline_path=model_path,
             )
             save_shap_npz(within_npz_path, result_within)
             within_shap = result_within['shap_values']
             base_within = result_within['base_value']
             completeness_within = result_within['completeness_error']
+            within_subject_ids = result_within['subject_ids']
             n_within = len(within_shap)
 
         # ── Cross-condition SHAP ──────────────────────────────────────────────
@@ -816,23 +932,40 @@ def run_shap_for_direction(
             X_c, y_c, idx_c = subsample_stratified(
                 X_target, y_target, config['n_explained'], local_rng
             )
+            subject_ids_c = target_subject_ids[idx_c]
         else:
             X_c = X_target
             y_c = y_target
             idx_c = np.arange(len(y_target))
+            subject_ids_c = target_subject_ids
 
         result_cross = compute_shap_values(
-            clf_name, pipeline, X_c, y_c, background, idx_c,
+            clf_name, pipeline, X_c, y_c, subject_ids_c, background, idx_c,
+            selected_feature_cols,
             pipeline_path=model_path,
         )
         save_shap_npz(cross_npz_path, result_cross)
         cross_shap = result_cross['shap_values']
         base_cross = result_cross['base_value']
         completeness_cross = result_cross['completeness_error']
+        cross_subject_ids = result_cross['subject_ids']
         n_cross = len(cross_shap)
 
         # ── δj ───────────────────────────────────────────────────────────────
         dj = compute_delta_j(within_shap, cross_shap)
+        family_delta_j = compute_family_delta_j(
+            feature_cols=selected_feature_cols,
+            mean_abs_within=dj['mean_abs_within'],
+            mean_abs_cross=dj['mean_abs_cross'],
+        )
+        stability = compute_delta_j_stability(
+            shap_within=within_shap,
+            shap_cross=cross_shap,
+            subject_ids_within=within_subject_ids,
+            subject_ids_cross=cross_subject_ids,
+            rng=np.random.default_rng(direction_seed + 100 * clf_seed_offset[clf_name]),
+            n_resamples=stability_n_resamples,
+        )
 
         direction_results[clf_name] = {
             'explainer_type':            config['explainer'],
@@ -847,11 +980,13 @@ def run_shap_for_direction(
             'delta_j':                   dj['delta_j'].tolist(),
             'delta_j_normalized':        dj['delta_j_normalized'].tolist(),
             'emerged_features':          dj['emerged_features'],
+            'family_delta_j':            family_delta_j,
+            'stability':                 stability,
         }
 
         top3 = np.argsort(dj['delta_j'])[::-1][:3]
         top3_str = ', '.join(
-            f'{ALL_FEATURE_COLS[j]}={dj["delta_j"][j]:.4f}'
+            f'{selected_feature_cols[j]}={dj["delta_j"][j]:.4f}'
             for j in top3
         )
         print(
@@ -864,4 +999,17 @@ def run_shap_for_direction(
             flush=True,
         )
 
+    top1_count = np.zeros(len(selected_feature_cols), dtype=int)
+    top3_count = np.zeros(len(selected_feature_cols), dtype=int)
+    for clf_name in clf_names:
+        delta = np.asarray(direction_results[clf_name]['delta_j'], dtype=np.float64)
+        rank_desc = np.argsort(delta)[::-1]
+        top1_count[rank_desc[0]] += 1
+        top3_count[rank_desc[:3]] += 1
+
+    direction_results['__consensus__'] = {
+        'feature_cols': selected_feature_cols,
+        'top1_count': top1_count.tolist(),
+        'top3_count': top3_count.tolist(),
+    }
     return direction_results

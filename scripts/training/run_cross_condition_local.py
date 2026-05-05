@@ -1,5 +1,5 @@
 """
-Local sequential runner for zero-shot cross-condition transfer evaluation.
+Local sequential runner for the publication-track v3 zero-shot transfer study.
 
 Runs all six transfer directions sequentially on local hardware:
     pd->hd, hd->pd, pd->als, als->pd, hd->als, als->hd
@@ -10,15 +10,11 @@ hyperparameters from within-condition LOSO-CV, then evaluates on the full
 target pool (target condition + Control B) with no retraining.
 
 Results from all six directions are accumulated into a single output dict
-and written to experiments/results/v2/cross_condition_results_v2.json after all
+and written to experiments/results/v3/cross_condition_results_v3.json after all
 directions complete.
 
-Usage (from repo root with venv active):
+Usage:
     python scripts/training/run_cross_condition_local.py
-
-    # Or with logging:
-    mkdir -p logs
-    python scripts/training/run_cross_condition_local.py 2>&1 | tee logs/cross_condition_local.log
 """
 
 import json
@@ -32,10 +28,11 @@ import polars as pl
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from features import get_feature_cols  # noqa: E402
 from train import run_cross_condition  # noqa: E402
 
-RESULTS_DIR = REPO_ROOT / "experiments" / "results" / "v2"
-MODELS_DIR  = REPO_ROOT / "experiments" / "models" / "v2"
+RESULTS_DIR = REPO_ROOT / "experiments" / "results" / "v3"
+MODELS_DIR  = REPO_ROOT / "experiments" / "models" / "v3"
 
 DIRECTIONS = [
     ("pd",  "hd"),
@@ -47,20 +44,21 @@ DIRECTIONS = [
 ]
 
 SOURCE_JSON = {
-    "pd":  RESULTS_DIR / "pd_results_v2.json",
-    "hd":  RESULTS_DIR / "hd_results_v2.json",
-    "als": RESULTS_DIR / "als_results_v2.json",
+    "pd":  RESULTS_DIR / "pd_results_v3.json",
+    "hd":  RESULTS_DIR / "hd_results_v3.json",
+    "als": RESULTS_DIR / "als_results_v3.json",
 }
 
 
 def main() -> None:
     # ── Load shared inputs ────────────────────────────────────────────────────
-    print("Loading feature matrix and control partition...", flush=True)
-    df = pl.read_csv(REPO_ROOT / "data" / "processed" / "v2" / "gait_features_v2.csv")
-    with open(REPO_ROOT / "data" / "processed" / "control_partition.json") as f:
+    print("Loading v3 feature matrix and control partition...", flush=True)
+    df = pl.read_csv(REPO_ROOT / "data" / "processed" / "v3" / "gait_features_v3.csv")
+    with open(REPO_ROOT / "data" / "processed" / "v3" / "control_partition_v3.json") as f:
         partition = json.load(f)
     control_a = partition["control_A"]
     control_b = partition["control_B"]
+    feature_cols = get_feature_cols('v3')
 
     # ── Load Step 2 within-condition results ──────────────────────────────────
     source_results: dict[str, dict] = {}
@@ -90,7 +88,10 @@ def main() -> None:
             source_results=source_results[source_cond],
             results_dir=RESULTS_DIR,
             models_dir=MODELS_DIR,
-            feature_matrix_file='v2/gait_features_v2.csv',
+            feature_cols=feature_cols,
+            feature_matrix_file='v3/gait_features_v3.csv',
+            feature_set_version='v3',
+            normalization='none',
         )
 
         elapsed = time.time() - t_dir_start
@@ -99,7 +100,7 @@ def main() -> None:
         print(flush=True)
 
     # ── Write single output file after all directions complete ────────────────
-    out_path = RESULTS_DIR / "cross_condition_results_v2.json"
+    out_path = RESULTS_DIR / "cross_condition_results_v3.json"
     with open(out_path, "w") as f:
         json.dump(accumulated, f, indent=2)
 

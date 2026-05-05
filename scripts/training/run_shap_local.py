@@ -1,29 +1,18 @@
 """
-Sequential local runner for SHAP transfer-failure diagnosis.
+Sequential local runner for publication-track v3 SHAP transfer diagnosis.
 
 Runs all six transfer directions in order:
     pd->hd, hd->pd, pd->als, als->pd, hd->als, als->hd
 
 For each direction, calls run_shap_for_direction() from src/explain.py,
 which computes SHAP values for all 7 classifiers, writes per-(source, clf)
-.npz files to experiments/shap/v2_local/, and returns per-classifier δj
-results.
+.npz files to experiments/shap/v3/, and returns per-classifier δj results,
+family-level summaries, and stability diagnostics.
 
 After all six directions complete, the accumulated results are written to
-experiments/results/v2/shap_results_v2_local.json following the same structure
-and commit convention as cross_condition_results_v2.json. Local outputs are
-kept separate from Modal outputs to avoid accidental overwrite when Modal
-volume downloads are synced back into the repository.
+experiments/results/v3/shap_results_v3.json.
 
-TreeExplainer classifiers (RF, DT, XGB, LGB) complete in seconds to
-tens of seconds per classifier per direction. KernelExplainer classifiers
-(SVM, QDA, KNN) each take tens of minutes per direction. Total estimated
-local wall time: several hours (dominated by KernelExplainer).
-
-For Modal-accelerated execution with parallel directions, use:
-    modal run scripts/training/run_shap_modal.py
-
-Usage (from repo root with venv active):
+Usage:
     python scripts/training/run_shap_local.py
 """
 
@@ -38,13 +27,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / 'src'))
 
 from explain import run_shap_for_direction  # noqa: E402
+from features import get_feature_cols  # noqa: E402
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-FEATURES_PATH   = REPO_ROOT / 'data/processed/v2/gait_features_v2.csv'
-PARTITION_PATH  = REPO_ROOT / 'data/processed/control_partition.json'
-MODELS_DIR      = REPO_ROOT / 'experiments/models/v2'
-SHAP_DIR        = REPO_ROOT / 'experiments/shap/v2_local'
-RESULTS_DIR     = REPO_ROOT / 'experiments/results/v2'
+FEATURES_PATH   = REPO_ROOT / 'data/processed/v3/gait_features_v3.csv'
+PARTITION_PATH  = REPO_ROOT / 'data/processed/v3/control_partition_v3.json'
+MODELS_DIR      = REPO_ROOT / 'experiments/models/v3'
+SHAP_DIR        = REPO_ROOT / 'experiments/shap/v3'
+RESULTS_DIR     = REPO_ROOT / 'experiments/results/v3'
 
 DIRECTIONS = [
     ('pd',  'hd'),
@@ -65,6 +55,7 @@ def main() -> None:
         partition = json.load(f)
     control_a: list[str] = partition['control_A']
     control_b: list[str] = partition['control_B']
+    feature_cols = get_feature_cols('v3')
 
     accumulated: dict = {}
     t_total = time.time()
@@ -84,6 +75,9 @@ def main() -> None:
             control_b=control_b,
             models_dir=MODELS_DIR,
             shap_dir=SHAP_DIR,
+            feature_cols=feature_cols,
+            feature_set_version='v3',
+            stability_n_resamples=200,
         )
 
         elapsed = time.time() - t_dir
@@ -92,14 +86,13 @@ def main() -> None:
 
         # Write a partial results file after each direction so that a crash does
         # not lose completed work during a multi-hour run.
-        partial_path = RESULTS_DIR / 'shap_results_v2_local_partial.json'
+        partial_path = RESULTS_DIR / 'shap_results_v3_partial.json'
         with open(partial_path, 'w') as f:
             json.dump(accumulated, f, indent=2)
         print(f'Partial results saved ({len(accumulated)}/6 directions)', flush=True)
 
-    # Rename the final partial file to the canonical output name.
-    partial_path = RESULTS_DIR / 'shap_results_v2_local_partial.json'
-    out_path = RESULTS_DIR / 'shap_results_v2_local.json'
+    partial_path = RESULTS_DIR / 'shap_results_v3_partial.json'
+    out_path = RESULTS_DIR / 'shap_results_v3.json'
     partial_path.rename(out_path)
 
     total_elapsed = time.time() - t_total

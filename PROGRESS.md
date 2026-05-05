@@ -1,5 +1,26 @@
 # Project Progress Log
 
+## 2026-05-02 — Shahmeer — Public repository documentation and licensing refresh
+
+- Rewrote `README.md` to describe the full research pipeline rather than only the Streamlit demo, with explicit reproduction guidance, repository layout, artifact structure, and app usage notes
+- Marked the `v2/` directories as the current authoritative experiment path across processed data, results, models, figures, and tables, while clarifying that follow-up improvements and mitigation work remain in progress
+- Added an MIT `LICENSE` file to support public release and reuse of the codebase under a standard academic-friendly open source license
+- Tightened `.gitignore` coverage around temporary local tooling outputs and clarified the public-versus-private repository boundary in the documentation
+
+## 2026-05-02 — Shahmeer — Manuscript draft expanded to full paper structure
+
+- Completed the working IEEE manuscript structure in `report/main.tex`, including title, author block, abstract, Introduction, Related Work, Dataset, Methodology, Experimental Setup, Results, Discussion, and Conclusion
+- Populated the core manuscript tables and figures from the authoritative `v2` outputs, including within-condition baselines, cross-condition transfer results, SHAP `delta_j` summaries, prior-work positioning, and clustering summaries
+- Integrated Step 5 to 8 assets into the paper flow, with Ali's robustness, PCA, and clustering artifacts anchored to the main Results section and supported by inline figure and table placement
+- Added source-traceable wording for the reported methodology so manuscript claims align directly with `src/train.py`, `src/explain.py`, `src/features.py`, and the stored experiment JSONs
+
+## 2026-05-02 — Shahmeer — Literature integration and manuscript positioning pass
+
+- Expanded `report/references.bib` with the working paper set used in the manuscript, including gait-clinical background, same-dataset comparators, broader ML gait papers, XAI references, and the public repository citation
+- Reworked the paper narrative to position the study around the specific gap it fills, zero-shot cross-condition transfer and feature-reliance shift diagnosis, rather than as a direct leaderboard comparison against prior work
+- Added limitation-forward discussion text covering feature redundancy, control-pool mismatch, shared target controls, sample-size uncertainty, residual preprocessing artifacts, and the practical interpretation boundary of DFA-based comparisons
+- Harmonized the manuscript voice around a two-researcher perspective while keeping the technical sections precise and the results grounded in the authoritative `v2` path
+
 ## 2026-04-25 — Shahmeer — Repository restructuring: versioned artifact layout
 
 - Applied a versioned local artifact structure across `data/processed/`, `experiments/results/`, `experiments/models/`, `experiments/shap/`, and `report/figures/`, moving historical outputs into `v1/`, authoritative rerun outputs into `v2/`, and creating empty `v3/` placeholders

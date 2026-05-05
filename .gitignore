@@ -10,8 +10,11 @@ notebooks/*.pdf
 .codex
 logs/
 old/
-paper/
-plans/
+IEEE-conference-template-062824/
+.tmp_ipython/
+.tmp_jupyter/
+explanations/
+
 # Experiment outputs
 experiments/models/**/*.joblib
 experiments/results/**/*_smoke*.json
@@ -36,3 +39,12 @@ Thumbs.db
 desktop.ini
 .vscode/
 .DS_Store
+
+# LaTeX build artifacts
+report/main.aux
+report/main.bbl
+report/main.blg
+report/main.fdb_latexmk
+report/main.fls
+report/main.log
+report/main.synctex.gz
