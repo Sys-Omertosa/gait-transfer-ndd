@@ -1,0 +1,83 @@
+[
+  {
+    "score": 0.031154296277919616,
+    "control_A": [
+      "control1",
+      "control3",
+      "control7",
+      "control10",
+      "control12",
+      "control13",
+      "control14",
+      "control15"
+    ],
+    "control_B": [
+      "control2",
+      "control4",
+      "control5",
+      "control6",
+      "control8",
+      "control9",
+      "control11",
+      "control16"
+    ],
+    "age_delta_years": 0.125,
+    "gait_speed_delta_m_per_s": 0.00374999999999992,
+    "overlap_with_main": 3,
+    "selection_bin": 1
+  },
+  {
+    "score": 0.031154296277919616,
+    "control_A": [
+      "control3",
+      "control4",
+      "control7",
+      "control8",
+      "control9",
+      "control11",
+      "control12",
+      "control14"
+    ],
+    "control_B": [
+      "control1",
+      "control2",
+      "control5",
+      "control6",
+      "control10",
+      "control13",
+      "control15",
+      "control16"
+    ],
+    "age_delta_years": 0.125,
+    "gait_speed_delta_m_per_s": 0.00374999999999992,
+    "overlap_with_main": 4,
+    "selection_bin": 2
+  },
+  {
+    "score": 0.031154296277919616,
+    "control_A": [
+      "control2",
+      "control4",
+      "control5",
+      "control6",
+      "control8",
+      "control9",
+      "control11",
+      "control16"
+    ],
+    "control_B": [
+      "control1",
+      "control3",
+      "control7",
+      "control10",
+      "control12",
+      "control13",
+      "control14",
+      "control15"
+    ],
+    "age_delta_years": 0.125,
+    "gait_speed_delta_m_per_s": 0.00374999999999992,
+    "overlap_with_main": 5,
+    "selection_bin": 3
+  }
+]
