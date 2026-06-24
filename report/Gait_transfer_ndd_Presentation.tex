@@ -1,0 +1,331 @@
+% IEEE-style professional Beamer presentation
+% Build from this directory: pdflatex main.tex (twice if TOC references change)
+%
+% Aspect ratio: 4:3 (43) avoids cropping on many classroom projectors and PDF viewers.
+% For widescreen venues only, switch to: \documentclass[aspectratio=169,10pt]{beamer}
+
+\documentclass[aspectratio=43,10pt]{beamer}
+
+% -----------------------------------------------------------------------------
+% Theme: conservative, readable (common choice for engineering talks)
+% -----------------------------------------------------------------------------
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% IEEE-adjacent accent: deep blue structure color
+\setbeamercolor{structure}{fg=blue!55!black}
+\setbeamercolor{frametitle}{bg=blue!55!black,fg=white}
+\setbeamercolor{titlelike}{parent=structure}
+\setbeamertemplate{navigation symbols}{}
+
+% Safe margins and slightly tighter list spacing (reduces clipping at bottom)
+\setbeamersize{text margin left=9mm,text margin right=9mm}
+\setlength{\leftmargini}{1.1em}
+\setlength{\leftmarginii}{1.1em}
+\setbeamerfont{frametitle}{size=\normalsize,series=\bfseries}
+\setbeamertemplate{itemize/enumerate body begin}{\small}
+\setbeamertemplate{itemize/enumerate subbody begin}{\small}
+
+% Figures: never exceed slide body; preserve aspect ratio (prevents vertical cutoff)
+% Usage: \presfig{file.pdf} or \presfig[0.65]{file.pdf}  (height = fraction of \textheight)
+\newcommand{\presfig}[2][0.82]{%
+  \includegraphics[width=\linewidth,height=#1\textheight,keepaspectratio]{#2}%
+}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black}
+
+% Figures are referenced with explicit v2/v3 paths below to avoid ambiguity.
+\graphicspath{{figures/}}
+
+\title{Does Gait Timing Knowledge Transfer Across Neurological Conditions?}
+\subtitle{A Zero-Shot Transfer Benchmark with SHAP-Based Failure Diagnosis}
+\author{Ahmad Shahmeer \and Ali Aqdas}
+\institute{SEECS $|$ NUST \\}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Motivation and problem}
+
+\begin{frame}{Motivation}
+  \begin{itemize}
+    \item \textbf{Distinct Pathways:} Neurological gait disorders (PD, HD, and ALS) alter stride timing through distinct pathophysiological pathways.
+    \item \textbf{Clinical Need:} Rare diseases like HD and ALS lack large labeled cohorts for robust model training, unlike more common conditions such as PD.
+    \item \textbf{Practical Impact:} Gait-analysis devices trained on PD data could potentially assist HD and ALS diagnosis, reducing the need for disease-specific device development.
+    \item \textbf{Research Gap:} No study has tested zero-shot transfer of gait knowledge across neurological conditions or diagnosed \emph{why} transfer fails.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Research questions}
+  \begin{enumerate}
+    \item How well do classifiers separate disease versus control \textbf{within} PD, HD, and ALS (macro-$F_1$, subject-level leave-one-subject-out cross-validation)?
+    \item How do those same models transfer \textbf{zero-shot} across disease pairs?
+    \item Which timing features show the largest \textbf{importance shift} under transfer (SHAP, \textbf{$\delta_j$}), and what does that suggest about drivers of transfer success or failure?
+  \end{enumerate}
+\end{frame}
+
+\section{Prior work and gap}
+
+\begin{frame}{Prior work and gap}
+  \begin{itemize}
+    \item \textbf{Erda\c{s} et al.\ (2024):} same GAITNDD dataset; CNN on QR-style gait representations; strong \emph{within-condition} results, but sample-level 10-fold CV and no disease-to-disease transfer.
+    \item \textbf{Yan et al.\ (2020):} same dataset; topological motion analysis; healthy-vs-disease within-domain comparisons only.
+    \item \textbf{Khera et al.\ (2025):} interpretable hierarchical decision-tree framework and severity staging, but not zero-shot cross-condition transfer.
+    \item \textbf{Xiang et al.\ (2025):} SHAP/XAI review showing growing explainability interest in gait analysis, but not explicit disease-to-disease transfer diagnosis.
+    \item \textbf{Gap addressed here:} no prior GAITNDD study tested zero-shot disease-to-disease transfer and diagnosed failure with a feature-level shift metric like \(\delta_j\).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why our evaluation is stricter}
+  \begin{itemize}
+    \item Many prior gait-classification results are \textbf{not apples-to-apples} with ours because they use \textbf{sample-level} cross-validation, which can leak subject-specific gait signatures across train and test sets.
+    \item Our paper uses \textbf{subject-level LOSO-CV}, so the held-out subject is completely unseen during training and tuning.
+    \item Prior work on GAITNDD mostly stops at \textbf{within-condition classification} such as PD vs.\ control or HD vs.\ control.
+    \item Our study adds a harder question: \textbf{cross-condition zero-shot transfer}, where a source-condition model is applied unchanged to a different neurological disorder.
+  \end{itemize}
+\end{frame}
+
+\section{Contributions}
+
+\begin{frame}{Contributions}
+  \begin{itemize}
+    \item Six-direction zero-shot cross-condition benchmark on PhysioNet GAITNDD (disjoint control split).
+    \item Seven classical ML classifiers with LOSO-CV and SMOTE/resampling per condition.
+    \item SHAP-based \textbf{importance-shift} metric $\delta_j$ for transfer-failure diagnosis.
+    \item Uncertainty quantification with subject-level bootstrap CIs; complementary robustness under controlled perturbations and unsupervised separability (PCA, clustering).
+  \end{itemize}
+\end{frame}
+
+\section{Data and methods}
+
+\begin{frame}{Dataset and cohort}
+  \begin{itemize}
+    \item \textbf{PhysioNet GAITNDD} (v1.0.0): instrumented gait recordings from which we derive \textbf{stride-level timing} for all experiments in this study.
+    \item After preprocessing and quality filters: \textbf{14{,}753 strides}; subjects by group:
+      \begin{center}\footnotesize
+        \begin{tabular}{@{}lr@{}}
+          \toprule
+          Group & Subjects \\
+          \midrule
+          PD & 15 \\
+          HD & 19 \\
+          ALS & 13 \\
+          Healthy control & 16 \\
+          \midrule
+          Total & 63 \\
+          \bottomrule
+        \end{tabular}
+      \end{center}
+    \item \textbf{Disjoint healthy pools:} non-overlapping Group A (training-side control pool) and Group B (evaluation-side control pool), so the same healthy subject never appears in both a transfer-training set and its paired transfer-evaluation set.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Features and evaluation}
+  \begin{itemize}
+    \item {\footnotesize \textbf{Per-stride representation (17):} twelve raw timing channels from the recordings (left/right stride, swing, and stance times; swing and stance percentages; double-support timing and percentage) plus five derived descriptors.}
+    \item {\footnotesize \textbf{Engineered descriptors:} bilateral asymmetry of stride timing (absolute and signed); per-subject stride- and swing-time variability (coefficients of variation, broadcast to each stride row); detrended fluctuation analysis (DFA) scaling exponent from each subject's left-stride interval sequence.}
+    \item \textbf{Within-condition evaluation:} leave-one-subject-out cross-validation (LOSO-CV) at the subject level; macro-$F_1$ for disease versus control in each condition.
+    \item \textbf{Zero-shot transfer:} train on the source condition with Group A controls; evaluate on the target condition with Group B controls (no healthy-subject overlap).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Models}
+  \begin{itemize}
+    \item Seven classifiers: RF, KNN, SVM, DT, QDA, XGBoost, LightGBM.
+    \item Each model is fit with the nested leave-one-subject-out protocol and imbalanced-learn pipelines summarized on the next slide.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Learning pipeline}
+  \begin{itemize}
+    \item \textbf{Outer evaluation:} subject-level leave-one-subject-out cross-validation; strides from the held-out subject are never used for training or tuning.
+    \item \textbf{Inner tuning:} grid search over classifier hyperparameters with a subject-level splitter applied only to \emph{training} subjects (nested design; the held-out subject is excluded from hyperparameter selection).
+    \item \textbf{Pipeline (imbalanced-learn):} optional \textbf{RobustScaler} for KNN and SVM only; optional \textbf{SMOTE} on training folds when enabled for that run (minority healthy strides); then the classifier. SMOTE and scaling run inside training folds only.
+    \item Best configuration, including SMOTE on or off, can differ by neurological condition and by classifier.
+  \end{itemize}
+\end{frame}
+
+\section{Results}
+
+\begin{frame}{Within-condition performance}
+  \vspace{-0.3em}
+  \begin{itemize}
+    \item Best macro-$F_1$ (deadline baseline): PD DT $\approx 0.867$; HD XGBoost $\approx 0.956$; ALS KNN $\approx 0.830$.
+    \item SMOTE vs.\ no-SMOTE pattern differs by condition and classifier (see heatmap).
+  \end{itemize}
+  \vspace{0.2em}
+  \begin{center}
+    \presfig[0.58]{figures/v2/pdf/f1_within_condition_heatmap.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Zero-shot transfer degradation}
+  \vspace{-0.4em}
+  \begin{itemize}
+    \item {\footnotesize \(\Delta F_1 = F_1^{\text{within}} - F_1^{\text{cross}}\)}
+    \item {\footnotesize \textbf{Positive} \(\Delta F_1\): worse transfer relative to the source-condition baseline.}
+    \item {\footnotesize \textbf{Negative} \(\Delta F_1\): rare case where the source model does better on the target than on its own source condition.}
+  \end{itemize}
+  \begin{center}
+    \presfig[0.72]{figures/v2/pdf/degradation_heatmap.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Directional asymmetry of transfer}
+  \begin{center}
+    \presfig[0.90]{figures/v2/pdf/delta_f1_asymmetry_pairs.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{SHAP importance shift ($\delta_j$), raw view (final improvement run)}
+  \vspace{-0.35em}
+  \begin{itemize}
+    \item {\footnotesize \textbf{SHAP} says how much the model uses a feature in one setting.}
+    \item {\footnotesize \textbf{\(\delta_j\)} says how much that feature usage changes between within-condition and cross-condition evaluation.}
+    \item {\footnotesize Raw \(\delta_j\) shows the absolute size of the shift in feature reliance.}
+  \end{itemize}
+  \begin{center}
+    \presfig[0.66]{figures/v3/png/delta_j_heatmap_raw.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{SHAP importance shift ($\delta_j$), normalized view (final improvement run)}
+  \vspace{-0.35em}
+  \begin{itemize}
+    \item {\footnotesize Normalized \(\delta_j\) scales the shift by the within-condition baseline importance, making changes more comparable across features and classifiers.}
+    \item {\footnotesize In the final improvement run, the SHAP story becomes more mixed and defensible, rather than reducing to a single \texttt{cv\_swing}-only narrative.}
+  \end{itemize}
+  \begin{center}
+    \presfig[0.66]{figures/v3/png/delta_j_heatmap_normalized.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Uncertainty: CI width (stride vs.\ subject)}
+  \begin{center}
+    \presfig[0.78]{figures/v2/pdf/ci_width_comparison.pdf}
+  \end{center}
+\end{frame}
+
+\section{Robustness and unsupervised structure}
+
+\begin{frame}{Noise robustness}
+  \vspace{-0.35em}
+  \begin{itemize}
+    \item {\footnotesize LOSO-fitted \textbf{within-condition winners} re-scored at \textbf{test time} with perturbations applied to evaluation inputs only (deadline baseline).}
+    \item {\footnotesize \textbf{Gaussian noise:} scale $\sigma$ as a fraction of each feature's training-set standard deviation; \textbf{30} stochastic draws per cell; macro-$F_1$ versus $\sigma$ with variability bands.}
+    \item {\footnotesize \textbf{Structured corruption:} sensor dropout, gain/bias drift, time jitter, missing strides, and label noise at \textbf{light, medium, and heavy} severities.}
+    \item {\footnotesize \textbf{Sensitivity:} per-feature column shuffle on test inputs; \textbf{split conformal} diagnostics (marginal coverage, mean prediction-set size) where panels appear.}
+  \end{itemize}
+  \vspace{0.15em}
+  \begin{center}
+    \presfig[0.58]{figures/v2/pdf/fig6_noise_robustness.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{PCA and clustering}
+  \vspace{-0.35em}
+  \begin{itemize}
+    \item {\footnotesize \textbf{PCA} on \textbf{standardized} stride-level features; projections (e.g., PC1 vs.\ PC2) visualize \textbf{condition separability} in timing space.}
+    \item {\footnotesize \textbf{K-means} with fixed random seed and multiple inits; \textbf{elbow} and \textbf{silhouette} curves support the choice of $K$.}
+    \item {\footnotesize \textbf{Adjusted Rand Index (ARI)} compares cluster assignments to disease and control labels (e.g., $K{=}3$ vs.\ PD/HD/ALS, $K{=}6$ vs.\ condition$\times$label), as in the Step~6 export tables.}
+    \item {\footnotesize Complements supervised transfer metrics by summarizing \textbf{unsupervised geometry} of the same feature matrix (deadline baseline).}
+  \end{itemize}
+  \vspace{0.15em}
+  \begin{center}
+    \presfig[0.46]{figures/v2/pdf/fig5_pca_kmeans.pdf}
+  \end{center}
+\end{frame}
+
+\section{Discussion and conclusion}
+
+\begin{frame}{Takeaways}
+  \begin{itemize}
+    \item Strong \emph{within-condition} timing discrimination does not imply reliable \emph{cross-condition} disease identity transfer.
+    \item Transfer is \textbf{direction-dependent}; PD$\rightarrow$HD vs.\ HD$\rightarrow$ALS illustrate contrasting behaviour.
+    \item $\delta_j$ links performance shifts to \textbf{feature reliance} under domain shift; uncertainty must be subject-aware.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Limitations: external validity and inference}
+  \begin{itemize}
+    \item \textbf{Single public cohort} (GAITNDD); results may not transfer to other sites, sensors, or walking protocols without further validation.
+    \item \textbf{Disjoint control groups (A vs.\ B):} Group A is younger and faster on average than Group B (mean age $\sim$34 vs.\ $\sim$44 years; mean gait speed $\sim$1.43 vs.\ $\sim$1.28~m/s). Some apparent cross-condition degradation may reflect this control shift, not only disease-domain shift. \textit{(Handled in new version: demographically balanced control partition.)}
+    \item \textbf{Shared evaluation pool:} The same Group B controls appear in all six transfer directions, so those evaluations are \emph{not} statistically independent.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Limitations: features, data quality, and scope}
+  \begin{itemize}
+    \item \textbf{Feature redundancy:} Complement-related timing columns and redundant asymmetry terms can inflate collinearity and split SHAP mass across dependent variables, weakening interpretive stability. \textit{(Handled in new version: 14-feature corrected set.)}
+    \item \textbf{Stride-level contamination:} Impossible or non-steady-state strides can survive weak cleaning and distort variability-based and fractal-dynamics features. \textit{(Handled in new version: tightened filtering and recomputation of sequence-derived features.)}
+    \item \textbf{Scope:} Classical stride-timing features and classical/ensemble models only (no full deep baseline comparison here); clinical deployment would still require external validation and prospective evidence.
+  \end{itemize}
+\end{frame}
+
+\section{Final improvement run}
+
+\begin{frame}{Final Improvement Run: Addressing Current Limitations}
+  \begin{itemize}
+    \item \textbf{Feature-space cleanup:} 17 features to a corrected 14-feature set; removed exact complements and weak signed asymmetry.
+    \item \textbf{Balanced control split:} replaced the older lexicographic A/B split with a demographically balanced disjoint control partition.
+    \item \textbf{Stronger preprocessing:} hard plausibility filtering plus robust subject-wise outlier removal; recomputed asymmetry, variability, and DFA after cleaning.
+    \item \textbf{More rigorous training analysis:} moved from simple SMOTE framing to explicit \texttt{synthetic}, \texttt{balanced}, and \texttt{raw} arms; clarified that control is the minority class.
+    \item \textbf{More defensible conclusions:} subject-level aggregation and SHAP stability/family-level interpretation changed the final scientific story, including removal of the old apparent positive PD$\rightarrow$HD signal.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Within-condition performance (final improvement run)}
+  \vspace{-0.3em}
+  \begin{itemize}
+    \item Best macro-$F_1$: PD RF $\approx 0.903$; HD XGBoost $\approx 0.955$; ALS SVM $\approx 0.969$.
+    \item Resampling comparison pattern now uses three explicit arms: \texttt{synthetic}, \texttt{balanced}, and \texttt{raw}.
+    \item {\footnotesize The rerun uses the corrected 14-dimensional timing vector, balanced disjoint controls, stronger cleaning, and recomputed sequence-derived features.}
+  \end{itemize}
+  \vspace{0.2em}
+  \begin{center}
+    \presfig[0.58]{figures/v3/pdf/f1_within_condition_heatmap.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Zero-shot transfer degradation (final improvement run)}
+  \vspace{-0.4em}
+  \begin{itemize}
+    \item {\footnotesize Same definition as before: \(\Delta F_1 = F_1^{\text{within}} - F_1^{\text{cross}}\).}
+    \item {\footnotesize Under the strengthened pipeline, some transfer conclusions change materially; for example, the old apparent positive PD$\rightarrow$HD signal disappears.}
+  \end{itemize}
+  \begin{center}
+    \presfig[0.72]{figures/v3/pdf/degradation_heatmap.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item We provide a reproducible zero-shot transfer benchmark and a SHAP-based diagnostic for \emph{why} transfer fails or holds.
+    \item Code, trained artifacts, Streamlit demo, and supplementary material are released with the project (public repository referenced in the manuscript).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vspace{2em}
+  {\LARGE Thank you.}\\[1.5em]
+  {\large Questions?}
+\end{frame}
+
+\end{document}
