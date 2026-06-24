@@ -1,0 +1,16 @@
+\begin{table}
+\caption{Main transfer results used in the final v4 manuscript bundle.}
+\label{tab:step7-master-transfer}
+\begin{tabular}{llrrrl}
+\toprule
+Direction & Best classifier & Cross subject F1 & Within source F1 & Matched degradation & Selected strategy \\
+\midrule
+ALS→HD & LGBM & 0.805200 & 0.844400 & 0.039200 & balanced \\
+ALS→PD & DT & 0.860000 & 0.844400 & -0.015600 & synthetic \\
+HD→ALS & QDA & 0.892900 & 0.871200 & -0.021600 & synthetic \\
+HD→PD & QDA & 0.808300 & 0.871200 & 0.062900 & synthetic \\
+PD→ALS & QDA & 0.948100 & 0.860000 & -0.088100 & synthetic \\
+PD→HD & QDA & 0.871200 & 0.860000 & -0.011200 & synthetic \\
+\bottomrule
+\end{tabular}
+\end{table}

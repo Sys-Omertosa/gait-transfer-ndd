@@ -1,0 +1,7 @@
+Direction,Best classifier,Cross subject F1,Within source F1,Matched degradation,Selected strategy
+ALS→HD,LGBM,0.8052,0.8444,0.0392,balanced
+ALS→PD,DT,0.86,0.8444,-0.0156,synthetic
+HD→ALS,QDA,0.8929,0.8712,-0.0216,synthetic
+HD→PD,QDA,0.8083,0.8712,0.0629,synthetic
+PD→ALS,QDA,0.9481,0.86,-0.0881,synthetic
+PD→HD,QDA,0.8712,0.86,-0.0112,synthetic

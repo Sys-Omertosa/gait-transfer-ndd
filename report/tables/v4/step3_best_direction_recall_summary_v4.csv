@@ -1,0 +1,7 @@
+direction_label,classifier,subject_f1,delta_subject,control_specificity_subject,target_recall_subject,control_specificity_stride,target_recall_stride,selected_strategy,Classifier
+ALS→HD,lgbm,0.805195,0.039249,1.0,0.736842,0.959503,0.714252,balanced,LightGBM
+ALS→PD,dt,0.860041,-0.015597,0.875,0.866667,0.855832,0.869654,synthetic,DT
+HD→ALS,qda,0.892857,-0.021633,0.75,1.0,0.800216,0.963676,synthetic,QDA
+HD→PD,qda,0.808333,0.062891,0.75,0.866667,0.800216,0.865847,synthetic,QDA
+PD→ALS,qda,0.948148,-0.088107,0.875,1.0,0.818575,0.976368,synthetic,QDA
+PD→HD,qda,0.871224,-0.011183,0.875,0.894737,0.818575,0.898832,synthetic,QDA

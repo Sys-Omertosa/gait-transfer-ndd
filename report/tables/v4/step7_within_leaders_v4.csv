@@ -1,0 +1,4 @@
+Condition,Leader,Subject macro-F1,Stride macro-F1,Strategy
+ALS,QDA,1.000,0.964,synthetic
+HD,XGB,0.957,0.955,raw
+PD,DT,0.904,0.902,balanced

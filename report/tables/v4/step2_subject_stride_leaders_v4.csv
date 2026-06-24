@@ -1,0 +1,4 @@
+Condition,Leader,Subject F1,Stride F1,Subject log loss,Strategy
+ALS,QDA,1.0,0.9642,0.0481,synthetic
+HD,XGBoost,0.9571,0.9546,0.1524,raw
+PD,DT,0.9042,0.9022,1.2065,balanced

@@ -1,0 +1,13 @@
+feature,top3_count
+cv_stride,33
+cv_swing,21
+dfa_alpha_stride,19
+right_stride_s,14
+left_stride_s,11
+asymmetry_index,6
+left_stance_s,6
+double_support_pct,5
+left_swing_s,5
+right_stance_s,4
+double_support_s,1
+right_swing_pct,1

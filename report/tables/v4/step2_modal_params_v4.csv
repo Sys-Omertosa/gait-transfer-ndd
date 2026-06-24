@@ -1,0 +1,22 @@
+Condition,Classifier,Selected strategy,Modal params,Modal frequency
+PD,DT,balanced,"criterion=entropy, max_depth=10, min_samples_leaf=5",19/23
+PD,KNN,raw,"metric=manhattan, n_neighbors=9, weights=uniform",7/23
+PD,LightGBM,balanced,"feature_fraction=0.8, learning_rate=0.01, max_depth=5, min_child_samples=20, n_estimators=200, num_leaves=31, subsample=0.8, subsample_freq=1",12/23
+PD,QDA,synthetic,reg_param=0.1,12/23
+PD,RF,raw,"max_depth=20, max_features=sqrt, min_samples_leaf=5, n_estimators=100",8/23
+PD,SVM,raw,"C=0.1, gamma=0.001",19/23
+PD,XGBoost,balanced,"colsample_bytree=0.8, learning_rate=0.01, max_depth=5, n_estimators=200, subsample=0.8",17/23
+HD,DT,balanced,"criterion=entropy, max_depth=10, min_samples_leaf=1",27/27
+HD,KNN,raw,"metric=manhattan, n_neighbors=21, weights=uniform",12/27
+HD,LightGBM,synthetic,"feature_fraction=1.0, learning_rate=0.01, max_depth=-1, min_child_samples=20, n_estimators=200, num_leaves=31, subsample=0.8, subsample_freq=1",24/27
+HD,QDA,synthetic,reg_param=0.001,27/27
+HD,RF,raw,"max_depth=10, max_features=sqrt, min_samples_leaf=1, n_estimators=300",4/27
+HD,SVM,raw,"C=10, gamma=scale",20/27
+HD,XGBoost,raw,"colsample_bytree=1.0, learning_rate=0.01, max_depth=3, n_estimators=200, subsample=1.0",26/27
+ALS,DT,synthetic,"criterion=gini, max_depth=10, min_samples_leaf=5",8/21
+ALS,KNN,synthetic,"metric=manhattan, n_neighbors=3, weights=distance",10/21
+ALS,LightGBM,balanced,"feature_fraction=1.0, learning_rate=0.3, max_depth=-1, min_child_samples=20, n_estimators=100, num_leaves=31, subsample=1.0, subsample_freq=1",4/21
+ALS,QDA,synthetic,reg_param=0.01,15/21
+ALS,RF,raw,"max_depth=20, max_features=sqrt, min_samples_leaf=5, n_estimators=100",12/21
+ALS,SVM,synthetic,"C=10, gamma=0.001",15/21
+ALS,XGBoost,balanced,"colsample_bytree=0.8, learning_rate=0.3, max_depth=5, n_estimators=200, subsample=0.8",10/21

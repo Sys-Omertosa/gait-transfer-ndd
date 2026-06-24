@@ -1,0 +1,5 @@
+condition,n_subjects,raw_strides,final_strides,condition_label
+als,13,2550,2285,ALS
+control,16,4076,3786,Control
+hd,20,4846,4280,HD
+pd,15,3688,3414,PD

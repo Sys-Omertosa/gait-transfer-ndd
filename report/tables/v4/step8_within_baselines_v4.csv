@@ -1,0 +1,10 @@
+partition_index,partition_label,condition,condition_label,best_subject_f1
+1,P1 (main),pd,PD,0.904167
+1,P1 (main),hd,HD,0.957075
+1,P1 (main),als,ALS,1.0
+2,P2,pd,PD,0.860041
+2,P2,hd,HD,0.871224
+2,P2,als,ALS,1.0
+3,P3,pd,PD,0.775828
+3,P3,hd,HD,0.871224
+3,P3,als,ALS,0.948148

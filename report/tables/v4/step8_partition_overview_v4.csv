@@ -1,0 +1,4 @@
+Partition,Overlap with main Control A,Main partition,Role reversal of main,Independent candidate,Sign agreement rate,Ordering rank correlation,Age delta (years),Gait-speed delta (m/s)
+P1 (main),8,True,False,False,1.0,1.0,0.125,0.00374999999999992
+P2,6,False,False,True,1.0,0.542857,0.125,0.00374999999999992
+P3,4,False,False,True,0.3333333333333333,0.485714,0.125,0.00374999999999992
