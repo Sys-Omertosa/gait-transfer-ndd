@@ -1,666 +1,1097 @@
 """
-Build notebooks/07_final_figures.ipynb (Step 7).
+Build notebooks/07_final_figures.ipynb (Step 7) for the authoritative v4 line.
 
-This generator writes the Step 7 notebook from a single authoritative source so
-that edits to its structure live in code, not in nested JSON. Running it is
-idempotent: it always overwrites the .ipynb with the cells defined below.
+Step 7 is the manuscript-facing synthesis notebook. It curates existing
+step-specific v4 figures and tables, writes paper figure/table manifests, and
+adds final reporting guidance without regenerating the main analysis figures.
 
 Usage:
     python scripts/verification/build_step7_notebook.py
 """
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from textwrap import dedent
 
-OUT = Path(__file__).resolve().parents[2] / 'notebooks' / '07_final_figures.ipynb'
+
+OUT = Path(__file__).resolve().parents[2] / "notebooks" / "07_final_figures.ipynb"
 
 
-def md(text: str) -> dict:
+def md(text: str, cell_id: str) -> dict:
+    body = dedent(text).strip("\n")
     return {
-        'cell_type': 'markdown',
-        'metadata': {},
-        'source': [line + '\n' for line in text.strip('\n').split('\n')],
+        "cell_type": "markdown",
+        "id": cell_id,
+        "metadata": {},
+        "source": [line + "\n" for line in body.split("\n")],
     }
 
 
-def code(text: str) -> dict:
-    body = dedent(text).strip('\n')
+def code(text: str, cell_id: str) -> dict:
+    body = dedent(text).strip("\n")
     return {
-        'cell_type': 'code',
-        'metadata': {},
-        'execution_count': None,
-        'outputs': [],
-        'source': [line + '\n' for line in body.split('\n')],
+        "cell_type": "code",
+        "id": cell_id,
+        "metadata": {},
+        "execution_count": None,
+        "outputs": [],
+        "source": [line + "\n" for line in body.split("\n")],
     }
 
 
-cells = []
+cells: list[dict] = []
 
-cells.append(md("""
-# Step 7 — Publication-Quality Figures (notebooks/07_final_figures.ipynb)
+cells.append(md(
+    """
+# Step 7: Final Results Synthesis and Paper Figure Selection
 
-This notebook assembles the IEEE paper's hero figures and the master results
-table. It consumes, without recomputing, the outputs of Steps 2–6 stored under
-`experiments/results/` and the per-step figures already exported to
-`report/figures/`.
+This notebook assembles the manuscript-facing figure and table set from the
+authoritative v4 outputs. It focuses on empirical evidence and final reporting
+choices: which existing step-specific figures are strongest for the main paper,
+which belong in the supplement, and which tables should carry exact reported
+values.
 
-**Inputs (read-only):**
-
-- `experiments/results/{pd,hd,als}_results.json` — Step 2 within-condition.
-- `experiments/results/cross_condition_results.json` — Step 3 transfer.
-- `experiments/results/shap_results.json` — Step 4 SHAP δj.
-- `experiments/results/noise_robustness.json` — Step 5 (optional panels).
-- `data/processed/gait_features.csv` + `data/processed/control_partition.json` —
-  used only to reproduce the Step 6 PCA fit for unified styling in Fig 5.
-
-**Outputs:**
-
-- Six paper figures under `report/figures/paper/{pdf,png}/` at IEEE
-  single-column (3.5 in) or double-column (7.16 in) width:
-  `fig1_within_overview`, `fig2_within_cms`, `fig3_cross_degradation`,
-  `fig4_shap_delta_j`, `fig5_pca_kmeans`, `fig6_noise_robustness`.
-- `report/tables/master_results.csv` and `report/tables/master_results.tex`
-  (booktabs-style IEEE `tabular`).
-
-No upstream artefact is modified. Missing optional inputs (Step 5 cross-noise
-sweep) are skipped with a clear warning rather than failing the notebook.
-"""))
+The study-design schematic will be handled directly in the manuscript source,
+so this notebook concentrates on the finalized analytical figures and tables.
+    """,
+    "step7-md-intro",
+))
 
 
-cells.append(code("""
+cells.append(code(
+    """
     import sys
-    import json
-    import warnings
     from pathlib import Path
 
-    sys.path.insert(0, str(Path('..').resolve()))
-
-    import numpy as np
     import pandas as pd
-    import polars as pl
-    import matplotlib
-    import matplotlib.pyplot as plt
+    from IPython.display import Image, display
 
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.decomposition import PCA
-    from sklearn.cluster import KMeans
-    from sklearn.metrics import confusion_matrix
 
-    from src.features import ALL_FEATURE_COLS
+    def find_repo_root() -> Path:
+        candidates = [Path.cwd().resolve(), *Path.cwd().resolve().parents]
+        for base in candidates:
+            if (base / "data" / "processed" / "v4" / "v4_protocol_manifest.json").exists():
+                return base
+        raise RuntimeError("Could not locate repository root from the current working directory.")
 
-    IEEE_SINGLE = 3.5
-    IEEE_DOUBLE = 7.16
 
-    matplotlib.rcParams.update({
-        'font.family': 'serif',
-        'font.size': 9,
-        'axes.labelsize': 9,
-        'axes.titlesize': 9,
-        'xtick.labelsize': 8,
-        'ytick.labelsize': 8,
-        'legend.fontsize': 7,
-        'figure.dpi': 180,
-        'savefig.bbox': 'tight',
-        'pdf.fonttype': 42,
-        'ps.fonttype': 42,
-    })
+    REPO_ROOT = find_repo_root()
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    if str(REPO_ROOT / "src") not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT / "src"))
 
-    PROCESSED = Path('../data/processed')
-    RESULTS = Path('../experiments/results')
-    PAPER_PDF = Path('../report/figures/paper/pdf')
-    PAPER_PNG = Path('../report/figures/paper/png')
-    TABLES = Path('../report/tables')
-    for d in (PAPER_PDF, PAPER_PNG, TABLES):
-        d.mkdir(parents=True, exist_ok=True)
+    FIG_PDF_ROOT = REPO_ROOT / "report" / "figures" / "v4" / "pdf"
+    FIG_PNG_ROOT = REPO_ROOT / "report" / "figures" / "v4" / "png"
+    TABLE_DIR = REPO_ROOT / "report" / "tables" / "v4"
+    TABLE_DIR.mkdir(parents=True, exist_ok=True)
 
-    CLASSIFIERS = ['rf', 'knn', 'svm', 'dt', 'qda', 'xgb', 'lgbm']
+    DIRECTIONS = ["pd_to_hd", "hd_to_pd", "pd_to_als", "als_to_pd", "hd_to_als", "als_to_hd"]
+    DIR_LABEL = {d: d.replace("_to_", "→").upper() for d in DIRECTIONS}
     CLF_LABEL = {
-        'rf': 'RF', 'knn': 'KNN', 'svm': 'SVM', 'dt': 'DT',
-        'qda': 'QDA', 'xgb': 'XGB', 'lgbm': 'LGBM',
+        "rf": "RF",
+        "knn": "KNN",
+        "svm": "SVM",
+        "dt": "DT",
+        "qda": "QDA",
+        "xgb": "XGBoost",
+        "lgbm": "LightGBM",
     }
-    CONDITIONS = ['pd', 'hd', 'als']
-    COND_LABEL = {'pd': 'PD', 'hd': 'HD', 'als': 'ALS'}
-    COND_COLORS = {'pd': '#1f77b4', 'hd': '#2ca02c', 'als': '#ff7f0e'}
-    DIRECTIONS = ['pd_to_hd', 'hd_to_pd', 'pd_to_als', 'als_to_pd', 'hd_to_als', 'als_to_hd']
-    DIR_LABEL = {d: d.replace('_to_', '→').upper() for d in DIRECTIONS}
 
-    def save_paper(fig, stem):
-        pdf = PAPER_PDF / f'{stem}.pdf'
-        png = PAPER_PNG / f'{stem}.png'
-        fig.savefig(pdf)
-        fig.savefig(png, dpi=300)
-        print(f'  wrote {pdf.relative_to(Path(\"..\"))} and {png.relative_to(Path(\"..\"))}')
 
-    print('Setup complete.')
-"""))
-
-
-cells.append(code("""
-    def _load(path: Path, required: bool = True):
-        if path.exists():
-            with open(path) as f:
-                return json.load(f)
-        if required:
-            raise FileNotFoundError(f'Required input missing: {path}')
-        warnings.warn(f'Optional input missing: {path}')
-        return None
-
-    within_results = {
-        c: _load(RESULTS / f'{c}_results.json') for c in CONDITIONS
-    }
-    cross_results = _load(RESULTS / 'cross_condition_results.json')
-    shap_results = _load(RESULTS / 'shap_results.json')
-    noise_results = _load(RESULTS / 'noise_robustness.json', required=False)
-
-    gait_df = pl.read_csv(PROCESSED / 'gait_features.csv')
-
-    print(f'Within-condition loaded: {list(within_results)}')
-    print(f'Cross-condition directions: {list(cross_results)}')
-    print(f'SHAP directions: {list(shap_results)}')
-    print(f'Noise robustness present: {noise_results is not None}')
-    print(f'Gait feature matrix: {gait_df.shape}')
-"""))
-
-
-cells.append(md("""
-## Figure 1 — Within-condition overview
-
-Composite 1×2 panel: (left) F1-macro heatmap across classifiers × conditions
-from Step 2 LOSO-CV; (right) modal-parameter frequency heatmap indicating how
-consistently the selected modal hyperparameters win across LOSO folds. A
-single-column variant contains only the F1 heatmap for a tight paper layout.
-"""))
-
-
-cells.append(code("""
-    f1_matrix = np.array([
-        [within_results[c]['classifiers'][clf]['f1_macro'] for clf in CLASSIFIERS]
-        for c in CONDITIONS
-    ])
-    mf_matrix = np.array([
-        [within_results[c]['classifiers'][clf].get('modal_frequency', np.nan) for clf in CLASSIFIERS]
-        for c in CONDITIONS
-    ])
-
-    def _heatmap(ax, values, vmin, vmax, cmap, title, fmt='{:.3f}'):
-        im = ax.imshow(values, vmin=vmin, vmax=vmax, cmap=cmap, aspect='auto')
-        ax.set_xticks(range(len(CLASSIFIERS)))
-        ax.set_xticklabels([CLF_LABEL[c] for c in CLASSIFIERS])
-        ax.set_yticks(range(len(CONDITIONS)))
-        ax.set_yticklabels([COND_LABEL[c] for c in CONDITIONS])
-        ax.set_title(title)
-        for i in range(values.shape[0]):
-            for j in range(values.shape[1]):
-                v = values[i, j]
-                if np.isnan(v):
-                    continue
-                bg = im.cmap(im.norm(v))[:3]
-                lum = 0.299*bg[0] + 0.587*bg[1] + 0.114*bg[2]
-                ax.text(j, i, fmt.format(v), ha='center', va='center',
-                        fontsize=7, color='black' if lum > 0.55 else 'white')
-        return im
-
-    fig, axes = plt.subplots(1, 2, figsize=(IEEE_DOUBLE, 2.4))
-    im1 = _heatmap(axes[0], f1_matrix, 0.5, 1.0, 'viridis', 'F1-macro (LOSO-CV)')
-    im2 = _heatmap(axes[1], mf_matrix, 0.0, 1.0, 'magma', 'Modal-param frequency', fmt='{:.2f}')
-    fig.colorbar(im1, ax=axes[0], fraction=0.05, pad=0.02)
-    fig.colorbar(im2, ax=axes[1], fraction=0.05, pad=0.02)
-    fig.tight_layout()
-    save_paper(fig, 'fig1_within_overview')
-    plt.show()
-
-    fig, ax = plt.subplots(figsize=(IEEE_SINGLE, 2.0))
-    im = _heatmap(ax, f1_matrix, 0.5, 1.0, 'viridis', 'Within-condition F1-macro')
-    fig.colorbar(im, ax=ax, fraction=0.05, pad=0.02)
-    fig.tight_layout()
-    save_paper(fig, 'fig1_within_f1_single')
-    plt.show()
-"""))
-
-
-cells.append(md("""
-## Figure 2 — Within-condition confusion matrices
-
-Row of normalised confusion matrices for the modal-best classifier per
-condition (PD–RF, HD–RF, ALS–KNN, as established in Step 2). Single shared
-colourbar; no recomputation — plotted directly from the stored
-`y_true`/`y_pred` lists.
-"""))
-
-
-cells.append(code("""
-    BEST = [('pd', 'rf'), ('hd', 'rf'), ('als', 'knn')]
-
-    fig, axes = plt.subplots(1, 3, figsize=(IEEE_DOUBLE, 2.4))
-    ims = []
-    for ax, (cond, clf) in zip(axes, BEST):
-        entry = within_results[cond]['classifiers'][clf]
-        y_true = np.asarray(entry['y_true'])
-        y_pred = np.asarray(entry['y_pred'])
-        cm = confusion_matrix(y_true, y_pred, normalize='true')
-        im = ax.imshow(cm, vmin=0, vmax=1, cmap='Blues')
-        ims.append(im)
-        ax.set_xticks([0, 1]); ax.set_yticks([0, 1])
-        ax.set_xticklabels(['Control', 'Disease'])
-        ax.set_yticklabels(['Control', 'Disease'])
-        ax.set_xlabel('Predicted')
-        if ax is axes[0]:
-            ax.set_ylabel('True')
-        ax.set_title(f'{COND_LABEL[cond]} — {CLF_LABEL[clf]} (F1={entry[\"f1_macro\"]:.3f})')
-        for i in range(2):
-            for j in range(2):
-                v = cm[i, j]
-                lum = 0.299 + 0.587*(1-v) + 0.114*(1-v)
-                ax.text(j, i, f'{v:.2f}', ha='center', va='center',
-                        fontsize=8, color='black' if v < 0.5 else 'white')
-
-    fig.subplots_adjust(right=0.9)
-    cbar_ax = fig.add_axes([0.92, 0.15, 0.015, 0.7])
-    fig.colorbar(ims[-1], cax=cbar_ax, label='Row-normalised rate')
-    save_paper(fig, 'fig2_within_cms')
-    plt.show()
-"""))
-
-
-cells.append(md("""
-## Figure 3 — Cross-condition transfer
-
-Top: per-classifier ΔF1 heatmap across the six transfer directions (positive
-= cross ≥ within, negative = degradation). Bottom: grouped within vs. cross
-F1 bars with stride-level 95% CIs. Both panels assembled from
-`cross_condition_results.json` (F1 and CI) and within-condition baselines in
-`{cond}_results.json` (F1 only).
-"""))
-
-
-cells.append(code("""
-    delta_f1 = np.zeros((len(CLASSIFIERS), len(DIRECTIONS)))
-    within_f1 = np.zeros_like(delta_f1)
-    cross_f1 = np.zeros_like(delta_f1)
-    cross_ci_lo = np.zeros_like(delta_f1)
-    cross_ci_hi = np.zeros_like(delta_f1)
-
-    for j, direction in enumerate(DIRECTIONS):
-        src = direction.split('_to_')[0]
-        for i, clf in enumerate(CLASSIFIERS):
-            wf = within_results[src]['classifiers'][clf]['f1_macro']
-            cf_entry = cross_results[direction]['classifiers'][clf]
-            cf = cf_entry['f1_macro']
-            within_f1[i, j] = wf
-            cross_f1[i, j] = cf
-            delta_f1[i, j] = cf - wf
-            cross_ci_lo[i, j] = cf_entry.get('f1_macro_ci_lower', cf)
-            cross_ci_hi[i, j] = cf_entry.get('f1_macro_ci_upper', cf)
-
-    fig, (ax_top, ax_bot) = plt.subplots(2, 1, figsize=(IEEE_DOUBLE, 5.2),
-                                         gridspec_kw={'height_ratios': [1, 1.4]})
-
-    vmax = np.nanmax(np.abs(delta_f1))
-    im = ax_top.imshow(delta_f1, cmap='RdBu_r', vmin=-vmax, vmax=vmax, aspect='auto')
-    ax_top.set_xticks(range(len(DIRECTIONS)))
-    ax_top.set_xticklabels([DIR_LABEL[d] for d in DIRECTIONS], rotation=0)
-    ax_top.set_yticks(range(len(CLASSIFIERS)))
-    ax_top.set_yticklabels([CLF_LABEL[c] for c in CLASSIFIERS])
-    ax_top.set_title('Transfer F1 shift  (ΔF1 = cross − within)')
-    for i in range(delta_f1.shape[0]):
-        for j in range(delta_f1.shape[1]):
-            v = delta_f1[i, j]
-            ax_top.text(j, i, f'{v:+.2f}', ha='center', va='center',
-                        fontsize=7, color='black' if abs(v) < vmax*0.5 else 'white')
-    fig.colorbar(im, ax=ax_top, fraction=0.04, pad=0.02)
-
-    width = 0.8 / len(CLASSIFIERS)
-    x = np.arange(len(DIRECTIONS))
-    cmap_bar = plt.get_cmap('tab10')
-    for i, clf in enumerate(CLASSIFIERS):
-        offs = (i - (len(CLASSIFIERS) - 1)/2) * width
-        err_lo = cross_f1[i] - cross_ci_lo[i]
-        err_hi = cross_ci_hi[i] - cross_f1[i]
-        ax_bot.bar(x + offs, cross_f1[i], width=width,
-                   color=cmap_bar(i), edgecolor='k', linewidth=0.3,
-                   label=CLF_LABEL[clf],
-                   yerr=np.stack([err_lo, err_hi]), capsize=1.2,
-                   error_kw={'elinewidth': 0.6})
-        for j in range(len(DIRECTIONS)):
-            ax_bot.hlines(within_f1[i, j], x[j] + offs - width/2, x[j] + offs + width/2,
-                          colors='k', linewidths=0.8)
-
-    ax_bot.set_xticks(x)
-    ax_bot.set_xticklabels([DIR_LABEL[d] for d in DIRECTIONS])
-    ax_bot.set_ylabel('F1-macro')
-    ax_bot.set_ylim(0, 1.0)
-    ax_bot.set_title('Cross (bars, 95% stride CI) vs. within (black line per classifier)')
-    ax_bot.legend(ncol=7, loc='upper center', bbox_to_anchor=(0.5, -0.12), frameon=False)
-    ax_bot.grid(axis='y', alpha=0.2)
-
-    fig.tight_layout()
-    save_paper(fig, 'fig3_cross_degradation')
-    plt.show()
-"""))
-
-
-cells.append(md("""
-## Figure 4 — SHAP δj diagnosis (Step 4)
-
-Left: normalised δj heatmap for RF across the six transfer directions,
-highlighting which features shift in attribution between within- and
-cross-condition predictions. Right: top-3 δj features per direction as a
-compact table panel, extracted from `shap_results.json`.
-"""))
-
-
-cells.append(code("""
-    features = ALL_FEATURE_COLS
-
-    def _delta_map(direction, clf='rf', key='delta_j_normalized'):
-        raw = shap_results[direction][clf][key]
-        if isinstance(raw, dict):
-            return {f: float(raw.get(f, np.nan)) for f in features}
-        return {f: float(v) for f, v in zip(features, raw)}
-
-    delta_mat = np.zeros((len(features), len(DIRECTIONS)))
-    for j, direction in enumerate(DIRECTIONS):
-        dj = _delta_map(direction)
-        for i, feat in enumerate(features):
-            delta_mat[i, j] = dj.get(feat, np.nan)
-
-    top3_rows = []
-    for direction in DIRECTIONS:
-        dj = _delta_map(direction)
-        ranked = sorted(dj.items(), key=lambda kv: -kv[1])[:3]
-        top3_rows.append([DIR_LABEL[direction]] + [f'{f} ({v:.2f})' for f, v in ranked])
-    top3_df = pd.DataFrame(top3_rows, columns=['Direction', 'Top-1', 'Top-2', 'Top-3'])
-
-    fig, (ax_hm, ax_tb) = plt.subplots(1, 2, figsize=(IEEE_DOUBLE, 4.2),
-                                        gridspec_kw={'width_ratios': [1.2, 1.0]})
-
-    vmax = np.nanmax(delta_mat)
-    im = ax_hm.imshow(delta_mat, cmap='cividis', vmin=0, vmax=vmax, aspect='auto')
-    ax_hm.set_xticks(range(len(DIRECTIONS)))
-    ax_hm.set_xticklabels([DIR_LABEL[d] for d in DIRECTIONS], rotation=30, ha='right')
-    ax_hm.set_yticks(range(len(features)))
-    ax_hm.set_yticklabels(features, fontsize=7)
-    ax_hm.set_title('RF δj (normalised)')
-    fig.colorbar(im, ax=ax_hm, fraction=0.04, pad=0.02)
-
-    ax_tb.axis('off')
-    table = ax_tb.table(cellText=top3_df.values, colLabels=list(top3_df.columns),
-                        cellLoc='left', loc='center')
-    table.auto_set_font_size(False)
-    table.set_fontsize(7)
-    table.scale(1.0, 1.35)
-    ax_tb.set_title('Top-3 δj features per direction')
-
-    fig.tight_layout()
-    save_paper(fig, 'fig4_shap_delta_j')
-    plt.show()
-"""))
-
-
-cells.append(md("""
-## Figure 5 — PCA + K-Means unified view (Step 6)
-
-The PCA fit is reproduced here with Step-6-identical settings so the styling
-matches the rest of the paper. Left: PC1 vs. PC2 coloured by condition.
-Right: K-Means (K=3) cluster overlay. Bottom strip: cumulative explained
-variance.
-"""))
-
-
-cells.append(code("""
-    X = gait_df.select(ALL_FEATURE_COLS).to_numpy()
-    conditions_arr = gait_df['condition'].to_numpy()
-    labels_arr = gait_df['label'].to_numpy()
-
-    X_scaled = StandardScaler().fit_transform(X)
-    pca = PCA(n_components=len(ALL_FEATURE_COLS), random_state=42)
-    X_pca = pca.fit_transform(X_scaled)
-
-    kmeans = KMeans(n_clusters=3, random_state=42, n_init=20)
-    clusters = kmeans.fit_predict(X_scaled)
-
-    COND_ORDER = ['pd', 'hd', 'als', 'control']
-    COND_LABELS_FULL = {'pd': 'PD', 'hd': 'HD', 'als': 'ALS', 'control': 'Control'}
-    COND_COLORS_FULL = {'pd': '#1f77b4', 'hd': '#2ca02c', 'als': '#ff7f0e', 'control': '#7f7f7f'}
-
-    fig = plt.figure(figsize=(IEEE_DOUBLE, 4.0))
-    gs = fig.add_gridspec(2, 2, height_ratios=[4, 1], hspace=0.45, wspace=0.25)
-    ax_cond = fig.add_subplot(gs[0, 0])
-    ax_clust = fig.add_subplot(gs[0, 1])
-    ax_var = fig.add_subplot(gs[1, :])
-
-    for cond in COND_ORDER:
-        mask = conditions_arr == cond
-        if not mask.any():
-            continue
-        disease = (labels_arr == 1) & mask
-        control = (labels_arr == 0) & mask
-        ax_cond.scatter(X_pca[disease, 0], X_pca[disease, 1], s=6, alpha=0.35,
-                        color=COND_COLORS_FULL[cond], marker='o',
-                        label=f'{COND_LABELS_FULL[cond]}' if cond != 'control' else None)
-        ax_cond.scatter(X_pca[control, 0], X_pca[control, 1], s=10, alpha=0.45,
-                        facecolors='none', edgecolors=COND_COLORS_FULL[cond],
-                        linewidths=0.5, marker='o',
-                        label='Control' if cond == 'control' else None)
-    ax_cond.set_xlabel('PC1'); ax_cond.set_ylabel('PC2')
-    ax_cond.set_title('PCA by condition')
-    ax_cond.legend(loc='best', frameon=False, fontsize=6, ncol=2)
-    ax_cond.grid(alpha=0.15)
-
-    scat = ax_clust.scatter(X_pca[:, 0], X_pca[:, 1], c=clusters, cmap='tab10',
-                            s=6, alpha=0.45)
-    ax_clust.set_xlabel('PC1'); ax_clust.set_ylabel('PC2')
-    ax_clust.set_title('K-Means (K=3)')
-    ax_clust.grid(alpha=0.15)
-    legend = ax_clust.legend(*scat.legend_elements(), title='Cluster',
-                             loc='best', fontsize=6, title_fontsize=6, frameon=False)
-    ax_clust.add_artist(legend)
-
-    cum = np.cumsum(pca.explained_variance_ratio_)
-    comps = np.arange(1, len(cum) + 1)
-    ax_var.bar(comps, pca.explained_variance_ratio_, color='#4c72b0', alpha=0.7,
-               label='Per-PC')
-    ax_var.plot(comps, cum, marker='o', ms=3, color='#dd8452', label='Cumulative')
-    ax_var.axhline(0.9, color='gray', linestyle='--', linewidth=0.6)
-    ax_var.set_xlabel('Principal component')
-    ax_var.set_ylabel('Variance ratio')
-    ax_var.set_xticks(comps)
-    ax_var.set_ylim(0, 1.02)
-    ax_var.legend(loc='upper left', frameon=False, fontsize=7)
-
-    save_paper(fig, 'fig5_pca_kmeans')
-    plt.show()
-"""))
-
-
-cells.append(md("""
-## Figure 6 — Noise robustness (Step 5, within-condition)
-
-F1-macro vs Gaussian input noise σ for each classifier, per condition. Clean
-baseline (σ=0) is a single point; σ∈{0.05…0.50} have 30 repeats — plotted as
-mean with ±1 SD shading. Cross-condition sweep is omitted (empty in the
-current `noise_robustness.json`).
-"""))
-
-
-cells.append(code("""
-    if noise_results is None:
-        print('noise_robustness.json missing — skipping Fig 6.')
-    else:
-        sigma_keys = ['0.0', '0.05', '0.1', '0.15', '0.2', '0.25', '0.5']
-        sigmas = np.array([float(s) for s in sigma_keys])
-
-        fig, axes = plt.subplots(1, len(CONDITIONS), figsize=(IEEE_DOUBLE, 2.3), sharey=True)
-        cmap_line = plt.get_cmap('tab10')
-        for ax, cond in zip(axes, CONDITIONS):
-            for i, clf in enumerate(CLASSIFIERS):
-                if clf not in noise_results['within'][cond]:
-                    continue
-                per_sigma = noise_results['within'][cond][clf]
-                means, stds = [], []
-                for sk in sigma_keys:
-                    vals = np.asarray(per_sigma.get(sk, []), dtype=float)
-                    if vals.size == 0:
-                        means.append(np.nan); stds.append(0.0)
-                    else:
-                        means.append(vals.mean()); stds.append(vals.std(ddof=1) if vals.size > 1 else 0.0)
-                means = np.asarray(means); stds = np.asarray(stds)
-                ax.plot(sigmas, means, marker='o', ms=3, linewidth=0.9,
-                        color=cmap_line(i), label=CLF_LABEL[clf])
-                ax.fill_between(sigmas, means - stds, means + stds,
-                                color=cmap_line(i), alpha=0.15, linewidth=0)
-            ax.set_xlabel('Noise σ')
-            ax.set_title(COND_LABEL[cond])
-            ax.grid(alpha=0.2)
-        axes[0].set_ylabel('F1-macro')
-        axes[-1].legend(loc='center left', bbox_to_anchor=(1.02, 0.5),
-                        frameon=False, fontsize=6)
-        fig.tight_layout()
-        save_paper(fig, 'fig6_noise_robustness')
-        plt.show()
-
-        empty_cross = all(not noise_results['cross'][d] for d in noise_results['cross'])
-        if empty_cross:
-            print('Cross-condition noise sweep is empty in noise_robustness.json; not plotted.')
-"""))
-
-
-cells.append(md("""
-## Master results table
-
-Single long-form table with one row per (direction, classifier) carrying the
-within-condition F1 baseline, cross-condition F1 with both stride- and
-subject-level 95% CIs, permutation p-value, ΔF1, and the top-1 δj feature
-(RF-normalised). Emitted to CSV and to an IEEE booktabs `tabular` for
-inclusion in the paper.
-"""))
-
-
-cells.append(code("""
-    def _delta_map_master(direction, clf='rf', key='delta_j_normalized'):
-        raw = shap_results[direction][clf][key]
-        if isinstance(raw, dict):
-            return {f: float(raw.get(f, np.nan)) for f in ALL_FEATURE_COLS}
-        return {f: float(v) for f, v in zip(ALL_FEATURE_COLS, raw)}
-
-    rows = []
-    for direction in DIRECTIONS:
-        src = direction.split('_to_')[0]
-        top1_feat = None
-        if direction in shap_results:
-            dj = _delta_map_master(direction)
-            top1_feat = max(dj.items(), key=lambda kv: kv[1])[0]
-        for clf in CLASSIFIERS:
-            within_f1 = within_results[src]['classifiers'][clf]['f1_macro']
-            cf_entry = cross_results[direction]['classifiers'][clf]
-            rows.append({
-                'direction': DIR_LABEL[direction],
-                'classifier': CLF_LABEL[clf],
-                'within_f1': round(within_f1, 4),
-                'cross_f1': round(cf_entry['f1_macro'], 4),
-                'delta_f1': round(cf_entry['f1_macro'] - within_f1, 4),
-                'stride_ci_low': round(cf_entry.get('f1_macro_ci_lower', np.nan), 4),
-                'stride_ci_high': round(cf_entry.get('f1_macro_ci_upper', np.nan), 4),
-                'subj_ci_low': round(cf_entry.get('f1_macro_subj_ci_lower', np.nan), 4),
-                'subj_ci_high': round(cf_entry.get('f1_macro_subj_ci_upper', np.nan), 4),
-                'perm_p': round(cf_entry.get('permutation_p_value', np.nan), 4),
-                'top1_delta_j_feature': top1_feat,
-            })
-    master_df = pd.DataFrame(rows)
-    csv_path = TABLES / 'master_results.csv'
-    master_df.to_csv(csv_path, index=False)
-    print(f'Wrote {csv_path.relative_to(Path(\"..\"))}  ({len(master_df)} rows).')
-
-    def _tex_escape(s):
-        if s is None:
-            return '--'
-        return str(s).replace('_', r'\\_').replace('→', r'$\\rightarrow$')
-
-    tex_lines = [
-        r'% Auto-generated by notebooks/07_final_figures.ipynb',
-        r'\\begin{tabular}{llrrrrrrr}',
-        r'\\toprule',
-        r'Direction & Clf & Within F1 & Cross F1 & $\\Delta$F1 & Stride CI & Subj CI & $p$ & Top-1 $\\delta_j$ \\\\',
-        r'\\midrule',
-    ]
-    current_dir = None
-    for _, r in master_df.iterrows():
-        if r['direction'] != current_dir and current_dir is not None:
-            tex_lines.append(r'\\addlinespace')
-        current_dir = r['direction']
-        tex_lines.append(
-            f\"{_tex_escape(r['direction'])} & {_tex_escape(r['classifier'])} & \"
-            f\"{r['within_f1']:.3f} & {r['cross_f1']:.3f} & {r['delta_f1']:+.3f} & \"
-            f\"[{r['stride_ci_low']:.3f},{r['stride_ci_high']:.3f}] & \"
-            f\"[{r['subj_ci_low']:.3f},{r['subj_ci_high']:.3f}] & \"
-            f\"{r['perm_p']:.3f} & {_tex_escape(r['top1_delta_j_feature'])} \\\\\\\\\"
+    def figure_paths(step: str, stem: str) -> tuple[Path, Path]:
+        return FIG_PDF_ROOT / step / f"{stem}.pdf", FIG_PNG_ROOT / step / f"{stem}.png"
+
+
+    def display_existing_figure(step: str, stem: str, width: int = 780) -> None:
+        pdf_path, png_path = figure_paths(step, stem)
+        assert png_path.exists(), f"Missing PNG figure: {png_path}"
+        assert pdf_path.exists(), f"Missing PDF figure: {pdf_path}"
+        print(f"Displayed figure: {png_path.relative_to(REPO_ROOT)}")
+        print(f"Vector source: {pdf_path.relative_to(REPO_ROOT)}")
+        display(Image(filename=str(png_path), width=width))
+
+
+    def save_table_csv(df: pd.DataFrame, name: str) -> Path:
+        path = TABLE_DIR / name
+        df.to_csv(path, index=False)
+        print(f"Saved table: {path.relative_to(REPO_ROOT)}")
+        return path
+
+
+    def save_table_latex(
+        df: pd.DataFrame,
+        name: str,
+        caption: str,
+        label: str,
+        *,
+        longtable: bool = False,
+    ) -> Path:
+        path = TABLE_DIR / name
+        latex = df.to_latex(
+            index=False,
+            escape=False,
+            caption=caption,
+            label=label,
+            longtable=longtable,
         )
-    tex_lines += [r'\\bottomrule', r'\\end{tabular}']
-    tex_path = TABLES / 'master_results.tex'
-    tex_path.write_text('\\n'.join(tex_lines) + '\\n')
-    print(f'Wrote {tex_path.relative_to(Path(\"..\"))}')
-
-    display(master_df.head(14))
-"""))
+        path.write_text(latex)
+        print(f"Saved table: {path.relative_to(REPO_ROOT)}")
+        return path
 
 
-cells.append(md("""
-## Verification
-
-Sanity checks: every paper figure + both table files are present on disk,
-F1 values round-trip back to the source JSONs with machine precision, and the
-CSV row count matches the number of (direction × classifier) pairs.
-"""))
-
-
-cells.append(code("""
-    expected_figs = [
-        'fig1_within_overview', 'fig1_within_f1_single', 'fig2_within_cms',
-        'fig3_cross_degradation', 'fig4_shap_delta_j', 'fig5_pca_kmeans',
+    FIGURE_SPECS = [
+        {
+            "tier": "main",
+            "step": "step0",
+            "figure_stem": "step0_authoritative_filtering_cascade",
+            "recommended_caption": "Authoritative v4 filtering cascade from raw stride rows to the retained cohort.",
+            "claim_supported": "The retained dataset is auditable from raw rows to the frozen analytical matrix.",
+            "why_included": "Cohort accounting is essential for a publication-track biomedical ML study.",
+            "caveat": "Descriptive only; not a performance result.",
+        },
+        {
+            "tier": "main",
+            "step": "step1",
+            "figure_stem": "step1_control_split_summary",
+            "recommended_caption": "Frozen Control A / Control B split used for transfer and control-partition sensitivity analyses.",
+            "claim_supported": "Downstream transfer and Step 8 sensitivity rely on an explicit disjoint-control design.",
+            "why_included": "This is the clearest visual anchor for the control-partition methodology.",
+            "caveat": "Small cohorts still permit sensitivity to alternate near-optimal control splits.",
+        },
+        {
+            "tier": "main",
+            "step": "step2",
+            "figure_stem": "f1_within_condition_heatmap",
+            "recommended_caption": "Subject-level within-condition macro-F1 across classifiers and source conditions.",
+            "claim_supported": "The source-condition benchmark is strong enough to make downstream transfer interpretable.",
+            "why_included": "This is the cleanest subject-primary overview of Step 2.",
+            "caveat": "ALS still requires small-sample caution despite its strong scores.",
+        },
+        {
+            "tier": "main",
+            "step": "step2",
+            "figure_stem": "step2_subject_stride_leaders",
+            "recommended_caption": "Condition-level leaders with subject-primary and stride-level companion metrics.",
+            "claim_supported": "The paper can report exact Step 2 leaders without hard-coded manuscript values.",
+            "why_included": "The panel complements the heatmap with exact condition-level numbers.",
+            "caveat": "Nested winners are protocol-specific, not universal classifier rankings.",
+        },
+        {
+            "tier": "main",
+            "step": "step3",
+            "figure_stem": "degradation_heatmap",
+            "recommended_caption": "Subject-level matched degradation by transfer direction and classifier.",
+            "claim_supported": "Transfer is measurable but usually degraded relative to within-source subject baselines.",
+            "why_included": "Matched degradation is the central Step 3 comparison lens.",
+            "caveat": "Direction-level means are uniformly positive, but individual classifier-direction cells still vary.",
+        },
+        {
+            "tier": "main",
+            "step": "step3",
+            "figure_stem": "cross_condition_f1_heatmap",
+            "recommended_caption": "Absolute subject-level zero-shot transfer performance by direction and classifier.",
+            "claim_supported": "Transfer success is directional and classifier-dependent rather than uniform.",
+            "why_included": "It complements matched degradation with the absolute transfer-performance surface.",
+            "caveat": "Absolute F1 should still be interpreted alongside the within-source baseline.",
+        },
+        {
+            "tier": "main",
+            "step": "step3",
+            "figure_stem": "step3_subject_confusion_matrices",
+            "recommended_caption": "Subject-level normalized confusion matrices for the best classifier in each transfer direction.",
+            "claim_supported": "The strongest transfer directions remain interpretable in terms of control specificity and target-disease recall.",
+            "why_included": "This panel adds error-structure information that the heatmaps do not show directly.",
+            "caveat": "The matrices summarize only the direction-level leaders, not every classifier.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step3",
+            "figure_stem": "step3_direction_intervals",
+            "recommended_caption": "Direction-level subject-F1 intervals for the best classifier in each transfer direction.",
+            "claim_supported": "The strongest transfer directions still carry non-trivial uncertainty.",
+            "why_included": "Useful when the manuscript wants explicit interval context beyond heatmaps.",
+            "caveat": "Descriptive intervals only; not a primary direction-level inferential test.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step3",
+            "figure_stem": "step3_bidirectional_asymmetry",
+            "recommended_caption": "Bidirectional asymmetry of subject-level transfer between disease pairs.",
+            "claim_supported": "Source-to-target direction matters and cannot be treated as interchangeable.",
+            "why_included": "This is the most direct visualization of the asymmetry claim.",
+            "caveat": "Asymmetry should be interpreted within this repaired v4 protocol, not as a universal disease ordering.",
+        },
+        {
+            "tier": "main",
+            "step": "step4",
+            "figure_stem": "step4_delta_j_rf_heatmap",
+            "recommended_caption": "Random-forest SHAP reliance shifts under transfer.",
+            "claim_supported": "Transfer alters feature reliance in concrete, direction-specific ways for a representative strong model family.",
+            "why_included": "It provides a model-specific diagnostic anchor for the broader SHAP story.",
+            "caveat": "Model-specific SHAP movement should not be generalized without the consensus views.",
+        },
+        {
+            "tier": "main",
+            "step": "step4",
+            "figure_stem": "step4_delta_j_normalized_consensus_heatmap",
+            "recommended_caption": "Normalized consensus SHAP reliance shifts across classifiers and transfer directions.",
+            "claim_supported": "Several timing-structure features recur as transfer-shift signals across model families.",
+            "why_included": "This is the strongest cross-classifier Step 4 panel.",
+            "caveat": "Diagnostic only; not evidence of causal gait biomarkers.",
+        },
+        {
+            "tier": "main",
+            "step": "step4",
+            "figure_stem": "step4_delta_j_spearman",
+            "recommended_caption": "Direction-wise cross-classifier rank agreement of SHAP transfer-shift features.",
+            "claim_supported": "Some directions show coherent diagnostic ranking across classifier families, whereas others are more fragmented.",
+            "why_included": "It indicates when the transfer-diagnosis story is shared across models rather than model-specific.",
+            "caveat": "Agreement patterns are descriptive and should not be overread as proof of a single latent mechanism.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step4",
+            "figure_stem": "step4_family_delta_j_consensus",
+            "recommended_caption": "Family-level consensus movement in feature reliance under transfer.",
+            "claim_supported": "Variability and raw timing dominate the family-level transfer-diagnostic story.",
+            "why_included": "This is the cleanest abstraction over the feature-level maps.",
+            "caveat": "Family movement summarizes reliance shifts, not biology.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step4",
+            "figure_stem": "step4_top_feature_recurrence",
+            "recommended_caption": "Recurring top-ranked transfer-shift features across directions and classifiers.",
+            "claim_supported": "A small set of timing-variability descriptors repeatedly reappears in the transfer-diagnostic layer.",
+            "why_included": "Useful as a feature-level complement to the family summary.",
+            "caveat": "Recurrence is descriptive rather than causal.",
+        },
+        {
+            "tier": "main",
+            "step": "step5",
+            "figure_stem": "noise_curves_cross",
+            "recommended_caption": "Cross-condition Gaussian feature-space stress curves across transfer directions.",
+            "claim_supported": "Cross-condition performance deteriorates under increasing feature-space stress in a direction-dependent way.",
+            "why_included": "This is the most compact robustness summary for transferred models.",
+            "caveat": "Gaussian feature-space stress is not raw sensor simulation.",
+        },
+        {
+            "tier": "main",
+            "step": "step5",
+            "figure_stem": "step5_feature_sensitivity_within",
+            "recommended_caption": "Within-condition single-feature permutation sensitivity heatmap.",
+            "claim_supported": "Within-condition models show selective reliance patterns that provide context for transfer sensitivity.",
+            "why_included": "The within-condition perturbation surface is scientifically distinct from the cross-condition one.",
+            "caveat": "Permutation sensitivity is a perturbation diagnostic rather than a causal attribution.",
+        },
+        {
+            "tier": "main",
+            "step": "step5",
+            "figure_stem": "step5_feature_sensitivity_cross",
+            "recommended_caption": "Cross-condition single-feature permutation sensitivity heatmap.",
+            "claim_supported": "Transfer performance is especially sensitive to a small set of timing-variability features.",
+            "why_included": "This figure links the Step 4 reliance-shift layer to a direct perturbation response surface.",
+            "caveat": "Cross-condition sensitivity under permutation does not establish deployment fragility in the real world.",
+        },
+        {
+            "tier": "main",
+            "step": "step5",
+            "figure_stem": "conformal_within",
+            "recommended_caption": "Within-condition exploratory conformal coverage and set-size behavior.",
+            "claim_supported": "Source-calibrated set behavior differs materially by method and alpha even before distribution shift.",
+            "why_included": "It gives the matched-domain reference for the conformal diagnostics.",
+            "caveat": "Descriptive only; not the primary performance endpoint.",
+        },
+        {
+            "tier": "main",
+            "step": "step5",
+            "figure_stem": "conformal_cross",
+            "recommended_caption": "Cross-condition exploratory conformal coverage and set-size behavior under shift.",
+            "claim_supported": "Prediction-set behavior changes under transfer and should be framed as exploratory under domain shift.",
+            "why_included": "It directly supports the caution that target-domain coverage is not guaranteed.",
+            "caveat": "No formal target-domain conformal guarantee should be claimed here.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step5",
+            "figure_stem": "step5_feature_family_sensitivity",
+            "recommended_caption": "Feature-family permutation sensitivity across within and transfer settings.",
+            "claim_supported": "Variability and raw timing families dominate the average transfer sensitivity story.",
+            "why_included": "This is a strong higher-level complement to the feature heatmaps.",
+            "caveat": "Family-level averages can hide direction-specific exceptions.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step5",
+            "figure_stem": "step5_corruption_cross",
+            "recommended_caption": "Structured cross-condition corruption response across severity levels.",
+            "claim_supported": "Heavy benchmark label corruption and heavy feature-space jitter are among the most damaging average cross-condition stressors.",
+            "why_included": "Adds a perturbation family that is distinct from Gaussian stress and feature permutation.",
+            "caveat": "These are benchmark perturbations, not deployment-validated sensor-fault models.",
+        },
+        {
+            "tier": "main",
+            "step": "step6",
+            "figure_stem": "kmeans_scatter_k3",
+            "recommended_caption": "Exploratory K-means overlay in subject-level PCA space.",
+            "claim_supported": "The subject-level feature space has visible structure, but that structure should remain exploratory rather than confirmatory.",
+            "why_included": "This is the most visually direct Step 6 panel for qualitative geometry context.",
+            "caveat": "Exploratory only; clustering does not prove disease separability or transfer validity.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step6",
+            "figure_stem": "pca_scatter_by_condition",
+            "recommended_caption": "Subject-level PCA projection colored by condition.",
+            "claim_supported": "The condition geometry is visually structured but remains only qualitative context for the supervised results.",
+            "why_included": "Useful if the supplement wants the raw PCA view alongside the K-means overlay.",
+            "caveat": "Visual separation alone is not supervised evidence.",
+        },
+        {
+            "tier": "main",
+            "step": "step8",
+            "figure_stem": "step8_sign_stability_matrix",
+            "recommended_caption": "Sign stability of direction-level matched degradation across near-optimal control partitions.",
+            "claim_supported": "Step 8 qualifies stability claims rather than proving invariance.",
+            "why_included": "This is the clearest figure for the key Step 8 caveat.",
+            "caveat": "Partition 3 reverses four of six direction-level signs.",
+        },
+        {
+            "tier": "main",
+            "step": "step8",
+            "figure_stem": "step8_direction_degradation_ranges",
+            "recommended_caption": "Direction-wise matched-degradation ranges across the main and alternate near-optimal control partitions.",
+            "claim_supported": "Control-partition sensitivity affects both sign and effect-size scale.",
+            "why_included": "It complements the sign matrix with direction-level magnitude movement.",
+            "caveat": "Sensitivity includes movement in both within-source baselines and transfer outcomes.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step8",
+            "figure_stem": "step8_within_source_baselines",
+            "recommended_caption": "Best within-source subject-level baselines across near-optimal control partitions.",
+            "claim_supported": "Some Step 8 movement is driven by baseline instability, not transfer behavior alone.",
+            "why_included": "Important supporting context for the sensitivity verdict.",
+            "caveat": "Baseline drift does not by itself imply transfer failure.",
+        },
+        {
+            "tier": "extended_main",
+            "step": "step8",
+            "figure_stem": "step8_best_transfer_leaders_heatmap",
+            "recommended_caption": "Best transfer leaders by direction and control partition.",
+            "claim_supported": "The identity of the best transfer classifier is not completely fixed across alternate partitions.",
+            "why_included": "Helpful if the supplement wants the classifier-family stability view explicitly.",
+            "caveat": "Best-leader changes should be read alongside effect-size movement, not in isolation.",
+        },
     ]
-    if noise_results is not None:
-        expected_figs.append('fig6_noise_robustness')
 
-    for stem in expected_figs:
-        for ext, d in [('pdf', PAPER_PDF), ('png', PAPER_PNG)]:
-            assert (d / f'{stem}.{ext}').exists(), f'missing {d / (stem + \".\" + ext)}'
+    TABLE_SPECS = [
+        {
+            "tier": "main",
+            "table_file": "step2_subject_stride_leaders_v4.csv",
+            "purpose": "Condition-level within-condition leaders with subject-primary and stride-level companions.",
+            "main_columns": "Condition, Leader, Subject F1, Stride F1, Subject log loss, Strategy",
+            "paper_use": "Exact Step 2 leader reporting.",
+            "caveat": "Nested winners are protocol-specific rather than universal rankings.",
+        },
+        {
+            "tier": "main",
+            "table_file": "paper_main_results_summary_v4.csv",
+            "purpose": "Full direction-by-classifier cross-condition transfer summary with subject-primary columns emphasized.",
+            "main_columns": "Direction, Classifier, Subject F1, Within-source subject F1, Matched degradation (subject), Control specificity, Target recall, Strategy, Permutation p-value",
+            "paper_use": "Primary Step 3 numerical reporting table.",
+            "caveat": "Direction-level means are the safest headline summaries; not every classifier-direction row degrades.",
+        },
+        {
+            "tier": "main",
+            "table_file": "step5_noise_robustness_summary_v4.csv",
+            "purpose": "Sigma-zero replay and key severity checkpoints for the Gaussian feature-space stress test.",
+            "main_columns": "scope, classifier, f1@0, f1@0.10, f1@0.25, f1@0.50, sigma_at_10pct_drop",
+            "paper_use": "Exact Step 5 checkpoint reporting.",
+            "caveat": "This is a feature-space perturbation diagnostic, not a raw sensor benchmark.",
+        },
+        {
+            "tier": "main",
+            "table_file": "step8_direction_sensitivity_v4.csv",
+            "purpose": "Direction-level matched-degradation sensitivity across alternate control partitions.",
+            "main_columns": "Partition, Direction, Mean matched degradation, Sign, Best classifier, Best subject F1",
+            "paper_use": "Exact Step 8 sensitivity reporting.",
+            "caveat": "Sensitivity qualifies the main transfer story rather than replacing it.",
+        },
+        {
+            "tier": "extended_main",
+            "table_file": "step0_filter_flow.csv",
+            "purpose": "Cohort filtering stages and retained stride-row counts.",
+            "main_columns": "stage_label, rows",
+            "paper_use": "Methods transparency for cohort accounting.",
+            "caveat": "Descriptive only.",
+        },
+        {
+            "tier": "extended_main",
+            "table_file": "step1_control_partition_summary.csv",
+            "purpose": "Frozen Control A / Control B membership.",
+            "main_columns": "subject_id, group",
+            "paper_use": "Methods or supplement table for control-reuse transparency.",
+            "caveat": "Important for protocol clarity but not a results table.",
+        },
+        {
+            "tier": "extended_main",
+            "table_file": "step3_best_direction_recall_summary_v4.csv",
+            "purpose": "Best classifier per transfer direction with recall and specificity context.",
+            "main_columns": "Direction, Classifier, Subject F1, Delta subject, Control specificity, Target recall",
+            "paper_use": "Compact Step 3 companion table if the manuscript wants the best-direction subset explicitly.",
+            "caveat": "Best-direction rows do not summarize the full classifier surface.",
+        },
+        {
+            "tier": "extended_main",
+            "table_file": "step5_feature_family_sensitivity_v4.csv",
+            "purpose": "Family-level permutation sensitivity across within and transfer settings.",
+            "main_columns": "scope, domain, classifier, family, drop",
+            "paper_use": "Step 5 companion table for the feature-family story.",
+            "caveat": "Family averages compress heterogeneous direction-specific behavior.",
+        },
+        {
+            "tier": "extended_main",
+            "table_file": "step8_partition_overview_v4.csv",
+            "purpose": "Partition-level Step 8 overview with overlap and role-reversal metadata.",
+            "main_columns": "partition, role, overlap, independent_sensitivity_candidate, candidate_family",
+            "paper_use": "Supplementary context for the control-partition design.",
+            "caveat": "Structural metadata rather than a headline results table.",
+        },
+    ]
 
-    for p in [TABLES / 'master_results.csv', TABLES / 'master_results.tex']:
-        assert p.exists() and p.stat().st_size > 0, f'missing or empty: {p}'
-
-    reloaded = pd.read_csv(TABLES / 'master_results.csv')
-    assert len(reloaded) == len(DIRECTIONS) * len(CLASSIFIERS)
-
-    for direction in DIRECTIONS:
-        src = direction.split('_to_')[0]
-        for clf in CLASSIFIERS:
-            row = reloaded[(reloaded['direction'] == DIR_LABEL[direction]) &
-                           (reloaded['classifier'] == CLF_LABEL[clf])].iloc[0]
-            json_within = within_results[src]['classifiers'][clf]['f1_macro']
-            json_cross = cross_results[direction]['classifiers'][clf]['f1_macro']
-            assert abs(row['within_f1'] - round(json_within, 4)) < 1e-6
-            assert abs(row['cross_f1'] - round(json_cross, 4)) < 1e-6
-
-    print('All verifications passed.')
-    print(f'  {len(expected_figs)} figure stems × (pdf + png) present in report/figures/paper/.')
-    print(f'  {len(reloaded)} master-table rows round-trip to JSON.')
-"""))
+    LEGACY_DUPLICATE_TABLES = {
+        "step7_within_leaders_v4.csv",
+        "step7_within_leaders_v4.tex",
+        "step7_cross_transfer_leaders_v4.csv",
+        "step7_cross_transfer_leaders_v4.tex",
+        "step7_master_transfer_table_v4.csv",
+        "step7_master_transfer_table_v4.tex",
+    }
+    """,
+    "step7-code-bootstrap",
+))
 
 
-nb = {
-    'cells': cells,
-    'metadata': {
-        'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'},
-        'language_info': {'name': 'python', 'version': '3.12'},
+cells.append(md(
+    """
+## Manuscript selection criteria
+
+The manuscript should stay subject-primary, extensive enough to cover every
+major result layer, and disciplined enough to avoid near-duplicate panels.
+
+- Step-specific figures are preferred over regenerated summary surrogates when
+  the existing figure already states the result clearly.
+- Main-paper figures should support distinct claims: cohort accounting, frozen
+  control design, within-condition benchmarking, zero-shot transfer,
+  transfer-diagnostic evidence, stress testing and uncertainty behavior,
+  exploratory geometry context, and control-partition sensitivity.
+- Dense diagnostics still matter scientifically, but they move to
+  `extended_main` or `supplement` when they repeat the same claim at finer
+  granularity.
+    """,
+    "step7-md-policy",
+))
+
+
+cells.append(md(
+    """
+## Methods and cohort figures
+
+The paper’s methods/result interface should begin with two concrete anchors:
+the authoritative filtering cascade and the frozen Control A / Control B
+partition. Together they make the retained cohort auditable and clarify why the
+later transfer and sensitivity analyses can be interpreted as leakage-aware.
+    """,
+    "step7-md-methods",
+))
+
+
+cells.append(code(
+    """
+    display_existing_figure("step0", "step0_authoritative_filtering_cascade", width=800)
+    display_existing_figure("step1", "step1_control_split_summary", width=800)
+    """,
+    "step7-code-methods",
+))
+
+
+cells.append(md(
+    """
+- **`step0_authoritative_filtering_cascade`** is a main paper figure because it
+  shows the retained-row path from **15,160** raw stride rows to **13,765**
+  authoritative v4 rows. It supports cohort transparency rather than a
+  performance claim.
+- **`step1_control_split_summary`** is also main because the later transfer
+  protocol and Step 8 sensitivity analysis depend on a frozen **8-vs-8**
+  Control A / Control B split. The main caveat is that a balanced split is not
+  the same thing as a partition-invariant result.
+    """,
+    "step7-md-methods-note",
+))
+
+
+cells.append(md(
+    """
+## Step 2: within-condition benchmark
+
+The Step 2 figures establish whether the source-condition models are strong
+enough to support a downstream transfer analysis. The paper should therefore
+show both the subject-level leaderboard surface and the compact leader summary.
+    """,
+    "step7-md-step2",
+))
+
+
+cells.append(code(
+    """
+    step2_leaders = pd.read_csv(TABLE_DIR / "step2_subject_stride_leaders_v4.csv")
+    display_existing_figure("step2", "f1_within_condition_heatmap", width=780)
+    display_existing_figure("step2", "step2_subject_stride_leaders", width=780)
+    display(step2_leaders)
+    """,
+    "step7-code-step2",
+))
+
+
+cells.append(md(
+    """
+The subject-primary Step 2 story is crisp. **ALS** is the strongest source
+condition and reaches a **QDA** leader score of **1.0000** subject-level
+macro-F1; **HD** is led by **XGBoost** at **0.9571**; and **PD** is flatter,
+with **DT** selected as the authoritative leader at **0.9042** subject-level
+macro-F1. That combination matters for Step 3 because it means the transfer
+analysis starts from strong, but not identical, within-source baselines. The
+main caveat is that these leaders are optimal within the repaired nested
+procedure only; they should not be described as universal classifier winners.
+    """,
+    "step7-md-step2-note",
+))
+
+
+cells.append(md(
+    """
+## Step 3: zero-shot cross-condition transfer
+
+Step 3 is the core empirical result. The manuscript should keep both the
+absolute transfer surface and the matched-degradation lens, then pair them with
+one detailed diagnostic view and one exact-value table so that the main claim
+does not rest on heatmaps alone.
+    """,
+    "step7-md-step3",
+))
+
+
+cells.append(code(
+    """
+    transfer_df = pd.read_csv(TABLE_DIR / "step3_cross_condition_summary_v4.csv")
+    transfer_table = transfer_df.copy()
+    transfer_table["Direction"] = transfer_table["direction"].map(DIR_LABEL)
+    transfer_table["Classifier"] = transfer_table["classifier"].map(CLF_LABEL)
+    paper_main_results_summary = transfer_table[
+        [
+            "Direction",
+            "Classifier",
+            "subject_f1",
+            "within_subject_f1",
+            "delta_subject",
+            "stride_f1",
+            "within_stride_f1",
+            "delta_stride",
+            "subject_ci_low",
+            "subject_ci_high",
+            "control_specificity_subject",
+            "target_recall_subject",
+            "selected_strategy",
+            "permutation_p_value",
+        ]
+    ].rename(
+        columns={
+            "subject_f1": "Subject F1",
+            "within_subject_f1": "Within-source subject F1",
+            "delta_subject": "Matched degradation (subject)",
+            "stride_f1": "Stride F1",
+            "within_stride_f1": "Within-source stride F1",
+            "delta_stride": "Matched degradation (stride)",
+            "subject_ci_low": "Subject CI low",
+            "subject_ci_high": "Subject CI high",
+            "control_specificity_subject": "Control specificity",
+            "target_recall_subject": "Target recall",
+            "selected_strategy": "Strategy",
+            "permutation_p_value": "Permutation p-value",
+        }
+    )
+    save_table_csv(paper_main_results_summary, "paper_main_results_summary_v4.csv")
+    save_table_latex(
+        paper_main_results_summary.round(4),
+        "paper_main_results_summary_v4.tex",
+        "Cross-condition transfer summary with subject-primary columns emphasized.",
+        "tab:paper_main_results_summary_v4",
+        longtable=True,
+    )
+
+    styled_transfer = (
+        paper_main_results_summary.style
+        .format({
+            "Subject F1": "{:.4f}",
+            "Within-source subject F1": "{:.4f}",
+            "Matched degradation (subject)": "{:+.4f}",
+            "Stride F1": "{:.4f}",
+            "Within-source stride F1": "{:.4f}",
+            "Matched degradation (stride)": "{:+.4f}",
+            "Subject CI low": "{:.4f}",
+            "Subject CI high": "{:.4f}",
+            "Control specificity": "{:.4f}",
+            "Target recall": "{:.4f}",
+            "Permutation p-value": "{:.4f}",
+        })
+        .background_gradient(
+            subset=["Matched degradation (subject)"],
+            cmap="RdYlBu_r",
+            vmin=-0.15,
+            vmax=0.40,
+        )
+        .background_gradient(
+            subset=["Subject F1"],
+            cmap="Blues",
+            vmin=0.45,
+            vmax=1.0,
+        )
+        .set_caption("Cross-condition transfer summary (subject-primary columns emphasized)")
+    )
+
+    display_existing_figure("step3", "degradation_heatmap", width=780)
+    display_existing_figure("step3", "cross_condition_f1_heatmap", width=780)
+    display_existing_figure("step3", "step3_subject_confusion_matrices", width=780)
+    display_existing_figure("step3", "step3_direction_intervals", width=780)
+    display_existing_figure("step3", "step3_bidirectional_asymmetry", width=780)
+    display(styled_transfer)
+    """,
+    "step7-code-step3",
+))
+
+
+cells.append(md(
+    """
+The transfer figures support the central v4 claim directly. At the
+direction-average level, **matched subject-level degradation is positive in all
+six directions**, with the largest mean losses in **HD→ALS** (**0.1925**) and
+**HD→PD** (**0.1735**), and the smallest in **PD→HD** (**0.0458**). The
+absolute subject-F1 heatmap shows that transfer remains practically strong in
+selected directions even when degradation is positive overall; the best
+direction-level outcomes are **QDA** for **PD→ALS** (**0.9481**), **HD→ALS**
+(**0.8929**), **PD→HD** (**0.8712**), and **HD→PD** (**0.8083**), with **DT**
+leading **ALS→PD** (**0.8600**) and **LightGBM** leading **ALS→HD**
+(**0.8052**). The confusion matrices add a complementary class-balance view:
+for example, **ALS→HD** achieves perfect control specificity at the cost of
+lower HD recall, whereas **HD→ALS** reaches full ALS recall with lower control
+specificity. The key caveat remains explicit in the table: some individual
+classifier-direction rows have near-zero or negative matched degradation even
+though the direction-level means are uniformly positive.
+    """,
+    "step7-md-step3-note",
+))
+
+
+cells.append(md(
+    """
+## Step 4: SHAP-based transfer diagnostics
+
+Step 4 should stay diagnostic rather than causal. The manuscript therefore
+benefits from showing the model-specific random-forest map, the cross-classifier
+consensus map, and the rank-agreement panel together, with family-level and
+recurrence summaries available as supporting detail.
+    """,
+    "step7-md-step4",
+))
+
+
+cells.append(code(
+    """
+    top_features = pd.read_csv(TABLE_DIR / "step4_top_feature_recurrence_v4.csv")
+    family_delta = pd.read_csv(TABLE_DIR / "step4_family_delta_j_long_v4.csv")
+    family_means = (
+        family_delta.groupby("family")["delta_j_family"]
+        .mean()
+        .sort_values(ascending=False)
+        .round(4)
+        .rename("mean_delta_j_family")
+        .reset_index()
+    )
+
+    display_existing_figure("step4", "step4_delta_j_rf_heatmap", width=780)
+    display_existing_figure("step4", "step4_delta_j_normalized_consensus_heatmap", width=780)
+    display_existing_figure("step4", "step4_delta_j_spearman", width=780)
+    display_existing_figure("step4", "step4_family_delta_j_consensus", width=780)
+    display_existing_figure("step4", "step4_top_feature_recurrence", width=780)
+    display(top_features.head(10))
+    display(family_means)
+    """,
+    "step7-code-step4",
+))
+
+
+cells.append(md(
+    """
+The Step 4 diagnostic layer is coherent but should still be described
+conservatively. The consensus heatmap and recurrence table point repeatedly to
+**`cv_stride`** (**33** top-3 appearances), **`cv_swing`** (**21**), and
+**`dfa_alpha_stride`** (**19**) as recurring transfer-shift features. At the
+family level, the mean movement is largest for **variability** (**0.0302**) and
+**raw timing** (**0.0274**), with **fractal** movement still visible
+(**0.0124**) and the remaining families smaller. The Spearman panel is useful
+because it distinguishes directions where classifier families tell a similar
+diagnostic story from directions where the feature rankings are more model
+contingent. The important caveat is unchanged: these figures diagnose changes
+in feature reliance under transfer, not disease-specific causal biomarkers.
+    """,
+    "step7-md-step4-note",
+))
+
+
+cells.append(md(
+    """
+## Step 5: stress testing, feature sensitivity, and exploratory conformal diagnostics
+
+Step 5 covers several genuinely different questions, so the synthesis notebook
+keeps more than one main figure here. The selected panels separate three claims:
+how transfer degrades under Gaussian feature-space stress, which individual
+features drive strong permutation sensitivity, and how exploratory conformal set
+behavior changes between matched and shifted evaluation.
+    """,
+    "step7-md-step5",
+))
+
+
+cells.append(code(
+    """
+    noise_summary = pd.read_csv(TABLE_DIR / "step5_noise_robustness_summary_v4.csv")
+    family_sensitivity = pd.read_csv(TABLE_DIR / "step5_feature_family_sensitivity_v4.csv")
+    conformal_summary = pd.read_csv(TABLE_DIR / "step5_conformal_summary_v4.csv")
+    conformal_methods = conformal_summary[conformal_summary["method"].isin(["aps", "lac"])].copy()
+    conformal_agg = (
+        conformal_methods
+        .groupby(["scope", "method", "alpha"])[
+            [
+                "coverage_subject_level",
+                "raw_mean_set_size",
+                "post_mean_set_size",
+                "raw_empty_rate",
+                "post_empty_rate",
+            ]
+        ]
+        .mean()
+        .reset_index()
+        .round(4)
+    )
+    family_drop_means = (
+        family_sensitivity.groupby(["scope", "family"])["drop"]
+        .mean()
+        .reset_index()
+        .sort_values(["scope", "drop"], ascending=[True, False])
+        .round(4)
+    )
+
+    display_existing_figure("step5", "noise_curves_cross", width=780)
+    display_existing_figure("step5", "step5_feature_sensitivity_within", width=780)
+    display_existing_figure("step5", "step5_feature_sensitivity_cross", width=780)
+    display_existing_figure("step5", "conformal_within", width=780)
+    display_existing_figure("step5", "conformal_cross", width=780)
+    display_existing_figure("step5", "step5_feature_family_sensitivity", width=780)
+    display_existing_figure("step5", "step5_corruption_cross", width=780)
+    display(noise_summary.head(12))
+    display(family_drop_means)
+    display(conformal_agg)
+    """,
+    "step7-code-step5",
+))
+
+
+cells.append(md(
+    """
+The Step 5 evidence is rich enough that several panels deserve main-paper
+status. The cross-condition noise curves show that transferred performance is
+stress-sensitive in a direction-dependent way rather than collapsing uniformly.
+The feature-sensitivity heatmaps and family summaries sharpen that story: under
+transfer, the largest average family-level drops are in **variability**
+(**0.1685**) and **raw timing** (**0.1137**), whereas within-condition family
+effects are generally smaller and more selective. The exploratory conformal
+panels add an uncertainty-behavior layer. Averaged across domains, **APS**
+retains larger mean set sizes and higher subject-level coverage than **LAC**
+both within-condition and under transfer, while **LAC** becomes notably tighter
+and more empty-set-prone before fallback under shift (raw empty rates rising to
+about **0.34** at `alpha=0.20`). The final caveat is crucial: this entire step
+is diagnostic stress testing. Gaussian feature-space perturbation is not raw
+sensor noise, benchmark label corruption is not noisy-label training, and
+cross-condition conformal behavior is exploratory under distribution shift.
+    """,
+    "step7-md-step5-note",
+))
+
+
+cells.append(md(
+    """
+## Step 6: exploratory geometry
+
+Step 6 remains exploratory, but one geometry panel is still worth surfacing in
+the synthesis notebook because it provides qualitative context for the
+subject-level feature space without claiming supervised evidence.
+    """,
+    "step7-md-step6",
+))
+
+
+cells.append(code(
+    """
+    step6_summary = json.loads((REPO_ROOT / "experiments" / "results" / "v4" / "step6_subject_views_summary.json").read_text())
+    display_existing_figure("step6", "kmeans_scatter_k3", width=780)
+    display_existing_figure("step6", "pca_scatter_by_condition", width=780)
+    display(pd.DataFrame(step6_summary["views"]).T[[
+        "subject_count",
+        "ari_against_relevant_labels",
+        "seed_stability_mean_ari",
+        "subject_bootstrap_stability_mean_ari",
+    ]])
+    """,
+    "step7-code-step6",
+))
+
+
+cells.append(md(
+    """
+The exploratory geometry panels are visually informative but scientifically
+limited. The **K-means overlay in PCA space** is the strongest Step 6 figure for
+the manuscript because it shows that the subject-level feature space has
+visible structure, yet the saved summary metrics keep the interpretation
+honest: ARI against the relevant labels remains weak (**0.0260** for
+`all_subjects`, **0.0135** for `disease_only`), and bootstrap stability is much
+lower than seed-to-seed stability. In other words, the geometry is useful
+context for transfer difficulty, but it does not prove disease separability or
+replace the supervised transfer results.
+    """,
+    "step7-md-step6-note",
+))
+
+
+cells.append(md(
+    """
+## Step 8: control-partition sensitivity
+
+Step 8 is now a required part of the final paper story because it tests whether
+the main transfer pattern is stable when the control partition changes within
+the near-optimal candidate family. The key framing is sensitivity, not
+invariance.
+    """,
+    "step7-md-step8",
+))
+
+
+cells.append(code(
+    """
+    step8_sensitivity = pd.read_csv(TABLE_DIR / "step8_direction_sensitivity_v4.csv")
+    step8_within = pd.read_csv(TABLE_DIR / "step8_within_baselines_v4.csv")
+    display_existing_figure("step8", "step8_sign_stability_matrix", width=780)
+    display_existing_figure("step8", "step8_direction_degradation_ranges", width=780)
+    display_existing_figure("step8", "step8_within_source_baselines", width=780)
+    display_existing_figure("step8", "step8_best_transfer_leaders_heatmap", width=780)
+    display(step8_sensitivity)
+    display(step8_within)
+    """,
+    "step7-code-step8",
+))
+
+
+cells.append(md(
+    """
+The Step 8 result is scientifically important precisely because it is mixed.
+**Partition 2 preserves the direction-level matched-degradation signs**, but
+**partition 3 reverses four of six signs**, so the control-partition sensitivity
+analysis clearly **qualifies** the main transfer story rather than proving
+invariance. The within-source baseline panel explains part of that sensitivity:
+the best within-source **PD** baseline drops from **0.9042** in the main
+partition to **0.7758** in partition 3, whereas **ALS** remains comparatively
+stable. The safest paper wording is therefore that the v4 conclusions are
+directionally informative but not fully insensitive to alternate near-optimal
+control splits.
+    """,
+    "step7-md-step8-note",
+))
+
+
+cells.append(md(
+    """
+## Figure and table manifests
+
+The manifest files below turn the notebook’s selection decisions into explicit
+paper metadata. Legacy `step7/paper_fig*` image files are intentionally
+excluded; the manuscript should cite the stronger step-specific source figures
+directly.
+    """,
+    "step7-md-manifests",
+))
+
+
+cells.append(code(
+    """
+    def manifest_row(spec: dict) -> dict:
+        pdf_path, png_path = figure_paths(spec["step"], spec["figure_stem"])
+        return {
+            **spec,
+            "pdf_path": str(pdf_path.relative_to(REPO_ROOT)),
+            "png_path": str(png_path.relative_to(REPO_ROOT)),
+            "exists_pdf": pdf_path.exists(),
+            "exists_png": png_path.exists(),
+        }
+
+
+    figure_manifest_df = pd.DataFrame([manifest_row(spec) for spec in FIGURE_SPECS])
+
+    discovered_existing = []
+    for png_path in sorted(FIG_PNG_ROOT.glob("step*/*.png")):
+        step = png_path.parent.name
+        stem = png_path.stem
+        if step == "step7":
+            continue
+        if any((row["step"] == step and row["figure_stem"] == stem) for row in FIGURE_SPECS):
+            continue
+        pdf_path = FIG_PDF_ROOT / step / f"{stem}.pdf"
+        discovered_existing.append({
+            "tier": "supplement",
+            "step": step,
+            "figure_stem": stem,
+            "recommended_caption": "Supplementary diagnostic figure retained for repository depth.",
+            "claim_supported": "Provides detailed backup for a step-specific interpretation.",
+            "why_included": "Non-redundant repository-facing detail.",
+            "caveat": "Supplement only to avoid redundancy in the main paper.",
+            "pdf_path": str(pdf_path.relative_to(REPO_ROOT)),
+            "png_path": str(png_path.relative_to(REPO_ROOT)),
+            "exists_pdf": pdf_path.exists(),
+            "exists_png": png_path.exists(),
+        })
+
+    if discovered_existing:
+        figure_manifest_df = pd.concat([figure_manifest_df, pd.DataFrame(discovered_existing)], ignore_index=True)
+
+    figure_manifest_df = figure_manifest_df.sort_values(["tier", "step", "figure_stem"]).reset_index(drop=True)
+    save_table_csv(figure_manifest_df, "paper_figure_manifest_v4.csv")
+    save_table_latex(
+        figure_manifest_df,
+        "paper_figure_manifest_v4.tex",
+        "Recommended v4 paper-figure manifest.",
+        "tab:paper_figure_manifest_v4",
+        longtable=True,
+    )
+
+    all_csv_tables = sorted(path.name for path in TABLE_DIR.glob("*.csv"))
+    table_rows = list(TABLE_SPECS)
+    seen_tables = {spec["table_file"] for spec in TABLE_SPECS}
+    for table_name in all_csv_tables:
+        if table_name in seen_tables or table_name in LEGACY_DUPLICATE_TABLES:
+            continue
+        if table_name.startswith("paper_"):
+            continue
+        table_rows.append({
+            "tier": "supplement",
+            "table_file": table_name,
+            "purpose": "Supplementary numerical detail retained for repository and appendix use.",
+            "main_columns": "See file columns.",
+            "paper_use": "Supplement or appendix only.",
+            "caveat": "Not every supplementary table should appear in the main manuscript.",
+        })
+
+    table_manifest_df = pd.DataFrame(table_rows).sort_values(["tier", "table_file"]).reset_index(drop=True)
+    save_table_csv(table_manifest_df, "paper_table_manifest_v4.csv")
+    save_table_latex(
+        table_manifest_df,
+        "paper_table_manifest_v4.tex",
+        "Recommended v4 paper-table manifest.",
+        "tab:paper_table_manifest_v4",
+        longtable=True,
+    )
+
+    display(figure_manifest_df[["tier", "step", "figure_stem", "exists_pdf", "exists_png"]])
+    display(table_manifest_df)
+    """,
+    "step7-code-manifests",
+))
+
+
+cells.append(md(
+    """
+## Final synthesis guidance for the manuscript
+
+The curated figure and table set above supports a publication-facing story that
+stays close to the frozen v4 evidence.
+
+- **Main claim:** zero-shot abnormal-vs-control transfer is measurable under
+  leakage-controlled subject-level validation, but it is directionally
+  asymmetric and usually degraded relative to within-source subject baselines.
+- **Safe Step 3 wording:** direction-level mean subject-level matched
+  degradation is positive across all six directions, while individual
+  classifier-direction pairs still vary.
+- **Safe Step 4 wording:** SHAP supports a diagnostic reliance-shift story
+  centered on variability, raw timing, and a small set of recurring
+  timing-structure features; it does **not** establish causal biomarkers.
+- **Safe Step 5 wording:** the robustness and conformal layers are diagnostic
+  stress tests and exploratory uncertainty analyses, not raw-sensor realism or
+  target-domain coverage guarantees.
+- **Safe Step 6 wording:** PCA and K-means provide exploratory geometry context
+  only.
+- **Safe Step 8 wording:** alternate near-optimal control partitions preserve
+  some conclusions but materially weaken others, because partition 3 reverses
+  four of six direction-level matched-degradation signs.
+- **Global caveat:** small subject counts remain the main limit on stronger
+  inferential claims.
+    """,
+    "step7-md-final",
+))
+
+
+cells.append(code(
+    """
+    expected_step7_outputs = [
+        TABLE_DIR / "paper_figure_manifest_v4.csv",
+        TABLE_DIR / "paper_figure_manifest_v4.tex",
+        TABLE_DIR / "paper_table_manifest_v4.csv",
+        TABLE_DIR / "paper_table_manifest_v4.tex",
+        TABLE_DIR / "paper_main_results_summary_v4.csv",
+        TABLE_DIR / "paper_main_results_summary_v4.tex",
+    ]
+    for path in expected_step7_outputs:
+        assert path.exists(), path
+
+    for row in figure_manifest_df.itertuples():
+        if row.tier in {"main", "extended_main"}:
+            assert row.exists_pdf, row.pdf_path
+            assert row.exists_png, row.png_path
+
+    assert all(spec["step"] != "step7" for spec in FIGURE_SPECS)
+
+    print("PASS: Step 7 synthesis notebook curated existing v4 figures and wrote the paper manifests.")
+    """,
+    "step7-code-verify",
+))
+
+
+payload = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {
+            "name": "python",
+            "version": "3.12",
+        },
     },
-    'nbformat': 4,
-    'nbformat_minor': 5,
+    "nbformat": 4,
+    "nbformat_minor": 5,
 }
 
-OUT.parent.mkdir(parents=True, exist_ok=True)
-with open(OUT, 'w') as f:
-    json.dump(nb, f, indent=1)
-
-print(f'Wrote {OUT.relative_to(Path.cwd()) if OUT.is_relative_to(Path.cwd()) else OUT}  ({len(cells)} cells).')
+OUT.write_text(json.dumps(payload, indent=2) + "\n")
+print(f"Wrote {OUT}")
