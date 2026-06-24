@@ -1,0 +1,211 @@
+{
+  "aggregation_rule": "mean_probability",
+  "approved": true,
+  "candidate_strategy_policy": {
+    "dt": [
+      "synthetic",
+      "balanced",
+      "raw"
+    ],
+    "knn": [
+      "synthetic",
+      "raw"
+    ],
+    "lgbm": [
+      "synthetic",
+      "balanced",
+      "raw"
+    ],
+    "qda": [
+      "synthetic",
+      "raw"
+    ],
+    "rf": [
+      "synthetic",
+      "balanced",
+      "raw"
+    ],
+    "svm": [
+      "synthetic",
+      "balanced",
+      "raw"
+    ],
+    "xgb": [
+      "synthetic",
+      "balanced",
+      "raw"
+    ]
+  },
+  "classifier_grids": {
+    "dt": {
+      "clf__criterion": [
+        "gini",
+        "entropy"
+      ],
+      "clf__max_depth": [
+        null,
+        5,
+        10,
+        20
+      ],
+      "clf__min_samples_leaf": [
+        1,
+        2,
+        5
+      ]
+    },
+    "knn": {
+      "clf__metric": [
+        "euclidean",
+        "manhattan"
+      ],
+      "clf__n_neighbors": [
+        3,
+        5,
+        7,
+        9,
+        11,
+        15,
+        21
+      ],
+      "clf__weights": [
+        "distance",
+        "uniform"
+      ]
+    },
+    "lgbm": {
+      "clf__feature_fraction": [
+        0.8,
+        1.0
+      ],
+      "clf__learning_rate": [
+        0.01,
+        0.1,
+        0.3
+      ],
+      "clf__max_depth": [
+        -1,
+        5
+      ],
+      "clf__min_child_samples": [
+        20
+      ],
+      "clf__n_estimators": [
+        100,
+        200
+      ],
+      "clf__num_leaves": [
+        31
+      ],
+      "clf__subsample": [
+        0.8,
+        1.0
+      ],
+      "clf__subsample_freq": [
+        1
+      ]
+    },
+    "qda": {
+      "clf__reg_param": [
+        0.001,
+        0.01,
+        0.1,
+        0.5,
+        0.9
+      ]
+    },
+    "rf": {
+      "clf__max_depth": [
+        null,
+        10,
+        20
+      ],
+      "clf__max_features": [
+        "sqrt",
+        null
+      ],
+      "clf__min_samples_leaf": [
+        1,
+        2,
+        5
+      ],
+      "clf__n_estimators": [
+        100,
+        300
+      ]
+    },
+    "svm": {
+      "clf__C": [
+        0.1,
+        1,
+        10,
+        100
+      ],
+      "clf__gamma": [
+        "scale",
+        "auto",
+        0.001,
+        0.01,
+        0.1
+      ]
+    },
+    "xgb": {
+      "clf__colsample_bytree": [
+        0.8,
+        1.0
+      ],
+      "clf__learning_rate": [
+        0.01,
+        0.1,
+        0.3
+      ],
+      "clf__max_depth": [
+        3,
+        5
+      ],
+      "clf__n_estimators": [
+        100,
+        200
+      ],
+      "clf__subsample": [
+        0.8,
+        1.0
+      ]
+    }
+  },
+  "code_hash": "ff53d2c5f526e87e0b8ada97e9670388e7eecd86aca70de389d002f3470c2c39",
+  "conformal_policy": "exploratory_only",
+  "created_at_utc": "2026-06-07T17:35:54+00:00",
+  "dfa_descriptor_interpretation": "pragmatic_dfa_derived_descriptor_from_discontinuous_stride_series",
+  "dfa_policy": "concatenated",
+  "dirty_tree": true,
+  "git_commit": "41a92facaa62c61e550ed823badf65961189de8d",
+  "methodology_version": "v4-hardening",
+  "namespace_map": {
+    "figures": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/report/figures/v4",
+    "models": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/experiments/models/v4",
+    "processed": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/data/processed/v4",
+    "results": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/experiments/results/v4",
+    "shap": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/experiments/shap/v4",
+    "tables": "/home/ahmad_shahmeer/ML_Research/gait-transfer-ndd/report/tables/v4"
+  },
+  "package_versions": {
+    "imbalanced-learn": "0.14.1",
+    "joblib": "1.5.3",
+    "lightgbm": "4.6.0",
+    "modal": "1.4.1",
+    "numpy": "2.4.4",
+    "polars": "1.39.3",
+    "scikit-learn": "1.8.0",
+    "shap": "0.51.0",
+    "xgboost": "3.2.0"
+  },
+  "random_seeds": {
+    "global": 42
+  },
+  "robust_mad_multiplier": 3.0,
+  "schema_version": "v4-protocol-manifest-v2",
+  "step3_primary_endpoint": "subject_level_macro_f1",
+  "subject_probability_threshold": 0.5,
+  "tie_break_rule": "subject_probability_loss_then_lexicographic"
+}

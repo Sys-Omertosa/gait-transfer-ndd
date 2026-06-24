@@ -1,0 +1,141 @@
+{
+  "artifact_index_sha256": "2b6e7022cbb62ba1efd0ad064022e96fd5b069af138ee7950ef91de1f92df3ac",
+  "created_at_utc": "2026-06-11T02:20:33+00:00",
+  "dirty_tree": true,
+  "downstream_code_hashes": {
+    "notebooks/06_pca_kmeans.ipynb": "ad1ed2e6b68fc9565d4dbc862de0c88116458d9e192377edc6f29b153a395759",
+    "scripts/setup/freeze_v4_downstream_execution_manifest.py": "084012dc2329b9ad6dcebe203b6d086e948a349fde91fc46841a9beb077d0c3e",
+    "scripts/setup/snapshot_v4_step2_frozen_source.py": "e12de7cbb28e4b63713c20527f90a5f151cda949256592c9167b85967aa970fd",
+    "scripts/training/run_control_split_sensitivity_modal.py": "9d80be4fc50e277439b4df50ed520092fa793c14f3f96194204f5ca3cb8584e5",
+    "scripts/training/run_cross_condition_modal.py": "651239723aa19d7eda7dcdfbaa7c731f442f4d7f330df780e2e6a8bd17bcbc66",
+    "scripts/training/run_noise_robustness_modal.py": "c7201527ccb01037ddd249ff34c8e06e254f8d60c527e98e601c161be2fc5c75",
+    "scripts/training/run_shap_modal.py": "df0f1fe64ddbe5bca73d7f799d5c16de279163e9ef669155c7fb7a4c75e3b129",
+    "src/explain.py": "04b3224069ac93ac94b9414e104e9d014b93dfbb789039e8607df824e89e712b",
+    "src/robustness.py": "9413f35ff271b740897d61fe1ddc04eca7128292333129fda71a5916af40f7c9",
+    "src/v4_downstream.py": "2c288c8e1a3a08964dbd57188ad401e030fc23c28afbe49c719ddb14febed9fa"
+  },
+  "downstream_execution_id": "v4d-20260611T022033+0000-85765ad9afd7",
+  "downstream_execution_id_derivation": {
+    "digest": "sha256(canonical_json_without_excluded_keys)",
+    "excluded_keys": [
+      "downstream_execution_id",
+      "payload_sha256"
+    ],
+    "short_hash_len": 12
+  },
+  "feature_matrix_sha256": "3955e85b58160417644d8f72095c061f83d7d305e6b06ae1f5b3990fff6031bd",
+  "git_commit": "41a92facaa62c61e550ed823badf65961189de8d",
+  "git_status_porcelain": " M .gitignore\n M notebooks/02_within_condition.ipynb\n M notebooks/03_cross_condition.ipynb\n M notebooks/04_shap_diagnosis.ipynb\n M notebooks/05_noise_robustness.ipynb\n M notebooks/06_pca_kmeans.ipynb\n M notebooks/07_final_figures.ipynb\n M notebooks/pdf/07_final_figures.pdf\n M report/main.pdf\n M requirements-core.txt\n M scripts/training/run_control_split_sensitivity_modal.py\n M scripts/training/run_cross_condition_modal.py\n M scripts/training/run_noise_robustness_modal.py\n M scripts/training/run_preprocessing_modal.py\n M scripts/training/run_shap_modal.py\n M scripts/training/run_within_condition_modal.py\n M scripts/verification/build_step7_notebook.py\n M src/explain.py\n M src/features.py\n M src/preprocessing.py\n M src/robustness.py\n M src/train.py\n?? data/processed/v3/control_partition_diverse_candidates_v3.json\n?? data/processed/v4/\n?? data/processed/v4_preflight/\n?? experiments/results/v3/conformal_v3.json\n?? experiments/results/v3/control_split_sensitivity/\n?? experiments/results/v3/control_split_sensitivity_diverse/\n?? experiments/results/v3/corruption_robustness_v3.json\n?? experiments/results/v3/feature_sensitivity_v3.json\n?? experiments/results/v3/noise_robustness_v3.json\n?? experiments/results/v3/subject_sensitivity_v3.json\n?? experiments/results/v4/\n?? experiments/results/v4_preflight/\n?? notebooks/08_sensitivity_analysis.ipynb\n?? notebooks/pdf/08_sensitivity_analysis.pdf\n?? report/Gait_transfer_ndd_Presentation.aux\n?? report/Gait_transfer_ndd_Presentation.log\n?? report/Gait_transfer_ndd_Presentation.nav\n?? report/Gait_transfer_ndd_Presentation.pdf\n?? report/Gait_transfer_ndd_Presentation.snm\n?? report/Gait_transfer_ndd_Presentation.tex\n?? report/Gait_transfer_ndd_Presentation.toc\n?? report/figures/v3/pdf/conformal_aggregation.pdf\n?? report/figures/v3/pdf/conformal_cross.pdf\n?? report/figures/v3/pdf/conformal_within.pdf\n?? report/figures/v3/pdf/corruption_cross.pdf\n?? report/figures/v3/pdf/corruption_within.pdf\n?? report/figures/v3/pdf/feature_sensitivity_cross.pdf\n?? report/figures/v3/pdf/feature_sensitivity_within.pdf\n?? report/figures/v3/pdf/fig_sensitivity_baseline_collapse.pdf\n?? report/figures/v3/pdf/fig_sensitivity_delta_f1_range.pdf\n?? report/figures/v3/pdf/fig_sensitivity_ordering_stability.pdf\n?? report/figures/v3/pdf/fig_sensitivity_partition_composition_table.pdf\n?? report/figures/v3/pdf/fig_sensitivity_sign_stability.pdf\n?? report/figures/v3/pdf/fig_sensitivity_verification_table.pdf\n?? report/figures/v3/pdf/kmeans_elbow.pdf\n?? report/figures/v3/pdf/kmeans_scatter_k3.pdf\n?? report/figures/v3/pdf/kmeans_silhouette.pdf\n?? report/figures/v3/pdf/noise_curves_cross.pdf\n?? report/figures/v3/pdf/noise_curves_within.pdf\n?? report/figures/v3/pdf/pca_explained_variance.pdf\n?? report/figures/v3/pdf/pca_feature_loadings.pdf\n?? report/figures/v3/pdf/pca_scatter_by_condition.pdf\n?? report/figures/v3/pdf/subject_sensitivity_cross.pdf\n?? report/figures/v3/pdf/subject_sensitivity_within.pdf\n?? report/tables/v3/\n?? scripts/setup/\n?? scripts/training/run_within_condition_recovery_modal.py\n?? scripts/verification/profile_v4_grouped_selector.py\n?? scripts/verification/test_v4_artifact_identity.py\n?? scripts/verification/test_v4_authoritative_context_and_reuse.py\n?? scripts/verification/test_v4_authoritative_runner_contracts.py\n?? scripts/verification/test_v4_downstream_final_envelopes.py\n?? scripts/verification/test_v4_downstream_model_path_equivalence.py\n?? scripts/verification/test_v4_modal_import_regression.py\n?? scripts/verification/test_v4_modal_paths.py\n?? scripts/verification/test_v4_modal_smoke.py\n?? scripts/verification/test_v4_rf_parallel_equivalence.py\n?? scripts/verification/test_v4_shap_sampling_determinism.py\n?? scripts/verification/test_v4_shap_tree_regression.py\n?? scripts/verification/test_v4_snapshot_surface_contract.py\n?? scripts/verification/test_v4_static_contracts.py\n?? scripts/verification/test_v4_step1_sensitivity.py\n?? scripts/verification/test_v4_step3_digest_roundtrip.py\n?? scripts/verification/test_v4_step5_replay.py\n?? scripts/verification/test_v4_step6_notebook_contract.py\n?? scripts/verification/test_v4_step6_views.py\n?? scripts/verification/test_v4_step8_schedule.py\n?? scripts/verification/test_v4_subject_aggregation.py\n?? scripts/verification/test_v4_subject_aggregation_fragment_resume.py\n?? scripts/verification/test_v4_subject_aggregation_fragment_worker_contracts.py\n?? scripts/verification/test_v4_subject_aggregation_fragmented_equivalence.py\n?? scripts/verification/test_v4_svc_probability_diagnostics.py\n?? scripts/verification/test_v4_svm_sharded_precision_equivalence.py\n?? scripts/verification/test_v4_tie_break_reranking_audit.py\n?? src/v4_downstream.py\n?? src/v4_provenance.py\n",
+  "methodology_version": "v4-downstream-hardening",
+  "package_versions": {
+    "imbalanced-learn": "0.14.1",
+    "joblib": "1.5.3",
+    "lightgbm": "4.6.0",
+    "modal": "1.4.1",
+    "numpy": "2.4.4",
+    "polars": "1.39.3",
+    "scikit-learn": "1.8.0",
+    "shap": "0.51.0",
+    "xgboost": "3.2.0"
+  },
+  "partition_sha256": "8d917540c09b2af2c58443a9425c240b3a4120860968eb0778f5ddc86d36366e",
+  "payload_sha256": "a1b19a51bd4a07edd8020429f7304677faf96c99929a9ca04d4c9f70c15dc068",
+  "preprocessing_manifest_sha256": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
+  "protocol_manifest_sha256": "4de674e9fa5eb8abd86a6dd6d62fe1bfe4cb90edbfd4c7f52c9d6a9cd3ae7116",
+  "schema_version": "v4-downstream-execution-manifest-v1",
+  "snapshot_manifest_sha256": "22de975103e838929d77a9ad8eb4f9dab190a931f9bfee73dee4839361483e7f",
+  "source_file_hashes_sha256": "dfb4f21de3a9a545644a929099c49abc0585430155467ddd86ded6060ee37a87",
+  "step2_model_hashes": {
+    "als:dt": {
+      "logical_path": "als_dt.joblib",
+      "sha256": "8eefb8053edcb7b1b8465bf53d02c71abd7a4536f70b03ced15d806de01a1fe4"
+    },
+    "als:knn": {
+      "logical_path": "als_knn.joblib",
+      "sha256": "ee56ac1adcbcd2e6f4925fa224f151df73b306d37fa838d74e0d86d933ea62c7"
+    },
+    "als:lgbm": {
+      "logical_path": "als_lgbm.joblib",
+      "sha256": "1c5a3df28f44514297bcc40aabb826b89ec541646f997347f8c11de8adec1af8"
+    },
+    "als:qda": {
+      "logical_path": "als_qda.joblib",
+      "sha256": "df81bbab4a360162cebb92defe190715444f2d640a69dc6de8754d336ad26a5d"
+    },
+    "als:rf": {
+      "logical_path": "als_rf.joblib",
+      "sha256": "60bd24fcb512adde805b5b08f1401124ea780d8c93afc91f6522ef2f80ab9c58"
+    },
+    "als:svm": {
+      "logical_path": "als_svm.joblib",
+      "sha256": "261644c14fad5592501884af1dc057dd52d78d1e7f496388832be43d3f94177a"
+    },
+    "als:xgb": {
+      "logical_path": "als_xgb.joblib",
+      "sha256": "dd18af2cae6a9818d8d3c651fc0406faef02eed76fcda160d56bab1e00f1cee5"
+    },
+    "hd:dt": {
+      "logical_path": "hd_dt.joblib",
+      "sha256": "81a6afb503863fa76356bf4fb51721d3072517875688f89deec05bcff4db3147"
+    },
+    "hd:knn": {
+      "logical_path": "hd_knn.joblib",
+      "sha256": "21c9c92c80adb76baca1bbcf5f727e455c731e57e7b34f8b24aeb2bfe724312d"
+    },
+    "hd:lgbm": {
+      "logical_path": "hd_lgbm.joblib",
+      "sha256": "06ac48459c1dfb1a3c086d06476b7e2c2fa19b4176aea4f3e9852d2a41a75e11"
+    },
+    "hd:qda": {
+      "logical_path": "hd_qda.joblib",
+      "sha256": "98c25fcd3a0f15b8e61def9acebcc506ef732e82b02f4cc5fc83e636aa786f54"
+    },
+    "hd:rf": {
+      "logical_path": "hd_rf.joblib",
+      "sha256": "c64524cefbd689f8343d1c6036aeb7c5c77e1584556d0b23d9e0942686318672"
+    },
+    "hd:svm": {
+      "logical_path": "hd_svm.joblib",
+      "sha256": "97df664533842f28961393549921baac5b918a2126a922592bf1c37a1cdb4c6e"
+    },
+    "hd:xgb": {
+      "logical_path": "hd_xgb.joblib",
+      "sha256": "c185f6442c1e29fcefa78d3b3a68c75c60ba538016a69d9e038c85dc62be5c92"
+    },
+    "pd:dt": {
+      "logical_path": "pd_dt.joblib",
+      "sha256": "f4bba9b625d2265a8f109bd2af5097f5865cb5229a775208c90df1f93ed77651"
+    },
+    "pd:knn": {
+      "logical_path": "pd_knn.joblib",
+      "sha256": "edb7fc6df5ea7d020334d4c1eb7b034e8738e56761ab81c0cb8bcb059caa9aae"
+    },
+    "pd:lgbm": {
+      "logical_path": "pd_lgbm.joblib",
+      "sha256": "3de873bc9fa3b55f5c64ae4c8544fc7d094eaf89920dacf957a2ef40fd0fbc12"
+    },
+    "pd:qda": {
+      "logical_path": "pd_qda.joblib",
+      "sha256": "cd84f56132b8f2fd1ec5c67dd3a07c9d06ef0c75c0877e8148179085318175b6"
+    },
+    "pd:rf": {
+      "logical_path": "pd_rf.joblib",
+      "sha256": "9e464e82b674f1b8da1f4cd3742b726d579a57b42c2dc510022b5fb2e03c7b6f"
+    },
+    "pd:svm": {
+      "logical_path": "pd_svm.joblib",
+      "sha256": "a02eb7e7a08271c01c42b6c5534ee7730932e300b8b5f13df4aa014ca0f56b8c"
+    },
+    "pd:xgb": {
+      "logical_path": "pd_xgb.joblib",
+      "sha256": "4faa3e6e1b4806c54b53796886bbe7433dd059697a461a3af5cbae9d87446300"
+    }
+  },
+  "step2_result_hashes": {
+    "als": "c557aab32b50ff0317df765759dd1adb567a6bc7634a8ae905c39fb18058b6dd",
+    "hd": "91d899dc0ab778224bd0b79ecb87d5c887c4bf8659faa231aaf7e31e8a11f201",
+    "pd": "59e463461db94aae667d85b7a22152d4c1687ffaa31619a8cdd5cb10804e08c2"
+  },
+  "untracked_archive_sha256": "1d97703fae9112f71a767e2f87e7f64c01c085c8836fe40d32d38ee69269f62e",
+  "working_tree_patch_sha256": "332f3bf42a4bf005b316289b18c9542c8d4b66e409400b379255b0e5b71f5b2d"
+}
