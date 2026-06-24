@@ -19,6 +19,7 @@ try:
         partition_controls,
         summarize_control_partition,
     )
+    from src.v4_provenance import atomic_write_json
 except ModuleNotFoundError:
     from preprocessing import (  # type: ignore
         FEATURE_COLS,
@@ -29,11 +30,12 @@ except ModuleNotFoundError:
         partition_controls,
         summarize_control_partition,
     )
+    from v4_provenance import atomic_write_json  # type: ignore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / 'data' / 'raw' / 'gait-in-neurodegenerative-disease-database-1.0.0'
 DEFAULT_PROCESSED_DIR = REPO_ROOT / 'data' / 'processed'
-DEFAULT_FEATURES_FILENAME = 'v2/gait_features_v2.csv'
+DEFAULT_FEATURES_FILENAME = 'v4/gait_features_v4.csv'
 
 # Original 14-feature baseline used in the first complete experiment chain.
 ORIGINAL_FEATURE_COLS: list[str] = FEATURE_COLS + [
@@ -57,11 +59,12 @@ V3_FEATURE_COLS: list[str] = [
     if col not in {'left_stance_pct', 'right_stance_pct', 'stride_asymmetry_signed'}
 ]
 
-# The default feature set used by the v2 rerun path.
-ALL_FEATURE_COLS: list[str] = V2_FEATURE_COLS
+# The default feature set used by the current authoritative v4 path.
+ALL_FEATURE_COLS: list[str] = V3_FEATURE_COLS
+BROADCAST_RECORDING_FEATURE_COLS: list[str] = ['cv_stride', 'cv_swing', 'dfa_alpha_stride']
 
 
-def get_feature_cols(feature_set_version: str = 'v2') -> list[str]:
+def get_feature_cols(feature_set_version: str = 'v4') -> list[str]:
     """Return the configured feature columns for the requested experiment version."""
     if feature_set_version == 'v1':
         return list(ORIGINAL_FEATURE_COLS)
@@ -69,7 +72,17 @@ def get_feature_cols(feature_set_version: str = 'v2') -> list[str]:
         return list(V2_FEATURE_COLS)
     if feature_set_version == 'v3':
         return list(V3_FEATURE_COLS)
+    if feature_set_version == 'v4':
+        return list(V3_FEATURE_COLS)
     raise ValueError(f"Unknown feature_set_version '{feature_set_version}'")
+
+
+def get_per_stride_only_feature_cols(feature_set_version: str = 'v4') -> list[str]:
+    """Feature columns excluding broadcast recording-derived subject features."""
+    return [
+        col for col in get_feature_cols(feature_set_version)
+        if col not in BROADCAST_RECORDING_FEATURE_COLS
+    ]
 
 
 # ── Functions ─────────────────────────────────────────────────────────────────
@@ -329,14 +342,16 @@ def build_feature_matrix(
     output_filename: str = DEFAULT_FEATURES_FILENAME,
     feature_cols: list[str] | None = None,
     *,
-    feature_set_version: str = 'v2',
-    filter_strategy: str = 'v2',
-    control_partition_version: str = 'v2',
+    feature_set_version: str = 'v4',
+    filter_strategy: str = 'v3',
+    control_partition_version: str = 'v4',
     control_partition: dict[str, list[str]] | None = None,
     partition_output_filename: str = 'control_partition.json',
     manifest_filename: str | None = None,
     dfa_scale_mode: str = 'pragmatic',
     dfa_custom_scales: np.ndarray | None = None,
+    metadata_cols: list[str] | None = None,
+    robust_mad_multiplier: float = 3.0,
 ) -> tuple[pl.DataFrame, dict[str, list[str]]]:
     """
     Orchestrate the full Step 1 pipeline and write outputs to processed_dir.
@@ -388,7 +403,11 @@ def build_feature_matrix(
     if filter_strategy == 'v2':
         clean = filter_pause_events(raw)
     elif filter_strategy == 'v3':
-        clean, filter_stats = filter_artifact_rows_v3(raw, return_stats=True)
+        clean, filter_stats = filter_artifact_rows_v3(
+            raw,
+            robust_mad_multiplier=robust_mad_multiplier,
+            return_stats=True,
+        )
     else:
         raise ValueError(f"Unknown filter_strategy '{filter_strategy}'")
 
@@ -416,7 +435,12 @@ def build_feature_matrix(
     )
 
     # Select final column order: features first, then metadata
-    output_cols = selected_feature_cols + ['subject_id', 'condition', 'label']
+    selected_metadata_cols = (
+        list(metadata_cols)
+        if metadata_cols is not None
+        else [col for col in ('elapsed_s', 'raw_stride_index') if col in with_dfa.columns]
+    )
+    output_cols = selected_feature_cols + selected_metadata_cols + ['subject_id', 'condition', 'label']
     output = with_dfa.select(output_cols)
 
     output_path = processed_path / output_filename
@@ -434,16 +458,68 @@ def build_feature_matrix(
             'n_features': len(selected_feature_cols),
             'output_filename': output_filename,
             'partition_output_filename': partition_output_filename,
+            'metadata_cols': selected_metadata_cols,
             'raw_rows': int(raw.height),
             'final_rows': int(output.height),
             'n_subjects': int(output.n_unique('subject_id')),
             'control_partition': partition,
             'control_partition_summary': control_summary,
             'dfa_scale_mode': dfa_scale_mode,
+            'robust_mad_multiplier': robust_mad_multiplier,
         }
         if filter_stats is not None:
             manifest['filter_stats'] = filter_stats
-        with open(manifest_path, 'w') as f:
-            json.dump(manifest, f, indent=2)
+        atomic_write_json(manifest_path, manifest)
 
     return output, partition
+
+
+def build_per_stride_only_matrix(
+    feature_df: pl.DataFrame,
+    *,
+    feature_set_version: str = 'v4',
+    metadata_cols: list[str] | None = None,
+) -> pl.DataFrame:
+    """Build the per-stride-only companion matrix from a full feature dataframe."""
+    selected_feature_cols = get_per_stride_only_feature_cols(feature_set_version)
+    selected_metadata_cols = (
+        list(metadata_cols)
+        if metadata_cols is not None
+        else [col for col in ('elapsed_s', 'raw_stride_index') if col in feature_df.columns]
+    )
+    return feature_df.select(
+        selected_feature_cols + selected_metadata_cols + ['subject_id', 'condition', 'label']
+    )
+
+
+def build_subject_level_matrix(
+    feature_df: pl.DataFrame,
+    *,
+    feature_set_version: str = 'v4',
+) -> pl.DataFrame:
+    """
+    Build the subject-level companion matrix for Step 6 and interpretive sensitivity.
+
+    Stride-level timing features are aggregated by subject mean. The three
+    recording-derived features are retained directly; because they are already
+    broadcast constants within subject, `first()` is equivalent to `mean()`.
+    """
+    feature_cols = get_feature_cols(feature_set_version)
+    stride_like_cols = [col for col in feature_cols if col not in BROADCAST_RECORDING_FEATURE_COLS]
+    agg_exprs = [pl.col(col).mean().alias(col) for col in stride_like_cols]
+    agg_exprs.extend(
+        pl.col(col).first().alias(col)
+        for col in BROADCAST_RECORDING_FEATURE_COLS
+        if col in feature_cols
+    )
+    agg_exprs.extend([
+        pl.col('condition').first().alias('condition'),
+        pl.col('label').first().alias('label'),
+        pl.len().alias('n_strides'),
+    ])
+    return (
+        feature_df
+        .group_by('subject_id', maintain_order=True)
+        .agg(agg_exprs)
+        .select(['subject_id'] + feature_cols + ['condition', 'label', 'n_strides'])
+    )

@@ -25,7 +25,7 @@ Explainer assignment per classifier (all output in probability scale):
                Interventional mode with probability output gives exact completeness.
   SVM, QDA, KNN — shap.KernelExplainer(pipeline.predict_proba, background).
                Full ImbPipeline predict_proba is passed so SHAP values are in the
-               original v2 feature space regardless of internal scaling.
+               original feature space regardless of internal scaling.
 
 SMOTE convention: SMOTE is part of the ImbPipeline and is skipped at predict time
 (ImbPipeline does not run samplers during transform/predict). Passing the full
@@ -38,19 +38,21 @@ evaluation always runs on real source or target strides, and the disjoint
 Control Group B keeps healthy transfer evaluation independent of any
 training-time augmentation.
 
-Background data: a class-balanced shap.kmeans summary (k=100) computed once per
-source condition and reused across all explainer types for that source. Balancing
-ensures the k-means centers represent both disease and control strides equally,
-so the base value (E[f(background)]) is close to 0.5 for all classifiers, making
-waterfall plots and base-value comparisons interpretable across classifier families.
+Background data: a class-balanced source-specific random sample (k=100)
+computed once per source condition and reused across both target directions.
+Balancing keeps disease and control represented equally in the background and
+makes the base value more comparable across classifier families.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import warnings
 from pathlib import Path
 from typing import Any
+from zipfile import BadZipFile
 
 import joblib
 import numpy as np
@@ -151,66 +153,246 @@ def get_shap_config(clf_name: str) -> dict[str, Any]:
 
 # ── Background data ───────────────────────────────────────────────────────────
 
-def get_background_data(
+def build_source_background(
     X_source: np.ndarray,
     y_source: np.ndarray,
     k: int = 100,
-    rng: np.random.Generator | None = None,
-) -> Any:
+    random_seed: int = 42,
+) -> dict[str, Any]:
     """
-    Compute a class-balanced k-means summary of the source pool for background data.
+    Build a class-balanced source-specific background sample for SHAP.
 
-    The background is class-balanced before clustering: equal numbers of disease
-    and control strides are sampled as input to k-means so that the resulting
-    cluster centres represent both classes equally. Without balancing, the
-    disease-heavy source pool (~64% disease) causes k-means centres to concentrate
-    in the disease region, producing base values of ~0.88 for interventional
-    TreeExplainer (XGB/LGB) instead of ~0.50. This makes waterfall plots misleading
-    and base values non-comparable across classifiers.
-
-    RF/DT tree_path_dependent is not affected by the background content (it
-    computes base values from the tree structure internally). Class balancing
-    primarily corrects interventional TreeExplainer and KernelExplainer.
-
-    The balanced background is used by:
-      - Interventional TreeExplainer (XGB, LGB): raw .data array passed as data=
-      - KernelExplainer (SVM, QDA, KNN): DenseData object passed as background
+    The v4 design makes the background source-specific rather than
+    direction-specific. This eliminates the within-cache reuse bug where the
+    same within-source SHAP file could be paired with different backgrounds
+    depending on which target direction ran first.
 
     Args:
         X_source: Feature matrix of the source pool, shape (n_source, 14).
         y_source: Binary label vector, shape (n_source,). Used to balance classes.
-        k:        Number of k-means cluster centres. Default 100.
-        rng:      NumPy Generator for reproducible balanced sampling.
-                  If None, uses np.random.default_rng(0) as a fixed fallback.
+        k:        Maximum background size. Default 100.
+        random_seed: Deterministic seed used for balanced sampling.
 
     Returns:
-        shap.kmeans DenseData object. For interventional TreeExplainer, extract
-        .data (handled inside compute_shap_values). For KernelExplainer, pass
-        the object directly.
+        Dict containing:
+          'background': np.ndarray of shape (k, n_features)
+          'source_indices': list[int] into the original source pool
+          'class_counts': disease/control counts used before final sampling
+          'random_seed': the seed used to build this background
     """
-    if rng is None:
-        rng = np.random.default_rng(0)
+    rng = np.random.default_rng(random_seed)
 
     disease_idx = np.where(y_source == 1)[0]
     control_idx = np.where(y_source == 0)[0]
 
-    # Draw equal numbers from each class; cap at 5× k//2 per class so the
-    # input to k-means is at most k*10 points but never undersamples a small class.
-    n_per_class = min(len(disease_idx), len(control_idx), k // 2 * 5)
+    n_per_class = min(len(disease_idx), len(control_idx), max(k // 2, 1))
+    if n_per_class < 1:
+        raise ValueError(
+            'SHAP background requires at least one disease row and one control row '
+            f'(got disease={len(disease_idx)}, control={len(control_idx)}).'
+        )
     sampled_disease = rng.choice(disease_idx, size=n_per_class, replace=False)
     sampled_control = rng.choice(control_idx, size=n_per_class, replace=False)
+    selected = rng.permutation(
+        np.concatenate([sampled_disease, sampled_control])
+    ).astype(int, copy=False)
+    return {
+        'background': X_source[selected].astype(np.float64, copy=False),
+        'source_indices': selected.astype(int).tolist(),
+        'class_counts': {
+            'disease': int(n_per_class),
+            'control': int(n_per_class),
+        },
+        'eligible_class_rows': {
+            'disease': int(len(disease_idx)),
+            'control': int(len(control_idx)),
+        },
+        'requested_background_size': int(k),
+        'random_seed': int(random_seed),
+    }
 
-    X_balanced = np.vstack(
-        [X_source[sampled_disease], X_source[sampled_control]])
 
-    # shap.sample (random subsample) is used instead of shap.kmeans here because
-    # k-means centroids land in the geometric centre of the feature space, which
-    # for XGB/LGB sits inside the high-confidence disease region even after class
-    # balancing — producing base values of ~0.70 instead of ~0.50. shap.sample
-    # preserves the actual balanced data distribution, giving base values close
-    # to 0.50 for all classifiers. The total background size is k points drawn
-    # from the 2*n_per_class balanced pool.
-    return shap.sample(X_balanced, k, random_state=42)
+def get_background_data(
+    X_source: np.ndarray,
+    y_source: np.ndarray,
+    k: int = 100,
+    random_seed: int = 42,
+) -> np.ndarray:
+    """Backward-compatible wrapper returning only the background array."""
+    return build_source_background(
+        X_source,
+        y_source,
+        k=k,
+        random_seed=random_seed,
+    )['background']
+
+
+def _hash_bytes(payload: bytes) -> str:
+    """SHA-256 helper for small in-memory payloads."""
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _stable_sampling_seed(*parts: str) -> int:
+    """Stable 32-bit seed derived from logical sampling identifiers."""
+    payload = '::'.join(parts).encode()
+    return int.from_bytes(hashlib.sha256(payload).digest()[:8], 'big') % (2 ** 32)
+
+
+def _hash_array(arr: np.ndarray) -> str:
+    """Stable SHA-256 hash of an ndarray's raw bytes."""
+    contiguous = np.ascontiguousarray(arr)
+    return _hash_bytes(contiguous.tobytes())
+
+
+def _hash_file(path: str | Path) -> str:
+    """SHA-256 hash of a file on disk."""
+    digest = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    tmp_path = path.with_name(f'.{path.name}.tmp')
+    tmp_path.write_text(text)
+    tmp_path.replace(path)
+
+
+def _atomic_savez_compressed(path: Path, **arrays: Any) -> None:
+    tmp_path = path.with_name(f'.{path.stem}.tmp{path.suffix}')
+    np.savez_compressed(str(tmp_path), **arrays)
+    tmp_path.replace(path)
+
+
+def _partition_hash(control_a: list[str], control_b: list[str]) -> str:
+    """Stable hash of the control partition used to define the source/target pools."""
+    payload = json.dumps(
+        {
+            'control_A': list(control_a),
+            'control_B': list(control_b),
+        },
+        sort_keys=True,
+        separators=(',', ':'),
+    ).encode()
+    return _hash_bytes(payload)
+
+
+def _load_or_build_background(
+    *,
+    shap_dir: Path,
+    source_condition: str,
+    X_source: np.ndarray,
+    y_source: np.ndarray,
+    source_subject_ids: np.ndarray | list[str],
+    feature_cols: list[str],
+    control_a: list[str],
+    control_b: list[str],
+    background_size: int = 100,
+    random_seed: int = 42,
+    protocol_manifest_hash: str | None = None,
+    preprocessing_manifest_hash: str | None = None,
+) -> dict[str, Any]:
+    """
+    Persist and reload one source-specific SHAP background per source condition.
+
+    The background is shared across both target directions for a source and is
+    therefore safe to pair with the shared within-condition SHAP cache.
+    """
+    background_path = shap_dir / f'{source_condition}_background.npz'
+    metadata_path = shap_dir / f'{source_condition}_background_meta.json'
+    expected_partition_hash = _partition_hash(control_a, control_b)
+    expected_source_subject_ids = list(
+        dict.fromkeys(np.asarray(source_subject_ids).astype(str).tolist())
+    )
+    expected_source_pool_hash = _hash_bytes(
+        np.ascontiguousarray(X_source).tobytes()
+        + np.ascontiguousarray(y_source.astype(np.int32)).tobytes()
+    )
+    expected_n_per_class = min(
+        int(np.sum(y_source == 1)),
+        int(np.sum(y_source == 0)),
+        max(int(background_size) // 2, 1),
+    )
+    expected_class_counts = {
+        'disease': int(expected_n_per_class),
+        'control': int(expected_n_per_class),
+    }
+    expected_background_rows = int(expected_n_per_class * 2)
+    expected_shap_version = getattr(shap, '__version__', 'unknown')
+
+    if background_path.exists() and metadata_path.exists():
+        try:
+            metadata = json.loads(metadata_path.read_text())
+            with np.load(background_path, allow_pickle=False) as loaded:
+                if 'background' not in loaded:
+                    raise KeyError('background')
+                background = loaded['background'].astype(np.float64)
+        except (BadZipFile, OSError, ValueError, KeyError, json.JSONDecodeError):
+            background = None
+            metadata = None
+        if background is not None and metadata is not None and (
+            metadata.get('source_condition') == source_condition
+            and metadata.get('feature_cols') == feature_cols
+            and metadata.get('partition_hash') == expected_partition_hash
+            and metadata.get('background_sha256') == _hash_array(background)
+            and metadata.get('background_rows_sha256') == _hash_array(background)
+            and metadata.get('background_size') == expected_background_rows
+            and metadata.get('class_counts') == expected_class_counts
+            and metadata.get('source_pool_rows') == int(len(X_source))
+            and metadata.get('source_pool_sha256') == expected_source_pool_hash
+            and metadata.get('source_subject_ids') == expected_source_subject_ids
+            and metadata.get('source_subject_count') == int(len(expected_source_subject_ids))
+            and metadata.get('random_seed') == int(random_seed)
+            and metadata.get('shap_version') == expected_shap_version
+            and metadata.get('protocol_manifest_hash') == protocol_manifest_hash
+            and metadata.get('preprocessing_manifest_hash') == preprocessing_manifest_hash
+        ):
+            return {
+                'background': background,
+                'source_indices': metadata.get('source_indices', []),
+                'class_counts': metadata.get('class_counts', {}),
+                'random_seed': int(metadata.get('random_seed', random_seed)),
+                'metadata_path': str(metadata_path),
+                'background_sha256': metadata['background_sha256'],
+                'metadata': metadata,
+            }
+
+    background_bundle = build_source_background(
+        X_source,
+        y_source,
+        k=background_size,
+        random_seed=random_seed,
+    )
+    background = np.asarray(background_bundle['background'], dtype=np.float64)
+    background_sha256 = _hash_array(background)
+
+    _atomic_savez_compressed(background_path, background=background)
+    metadata = {
+        'source_condition': source_condition,
+        'feature_cols': feature_cols,
+        'source_pool_rows': int(len(X_source)),
+        'source_subject_ids': expected_source_subject_ids,
+        'source_subject_count': int(len(np.unique(np.asarray(source_subject_ids).astype(str)))),
+        'source_pool_sha256': expected_source_pool_hash,
+        'source_indices': background_bundle['source_indices'],
+        'class_counts': background_bundle['class_counts'],
+        'eligible_class_rows': background_bundle['eligible_class_rows'],
+        'requested_background_size': int(background_size),
+        'random_seed': int(background_bundle['random_seed']),
+        'partition_hash': expected_partition_hash,
+        'background_sha256': background_sha256,
+        'background_rows_sha256': background_sha256,
+        'background_size': int(background.shape[0]),
+        'shap_version': expected_shap_version,
+        'protocol_manifest_hash': protocol_manifest_hash,
+        'preprocessing_manifest_hash': preprocessing_manifest_hash,
+    }
+    _atomic_write_text(metadata_path, json.dumps(metadata, indent=2))
+    background_bundle['metadata_path'] = str(metadata_path)
+    background_bundle['background_sha256'] = background_sha256
+    background_bundle['metadata'] = metadata
+    return background_bundle
 
 
 # ── Stratified subsampling ────────────────────────────────────────────────────
@@ -367,6 +549,29 @@ def _extract_base_value(expected_value: Any) -> float:
     return float(expected_value)
 
 
+def _transform_tree_inputs(
+    pipeline: Any,
+    X: np.ndarray,
+    background: Any,
+) -> tuple[Any, np.ndarray, np.ndarray]:
+    """
+    Align tree-explainer inputs with the fitted classifier's feature space.
+
+    In the v4 protocol, synthetic arms scale before SMOTE for every classifier,
+    so tree models may now see scaled inputs. TreeExplainer must therefore
+    operate on the same transformed representation the fitted classifier uses.
+    """
+    clf = pipeline.named_steps['clf']
+    scaler = pipeline.named_steps.get('scaler')
+    bg_array = np.asarray(background.data) if hasattr(background, 'data') else np.asarray(background)
+    X_tree = np.asarray(X, dtype=np.float64)
+    bg_tree = np.asarray(bg_array, dtype=np.float64)
+    if scaler is not None:
+        X_tree = scaler.transform(X_tree).astype(np.float64, copy=False)
+        bg_tree = scaler.transform(bg_tree).astype(np.float64, copy=False)
+    return clf, X_tree, bg_tree
+
+
 def compute_shap_values(
     clf_name: str,
     pipeline: Any,
@@ -446,18 +651,17 @@ def compute_shap_values(
     config = get_shap_config(clf_name)
     explainer_type = config['explainer']
 
-    clf = pipeline.named_steps['clf']
-
     if explainer_type == 'tree_tpd':
         # RF and DT: tree_path_dependent produces exact probability-scale output.
         # No background data argument needed — the tree structure encodes the
         # marginal distributions internally.
+        clf, X_tree, _ = _transform_tree_inputs(pipeline, X, background)
         explainer = shap.TreeExplainer(clf)
-        sv_raw = explainer.shap_values(X)
+        sv_raw = explainer.shap_values(X_tree)
         base_value = _extract_base_value(explainer.expected_value)
         shap_vals = _extract_class1_shap(sv_raw)
 
-        predicted = pipeline.predict_proba(X)[:, 1]
+        predicted = clf.predict_proba(X_tree)[:, 1]
         reconstructed = base_value + shap_vals.sum(axis=1)
         err = float(np.max(np.abs(reconstructed - predicted)))
         assert err < 1e-4, (
@@ -475,8 +679,7 @@ def compute_shap_values(
         # thousands of times per run.
         # In SHAP 0.51.0, the data= argument for interventional TreeExplainer
         # requires a raw numpy array, not a shap.kmeans DenseData object.
-        bg_array = np.asarray(background.data) if hasattr(
-            background, 'data') else np.asarray(background)
+        clf, X_tree, bg_array = _transform_tree_inputs(pipeline, X, background)
         explainer = shap.TreeExplainer(
             clf,
             data=bg_array,
@@ -484,11 +687,11 @@ def compute_shap_values(
             feature_perturbation='interventional',
             feature_names=feature_cols,
         )
-        sv_raw = explainer.shap_values(X)
+        sv_raw = explainer.shap_values(X_tree)
         base_value = _extract_base_value(explainer.expected_value)
         shap_vals = _extract_class1_shap(sv_raw)
 
-        predicted = pipeline.predict_proba(X)[:, 1]
+        predicted = clf.predict_proba(X_tree)[:, 1]
         reconstructed = base_value + shap_vals.sum(axis=1)
         err = float(np.max(np.abs(reconstructed - predicted)))
         if err >= 0.05:
@@ -509,7 +712,7 @@ def compute_shap_values(
     elif explainer_type == 'kernel':
         # SVM, QDA, KNN: KernelExplainer with the full pipeline's predict_proba.
         # Passing pipeline.predict_proba (not clf.predict_proba) ensures SHAP
-        # values are in the original v2 feature space. The RobustScaler
+        # values stay aligned to the original feature columns. The RobustScaler
         # inside the pipeline for SVM/KNN is absorbed into the pipeline call — no
         # manual pre-scaling is needed and no post-hoc space correction is required.
         #
@@ -652,10 +855,13 @@ def compute_family_delta_j(
     for family_name, idxs in family_map.items():
         within_sum = float(np.sum(mean_abs_within[idxs]))
         cross_sum = float(np.sum(mean_abs_cross[idxs]))
+        total_movement = float(np.sum(np.abs(mean_abs_within[idxs] - mean_abs_cross[idxs])))
         family_summary[family_name] = {
             'features': [feature_cols[idx] for idx in idxs],
             'mean_abs_within_sum': round(within_sum, 6),
             'mean_abs_cross_sum': round(cross_sum, 6),
+            'net_shift': round(abs(within_sum - cross_sum), 6),
+            'total_movement': round(total_movement, 6),
             'delta_j_sum': round(abs(within_sum - cross_sum), 6),
         }
     return family_summary
@@ -733,8 +939,8 @@ def save_shap_npz(
         path:        Destination file path. Parent directory must exist.
         shap_result: Dict returned by compute_shap_values().
     """
-    np.savez_compressed(
-        str(path),
+    _atomic_savez_compressed(
+        Path(path),
         shap_values=shap_result['shap_values'].astype(np.float32),
         base_value=np.float64(shap_result['base_value']),
         X_explained=shap_result['X_explained'].astype(np.float32),
@@ -742,6 +948,68 @@ def save_shap_npz(
         subject_ids=shap_result['subject_ids'].astype(str),
         sample_indices=shap_result['sample_indices'].astype(np.int64),
     )
+
+
+def _save_shap_artifact_with_metadata(
+    *,
+    npz_path: Path,
+    metadata_path: Path,
+    shap_result: dict[str, Any],
+    metadata: dict[str, Any],
+) -> tuple[str, str]:
+    """Persist one SHAP cache plus a JSON sidecar and return both SHA-256 hashes."""
+    save_shap_npz(npz_path, shap_result)
+    npz_sha = _hash_file(npz_path)
+    payload = dict(metadata)
+    payload['npz_sha256'] = npz_sha
+    _atomic_write_text(metadata_path, json.dumps(payload, indent=2))
+    meta_sha = _hash_file(metadata_path)
+    return npz_sha, meta_sha
+
+
+def _load_validated_shap_artifact(
+    *,
+    npz_path: Path,
+    metadata_path: Path,
+    expected_metadata: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Load a cached SHAP artifact only when its sidecar metadata matches expectations."""
+    if not npz_path.exists() or not metadata_path.exists():
+        return None
+    try:
+        metadata = json.loads(metadata_path.read_text())
+    except json.JSONDecodeError:
+        return None
+    for key, expected_value in expected_metadata.items():
+        if expected_value is None:
+            continue
+        if metadata.get(key) != expected_value:
+            return None
+    if metadata.get('npz_sha256') != _hash_file(npz_path):
+        return None
+    try:
+        with np.load(npz_path, allow_pickle=False) as loaded:
+            required_keys = {
+                'shap_values',
+                'base_value',
+                'X_explained',
+                'y_true',
+                'subject_ids',
+                'sample_indices',
+            }
+            if not required_keys.issubset(set(loaded.files)):
+                return None
+            return {
+                'metadata': metadata,
+                'shap_values': loaded['shap_values'].astype(np.float64),
+                'base_value': float(loaded['base_value']),
+                'X_explained': loaded['X_explained'].astype(np.float64),
+                'y_true': loaded['y_true'].astype(np.int64),
+                'subject_ids': loaded['subject_ids'].astype(str),
+                'sample_indices': loaded['sample_indices'].astype(np.int64),
+            }
+    except (BadZipFile, OSError, ValueError, KeyError):
+        return None
 
 
 # ── Direction-level orchestration ─────────────────────────────────────────────
@@ -756,8 +1024,12 @@ def run_shap_for_direction(
     shap_dir: str | Path,
     reuse_within: bool = True,
     feature_cols: list[str] | None = None,
-    feature_set_version: str = 'v2',
+    feature_set_version: str = 'v4',
     stability_n_resamples: int = _STABILITY_N_RESAMPLES,
+    protocol_manifest_hash: str | None = None,
+    preprocessing_manifest_hash: str | None = None,
+    downstream_execution_manifest_hash: str | None = None,
+    downstream_execution_id: str | None = None,
 ) -> dict[str, Any]:
     """
     Compute SHAP values and δj for all 7 classifiers for one transfer direction.
@@ -774,15 +1046,10 @@ def run_shap_for_direction(
     condition file already exists when this function runs, the stored arrays are
     loaded rather than recomputed, saving significant time on XGB/LGB.
 
-    Background data (class-balanced shap.kmeans, k=100) is computed once from the
-    source pool and shared across all 7 classifiers, ensuring a consistent marginal
-    reference distribution for both interventional TreeExplainer and KernelExplainer.
-
-    RNG seeding: a direction-specific seed is derived deterministically from the
-    source and target condition names so that each (source, target) pair produces
-    identical subsamples regardless of execution order. This means pd→hd and pd→als
-    can run in parallel on separate Modal containers and produce the same results
-    as if run sequentially. The caller does not need to manage an rng parameter.
+    Background data is computed once per source condition, persisted under shap_dir,
+    and reused across both target directions. Kernel-explainer subsampling remains
+    direction-specific so the cross-pool explained rows are still deterministic per
+    direction while the within-condition background stays source-intrinsic.
 
     Computational profile per direction:
       - RF, DT (tree_path_dependent, full pool ~5–7 K strides): seconds each
@@ -826,14 +1093,10 @@ def run_shap_for_direction(
     shap_dir = Path(shap_dir)
     shap_dir.mkdir(parents=True, exist_ok=True)
 
-    # Deterministic per-direction RNG: seed derived from condition names so each
-    # (source, target) pair produces identical subsamples regardless of which
-    # other directions were run before it or in parallel.
-    _CONDITION_SEEDS = {'pd': 0, 'hd': 1, 'als': 2}
-    direction_seed = 42 + \
-        _CONDITION_SEEDS[source_condition] * 10 + \
-        _CONDITION_SEEDS[target_condition]
-    local_rng = np.random.default_rng(direction_seed)
+    # Deterministic sampling seeds are derived independently for each logical
+    # draw so cache existence and direction order cannot perturb KernelExplainer
+    # explained-row sampling.
+    source_seed = _stable_sampling_seed('background', source_condition)
 
     # ── Construct pools ───────────────────────────────────────────────────────
     source_pool = df.filter(
@@ -857,10 +1120,31 @@ def run_shap_for_direction(
         selected_feature_cols).to_numpy().astype(np.float64)
     y_target = target_pool['label'].to_numpy().astype(int)
     target_subject_ids = target_pool['subject_id'].to_numpy()
+    source_pool_sha256 = _hash_bytes(
+        np.ascontiguousarray(X_source).tobytes()
+        + np.ascontiguousarray(y_source.astype(np.int32)).tobytes()
+    )
+    target_pool_sha256 = _hash_bytes(
+        np.ascontiguousarray(X_target).tobytes()
+        + np.ascontiguousarray(y_target.astype(np.int32)).tobytes()
+    )
 
-    # Class-balanced background computed once from source pool, shared across all 7
-    # classifiers. local_rng seeds the balanced sampling deterministically per direction.
-    background = get_background_data(X_source, y_source, k=100, rng=local_rng)
+    # Source-specific class-balanced background persisted once per source.
+    background_bundle = _load_or_build_background(
+        shap_dir=shap_dir,
+        source_condition=source_condition,
+        X_source=X_source,
+        y_source=y_source,
+        source_subject_ids=source_subject_ids,
+        feature_cols=selected_feature_cols,
+        control_a=control_a,
+        control_b=control_b,
+        background_size=100,
+        random_seed=source_seed,
+        protocol_manifest_hash=protocol_manifest_hash,
+        preprocessing_manifest_hash=preprocessing_manifest_hash,
+    )
+    background = background_bundle['background']
 
     clf_names = ['rf', 'knn', 'svm', 'dt', 'qda', 'xgb', 'lgbm']
     clf_seed_offset = {name: idx for idx, name in enumerate(clf_names)}
@@ -869,27 +1153,79 @@ def run_shap_for_direction(
     for clf_name in clf_names:
         model_path = models_dir / f'{source_condition}_{clf_name}.joblib'
         pipeline = joblib.load(model_path)
+        model_sha256 = _hash_file(model_path)
 
         config = get_shap_config(clf_name)
         is_kernel = config['explainer'] == 'kernel'
+        within_sampling_seed = _stable_sampling_seed(
+            'within_explained_rows',
+            source_condition,
+            clf_name,
+        )
+        cross_sampling_seed = _stable_sampling_seed(
+            'cross_explained_rows',
+            source_condition,
+            target_condition,
+            clf_name,
+        )
+        if is_kernel:
+            _, _, expected_idx_w = subsample_stratified(
+                X_source,
+                y_source,
+                config['n_explained'],
+                np.random.default_rng(within_sampling_seed),
+            )
+        else:
+            expected_idx_w = np.arange(len(y_source), dtype=int)
 
         # ── Within-condition SHAP ─────────────────────────────────────────────
         # File path encodes source condition only (not direction), so it is
         # shared across both target directions for this source model.
-        within_npz_path = shap_dir / \
-            f'{source_condition}_{clf_name}_within.npz'
+        within_npz_path = shap_dir / f'{source_condition}_{clf_name}_within.npz'
+        within_meta_path = shap_dir / f'{source_condition}_{clf_name}_within.meta.json'
 
-        if reuse_within and within_npz_path.exists():
+        expected_within_metadata = {
+            'source_condition': source_condition,
+            'target_condition': None,
+            'pool_role': 'within',
+            'classifier': clf_name,
+            'feature_cols': selected_feature_cols,
+            'model_sha256': model_sha256,
+            'background_sha256': background_bundle.get('background_sha256'),
+            'source_pool_sha256': source_pool_sha256,
+            'source_pool_rows': int(len(X_source)),
+            'source_subject_ids': list(dict.fromkeys(np.asarray(source_subject_ids).astype(str).tolist())),
+            'partition_hash': background_bundle['metadata']['partition_hash'],
+            'background_size': background_bundle['metadata'].get('background_size'),
+            'class_counts': background_bundle['metadata'].get('class_counts'),
+            'explainer_type': config['explainer'],
+            'shap_version': getattr(shap, '__version__', 'unknown'),
+            'protocol_manifest_hash': protocol_manifest_hash,
+            'preprocessing_manifest_hash': preprocessing_manifest_hash,
+            'downstream_execution_manifest_hash': downstream_execution_manifest_hash,
+            'downstream_execution_id': downstream_execution_id,
+            'sampling_seed': int(within_sampling_seed),
+            'sample_indices_sha256': _hash_array(expected_idx_w.astype(np.int64)),
+        }
+
+        loaded_within = None
+        if reuse_within:
+            loaded_within = _load_validated_shap_artifact(
+                npz_path=within_npz_path,
+                metadata_path=within_meta_path,
+                expected_metadata=expected_within_metadata,
+            )
+
+        if loaded_within is not None:
             # Load pre-computed within-condition SHAP to avoid redundant computation
             # when this source condition is used for its second target direction.
             # Disabled (reuse_within=False) in the Modal parallel runner to eliminate
             # the race condition where two containers sharing the same source condition
             # could simultaneously write and read the same within-condition file.
-            loaded_w = np.load(within_npz_path)
-            within_shap = loaded_w['shap_values'].astype(np.float64)
-            base_within = float(loaded_w['base_value'])
-            X_within_loaded = loaded_w['X_explained'].astype(np.float64)
-            within_subject_ids = loaded_w['subject_ids'].astype(str)
+            within_shap = loaded_within['shap_values']
+            base_within = loaded_within['base_value']
+            X_within_loaded = loaded_within['X_explained']
+            within_subject_ids = loaded_within['subject_ids']
             predicted_w = pipeline.predict_proba(X_within_loaded)[:, 1]
             reconstructed_w = base_within + within_shap.sum(axis=1)
             errors_w = np.abs(reconstructed_w - predicted_w)
@@ -898,10 +1234,13 @@ def run_shap_for_direction(
                 else float(np.max(errors_w))
             )
             n_within = len(within_shap)
+            within_npz_sha = loaded_within['metadata']['npz_sha256']
+            within_meta_sha = _hash_file(within_meta_path)
         else:
             if is_kernel:
+                within_rng = np.random.default_rng(within_sampling_seed)
                 X_w, y_w, idx_w = subsample_stratified(
-                    X_source, y_source, config['n_explained'], local_rng
+                    X_source, y_source, config['n_explained'], within_rng
                 )
                 subject_ids_w = source_subject_ids[idx_w]
             else:
@@ -915,7 +1254,30 @@ def run_shap_for_direction(
                 selected_feature_cols,
                 pipeline_path=model_path,
             )
-            save_shap_npz(within_npz_path, result_within)
+            within_metadata = {
+                **expected_within_metadata,
+                'source_subject_ids': list(dict.fromkeys(np.asarray(source_subject_ids).astype(str).tolist())),
+                'sample_indices': result_within['sample_indices'].astype(int).tolist(),
+                'sample_indices_sha256': _hash_array(result_within['sample_indices']),
+                'subject_ids': result_within['subject_ids'].astype(str).tolist(),
+                'explained_row_count': int(len(result_within['shap_values'])),
+                'background_metadata_path': background_bundle.get('metadata_path'),
+                'background_metadata_sha256': _hash_file(background_bundle['metadata_path']),
+                'sampling_seed': int(within_sampling_seed),
+                'kernel_nsamples': config.get('nsamples'),
+                'preprocessing_manifest_hash': preprocessing_manifest_hash,
+                'downstream_execution_manifest_hash': downstream_execution_manifest_hash,
+                'downstream_execution_id': downstream_execution_id,
+                'source_pool_rows': int(len(X_source)),
+                'background_size': background_bundle['metadata'].get('background_size'),
+                'class_counts': background_bundle['metadata'].get('class_counts'),
+            }
+            within_npz_sha, within_meta_sha = _save_shap_artifact_with_metadata(
+                npz_path=within_npz_path,
+                metadata_path=within_meta_path,
+                shap_result=result_within,
+                metadata=within_metadata,
+            )
             within_shap = result_within['shap_values']
             base_within = result_within['base_value']
             completeness_within = result_within['completeness_error']
@@ -927,10 +1289,15 @@ def run_shap_for_direction(
             shap_dir /
             f'{source_condition}_{clf_name}_cross_{target_condition}.npz'
         )
+        cross_meta_path = (
+            shap_dir /
+            f'{source_condition}_{clf_name}_cross_{target_condition}.meta.json'
+        )
 
         if is_kernel:
+            cross_rng = np.random.default_rng(cross_sampling_seed)
             X_c, y_c, idx_c = subsample_stratified(
-                X_target, y_target, config['n_explained'], local_rng
+                X_target, y_target, config['n_explained'], cross_rng
             )
             subject_ids_c = target_subject_ids[idx_c]
         else:
@@ -944,7 +1311,42 @@ def run_shap_for_direction(
             selected_feature_cols,
             pipeline_path=model_path,
         )
-        save_shap_npz(cross_npz_path, result_cross)
+        cross_metadata = {
+            'source_condition': source_condition,
+            'target_condition': target_condition,
+            'pool_role': 'cross',
+            'classifier': clf_name,
+            'feature_cols': selected_feature_cols,
+            'model_sha256': model_sha256,
+            'background_sha256': background_bundle.get('background_sha256'),
+            'source_pool_sha256': source_pool_sha256,
+            'source_pool_rows': int(len(X_source)),
+            'target_pool_sha256': target_pool_sha256,
+            'source_subject_ids': list(dict.fromkeys(np.asarray(source_subject_ids).astype(str).tolist())),
+            'partition_hash': background_bundle['metadata']['partition_hash'],
+            'background_size': background_bundle['metadata'].get('background_size'),
+            'class_counts': background_bundle['metadata'].get('class_counts'),
+            'explainer_type': config['explainer'],
+            'protocol_manifest_hash': protocol_manifest_hash,
+            'preprocessing_manifest_hash': preprocessing_manifest_hash,
+            'downstream_execution_manifest_hash': downstream_execution_manifest_hash,
+            'downstream_execution_id': downstream_execution_id,
+            'shap_version': getattr(shap, '__version__', 'unknown'),
+            'sample_indices': result_cross['sample_indices'].astype(int).tolist(),
+            'sample_indices_sha256': _hash_array(result_cross['sample_indices']),
+            'subject_ids': result_cross['subject_ids'].astype(str).tolist(),
+            'explained_row_count': int(len(result_cross['shap_values'])),
+            'background_metadata_path': background_bundle.get('metadata_path'),
+            'background_metadata_sha256': _hash_file(background_bundle['metadata_path']),
+            'sampling_seed': int(cross_sampling_seed),
+            'kernel_nsamples': config.get('nsamples'),
+        }
+        cross_npz_sha, cross_meta_sha = _save_shap_artifact_with_metadata(
+            npz_path=cross_npz_path,
+            metadata_path=cross_meta_path,
+            shap_result=result_cross,
+            metadata=cross_metadata,
+        )
         cross_shap = result_cross['shap_values']
         base_cross = result_cross['base_value']
         completeness_cross = result_cross['completeness_error']
@@ -963,7 +1365,14 @@ def run_shap_for_direction(
             shap_cross=cross_shap,
             subject_ids_within=within_subject_ids,
             subject_ids_cross=cross_subject_ids,
-            rng=np.random.default_rng(direction_seed + 100 * clf_seed_offset[clf_name]),
+            rng=np.random.default_rng(
+                _stable_sampling_seed(
+                    'delta_j_stability',
+                    source_condition,
+                    target_condition,
+                    clf_name,
+                )
+            ),
             n_resamples=stability_n_resamples,
         )
 
@@ -975,6 +1384,18 @@ def run_shap_for_direction(
             'base_value_cross':          base_cross,
             'completeness_error_within': completeness_within,
             'completeness_error_cross':  completeness_cross,
+            'model_path':                str(model_path),
+            'model_sha256':              model_sha256,
+            'background_metadata_path':  background_bundle.get('metadata_path'),
+            'background_sha256':         background_bundle.get('background_sha256'),
+            'within_npz_path':           str(within_npz_path),
+            'within_metadata_path':      str(within_meta_path),
+            'within_npz_sha256':         within_npz_sha,
+            'within_metadata_sha256':    within_meta_sha,
+            'cross_npz_path':            str(cross_npz_path),
+            'cross_metadata_path':       str(cross_meta_path),
+            'cross_npz_sha256':          cross_npz_sha,
+            'cross_metadata_sha256':     cross_meta_sha,
             'mean_abs_within':           dj['mean_abs_within'].tolist(),
             'mean_abs_cross':            dj['mean_abs_cross'].tolist(),
             'delta_j':                   dj['delta_j'].tolist(),
@@ -1011,5 +1432,7 @@ def run_shap_for_direction(
         'feature_cols': selected_feature_cols,
         'top1_count': top1_count.tolist(),
         'top3_count': top3_count.tolist(),
+        'background_metadata_path': background_bundle.get('metadata_path'),
+        'background_sha256': background_bundle.get('background_sha256'),
     }
     return direction_results

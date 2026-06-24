@@ -14,10 +14,13 @@ from typing import Any
 import numpy as np
 import polars as pl
 
+from v4_provenance import atomic_write_json
+
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 # The 12 gait timing features as ordered in the .ts files (columns 2–13).
-# Column 1 (elapsed_s) is discarded during loading.
+# Column 1 (elapsed_s) is preserved in v4 for temporal provenance checks but
+# is not part of the learned feature set unless explicitly selected later.
 FEATURE_COLS: list[str] = [
     'left_stride_s',
     'right_stride_s',
@@ -88,6 +91,8 @@ CONTROL_B_V3: list[str] = [
     'control5', 'control8', 'control9', 'control10',
     'control12', 'control13', 'control14', 'control15',
 ]
+CONTROL_A_V4: list[str] = list(CONTROL_A_V3)
+CONTROL_B_V4: list[str] = list(CONTROL_B_V3)
 
 DEFAULT_SUBJECT_DESCRIPTION = (
     Path(__file__).resolve().parent.parent
@@ -126,7 +131,8 @@ def load_raw_data(data_dir: str) -> pl.DataFrame:
     Args:
         data_dir: Path to the directory containing the .ts files.
     Returns:
-        Raw Polars DataFrame with columns: FEATURE_COLS + ['subject_id', 'condition'].
+        Raw Polars DataFrame with columns:
+        ['elapsed_s', 'raw_stride_index'] + FEATURE_COLS + ['subject_id', 'condition'].
         All 15,160 raw strides (before any filtering).
     """
     frames: list[pl.DataFrame] = []
@@ -148,7 +154,7 @@ def load_raw_data(data_dir: str) -> pl.DataFrame:
                 'elapsed_s'] + FEATURE_COLS},
         )
 
-        df = df.drop('elapsed_s').with_columns([
+        df = df.with_row_index('raw_stride_index').with_columns([
             pl.lit(subject_id).alias('subject_id'),
             pl.lit(condition).alias('condition'),
         ])
@@ -200,9 +206,13 @@ def filter_pause_events(df: pl.DataFrame) -> pl.DataFrame:
     return after_pct_filter
 
 
-def _scaled_mad_bounds(values: np.ndarray) -> tuple[float, float] | None:
+def _scaled_mad_bounds(
+    values: np.ndarray,
+    *,
+    robust_mad_multiplier: float = 3.0,
+) -> tuple[float, float] | None:
     """
-    Return median ± 3 * scaled MAD bounds for a 1D array.
+    Return median ± k * scaled MAD bounds for a 1D array.
 
     If the scaled MAD is zero or non-finite, returns None to indicate that no
     robust outlier filter should be applied to this variable.
@@ -213,7 +223,7 @@ def _scaled_mad_bounds(values: np.ndarray) -> tuple[float, float] | None:
     scaled_mad = 1.4826 * mad
     if not np.isfinite(scaled_mad) or scaled_mad <= 0:
         return None
-    width = 3.0 * scaled_mad
+    width = float(robust_mad_multiplier) * scaled_mad
     return median - width, median + width
 
 
@@ -221,6 +231,7 @@ def filter_artifact_rows_v3(
     df: pl.DataFrame,
     *,
     min_subject_strides_for_robust: int = 100,
+    robust_mad_multiplier: float = 3.0,
     return_stats: bool = False,
 ) -> pl.DataFrame | tuple[pl.DataFrame, dict[str, Any]]:
     """
@@ -233,7 +244,7 @@ def filter_artifact_rows_v3(
       - all percentages must lie in [0, 100]
 
     Stage 2 applies a per-subject robust outlier filter on a small timing block
-    (left/right stride and double support) using median ± 3 * scaled MAD. This
+    (left/right stride and double support) using median ± k * scaled MAD. This
     is intended to suppress turn, pause, and acceleration artifacts that can
     disproportionately affect variability and DFA features. If the robust stage
     would leave a subject with fewer than `min_subject_strides_for_robust`
@@ -286,7 +297,10 @@ def filter_artifact_rows_v3(
         robust_mask = np.ones(len(subject_pd), dtype=bool)
 
         for col in ROBUST_OUTLIER_COLS:
-            bounds = _scaled_mad_bounds(subject_pd[col].to_numpy())
+            bounds = _scaled_mad_bounds(
+                subject_pd[col].to_numpy(),
+                robust_mad_multiplier=robust_mad_multiplier,
+            )
             if bounds is None:
                 continue
             lower, upper = bounds
@@ -341,6 +355,7 @@ def filter_artifact_rows_v3(
         'rows_removed_hard_filter': raw_rows - hard_rows,
         'rows_removed_robust_filter': robust_removed_rows,
         'subjects_skipped_robust_filter': skipped_subjects,
+        'robust_mad_multiplier': float(robust_mad_multiplier),
         'negative_double_support_rows_removed': int(
             working.filter(pl.col('double_support_s') < 0.0).height
         ),
@@ -396,6 +411,11 @@ def get_control_partition(
             'control_A': list(CONTROL_A_V3),
             'control_B': list(CONTROL_B_V3),
         }
+    if version == 'v4':
+        return {
+            'control_A': list(CONTROL_A_V4),
+            'control_B': list(CONTROL_B_V4),
+        }
     raise ValueError(f"Unknown control partition version '{version}'")
 
 
@@ -428,8 +448,26 @@ def partition_controls(
 
     if output_path is not None:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, 'w') as f:
-            json.dump(partition, f, indent=2)
+        atomic_write_json(output_path, partition)
+        if version in {'v3', 'v4'}:
+            diverse_candidates = enumerate_diverse_sensitivity_partitions(
+                top_k=3,
+                max_age_delta_years=2.0,
+                max_speed_delta_m_per_s=0.15,
+                max_overlap_with_main=5,
+                max_pairwise_overlap=6,
+                random_seed=42,
+            )
+            diverse_candidates_path = (
+                Path(output_path).parent /
+                f'control_partition_diverse_candidates_{version}.json'
+            )
+            atomic_write_json(diverse_candidates_path, diverse_candidates)
+            print(
+                f'Diverse sensitivity candidates written to '
+                f'{diverse_candidates_path}',
+                flush=True,
+            )
 
     return partition
 
@@ -559,3 +597,254 @@ def enumerate_balanced_control_partitions(
 
     ranked.sort(key=lambda item: item['score'])
     return ranked[:top_k]
+
+
+def enumerate_diverse_sensitivity_partitions(
+    top_k: int = 3,
+    max_age_delta_years: float = 2.0,
+    max_speed_delta_m_per_s: float = 0.15,
+    max_overlap_with_main: int = 5,
+    min_pairwise_overlap: int = 0,
+    max_pairwise_overlap: int = 6,
+    random_seed: int = 42,
+) -> list[dict[str, Any]]:
+    """
+    Generate a diverse stratified sample of balanced control partitions
+    for sensitivity analysis, explicitly excluding the main v3 partition.
+
+    Unlike enumerate_balanced_control_partitions (which returns the
+    top-K by demographic score and always includes the main partition),
+    this function:
+      1. Enumerates all valid balanced 8/8 splits of the 16 control
+         subjects subject to the sex-balance constraint preserved in
+         enumerate_balanced_control_partitions.
+      2. Filters to those meeting broader demographic balance criteria
+         (max_age_delta_years, max_speed_delta_m_per_s).
+      3. Removes the main authoritative v3 partition (loaded from
+         CONTROL_A_V3 / CONTROL_B_V3 constants in this module).
+      4. Removes any partition where control_A overlaps with the main
+         CONTROL_A_V3 by more than max_overlap_with_main subjects.
+      5. From the remaining candidates, selects top_k using stratified
+         diversity sampling:
+           - Sort remaining candidates by overlap_with_main ascending
+             (most different first).
+           - Divide into top_k equal-sized bins.
+           - From each bin, select the candidate with the best (lowest)
+             demographic score within that bin.
+           - This ensures the selected partitions span a range of
+             differences from the main split rather than clustering
+             at one end.
+      6. For each selected partition, compute overlap_with_main as the
+         count of subjects in control_A that also appear in the main
+         CONTROL_A_V3. Report this in the returned dict.
+
+    Each returned dict has the same schema as
+    enumerate_balanced_control_partitions but adds:
+        'overlap_with_main': int  -- how many control_A subjects are
+                                     shared with the main v3 partition
+        'selection_bin': int      -- which diversity bin (1..top_k)
+                                     this partition came from
+
+    The random_seed parameter is used only if tie-breaking is needed
+    within a bin; prefer the lowest demographic score first.
+
+    Raises ValueError if fewer than top_k valid diverse candidates
+    exist after all filtering steps. Print a diagnostic in that case
+    listing how many candidates survived each filter step.
+    """
+    metadata_path = DEFAULT_SUBJECT_DESCRIPTION
+    meta = pl.read_csv(str(metadata_path), separator='\t',
+                       null_values=['MISSING'])
+    subject_id_col = _subject_description_id_col(meta)
+    controls = (
+        meta.filter(pl.col('GROUP') == 'control')
+        .with_columns([
+            pl.col('AGE(YRS)').cast(pl.Float64),
+            pl.col('GaitSpeed(m/sec)').cast(pl.Float64),
+            pl.col('HEIGHT(meters)').cast(pl.Float64),
+            pl.col('Weight(kg)').cast(pl.Float64),
+            pl.col(subject_id_col).str.extract(
+                r'(\d+)').cast(pl.Int64).alias('_subject_num'),
+        ])
+        .sort('_subject_num')
+    )
+
+    rows = controls.to_dicts()
+    age_sd = float(controls['AGE(YRS)'].std(ddof=0))
+    speed_sd = float(controls['GaitSpeed(m/sec)'].std(ddof=0))
+    main_control_a = set(CONTROL_A_V3)
+    main_control_b = set(CONTROL_B_V3)
+
+    valid_sex_balanced = 0
+    demographic_balanced: list[dict[str, Any]] = []
+    for combo in combinations(range(len(rows)), 8):
+        group_a_rows = [rows[i] for i in combo]
+        group_b_rows = [row for idx, row in enumerate(rows) if idx not in combo]
+
+        male_a = sum(1 for row in group_a_rows if row['gender'] == 'm')
+        male_b = sum(1 for row in group_b_rows if row['gender'] == 'm')
+        if male_a != 1 or male_b != 1:
+            continue
+
+        valid_sex_balanced += 1
+
+        age_a = float(np.mean([row['AGE(YRS)'] for row in group_a_rows]))
+        age_b = float(np.mean([row['AGE(YRS)'] for row in group_b_rows]))
+        speed_a = float(np.mean([row['GaitSpeed(m/sec)'] for row in group_a_rows]))
+        speed_b = float(np.mean([row['GaitSpeed(m/sec)'] for row in group_b_rows]))
+        age_delta = abs(age_a - age_b)
+        speed_delta = abs(speed_a - speed_b)
+
+        if age_delta > max_age_delta_years or speed_delta > max_speed_delta_m_per_s:
+            continue
+
+        control_a = sorted(
+            [row[subject_id_col] for row in group_a_rows],
+            key=lambda s: int(re.search(r'\d+', s).group()),
+        )
+        control_b = sorted(
+            [row[subject_id_col] for row in group_b_rows],
+            key=lambda s: int(re.search(r'\d+', s).group()),
+        )
+        score = (
+            age_delta / (age_sd + 1e-12) +
+            speed_delta / (speed_sd + 1e-12)
+        )
+        overlap_with_main = len(set(control_a) & main_control_a)
+        demographic_balanced.append({
+            'score': score,
+            'control_A': control_a,
+            'control_B': control_b,
+            'age_delta_years': age_delta,
+            'gait_speed_delta_m_per_s': speed_delta,
+            'overlap_with_main': overlap_with_main,
+        })
+
+    without_main = [
+        candidate for candidate in demographic_balanced
+        if not (
+            set(candidate['control_A']) == main_control_a and
+            set(candidate['control_B']) == main_control_b
+        )
+    ]
+    overlap_filtered = [
+        candidate for candidate in without_main
+        if candidate['overlap_with_main'] <= max_overlap_with_main
+    ]
+
+    diagnostic_counts = {
+        'valid_sex_balanced': valid_sex_balanced,
+        'demographic_balanced': len(demographic_balanced),
+        'excluding_main_partition': len(without_main),
+        'overlap_filtered': len(overlap_filtered),
+    }
+
+    if len(overlap_filtered) < top_k:
+        print(
+            'Diverse sensitivity partition generation failed: '
+            f'{diagnostic_counts}',
+            flush=True,
+        )
+        raise ValueError(
+            f'Only {len(overlap_filtered)} valid diverse candidates remain '
+            f'after filtering; need at least {top_k}.'
+        )
+
+    sorted_candidates = sorted(
+        overlap_filtered,
+        key=lambda item: (item['overlap_with_main'], item['score']),
+    )
+    candidate_bins = np.array_split(np.asarray(sorted_candidates, dtype=object), top_k)
+    rng = np.random.default_rng(random_seed)
+
+    def _ordered_bin_candidates(bin_candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        by_score: dict[float, list[dict[str, Any]]] = {}
+        for candidate in bin_candidates:
+            by_score.setdefault(float(candidate['score']), []).append(candidate)
+
+        ordered: list[dict[str, Any]] = []
+        for score in sorted(by_score):
+            group = list(by_score[score])
+            if len(group) > 1:
+                perm = rng.permutation(len(group))
+                group = [group[idx] for idx in perm]
+            ordered.extend(group)
+        return ordered
+
+    selected: list[dict[str, Any]] = []
+    for bin_idx, raw_bin in enumerate(candidate_bins, start=1):
+        bin_candidates = [dict(candidate) for candidate in raw_bin.tolist()]
+        chosen: dict[str, Any] | None = None
+
+        for candidate in _ordered_bin_candidates(bin_candidates):
+            candidate_a = set(candidate['control_A'])
+            pairwise_ok = True
+            for prior in selected:
+                overlap = len(candidate_a & set(prior['control_A']))
+                if overlap < min_pairwise_overlap or overlap > max_pairwise_overlap:
+                    pairwise_ok = False
+                    break
+            if pairwise_ok:
+                chosen = candidate
+                break
+
+        if chosen is None:
+            print(
+                'Diverse sensitivity partition generation failed during '
+                f'bin selection: {diagnostic_counts}, bin={bin_idx}',
+                flush=True,
+            )
+            raise ValueError(
+                f'Could not find a pairwise-diverse candidate in selection bin {bin_idx}.'
+            )
+
+        chosen['selection_bin'] = bin_idx
+        selected.append(chosen)
+
+    if len(selected) < top_k:
+        print(
+            'Diverse sensitivity partition generation failed after bin '
+            f'selection: {diagnostic_counts}',
+            flush=True,
+        )
+        raise ValueError(
+            f'Only selected {len(selected)} diverse candidates; expected {top_k}.'
+        )
+
+    return selected
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--diverse-candidates-only',
+        action='store_true',
+        help='Generate only the diverse sensitivity candidates and exit.',
+    )
+    args, _ = parser.parse_known_args()
+    if args.diverse_candidates_only:
+        candidates = enumerate_diverse_sensitivity_partitions(
+            top_k=3,
+            max_age_delta_years=2.0,
+            max_speed_delta_m_per_s=0.15,
+            max_overlap_with_main=5,
+            max_pairwise_overlap=6,
+            random_seed=42,
+        )
+        out_path = Path(
+            'data/processed/v3/control_partition_diverse_candidates_v3.json'
+        )
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, 'w') as f:
+            json.dump(candidates, f, indent=2)
+        print(f'Written {len(candidates)} diverse candidates to {out_path}')
+        for c in candidates:
+            print(
+                f"  bin={c['selection_bin']} overlap={c['overlap_with_main']} "
+                f"score={c['score']:.6f} "
+                f"age_delta={c['age_delta_years']:.3f} "
+                f"speed_delta={c['gait_speed_delta_m_per_s']:.6f} "
+                f"control_A={c['control_A']}"
+            )
