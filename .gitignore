@@ -1,50 +1,116 @@
-# Data
+# ---------------------------------------------------------------------
+# Raw/private data
+# ---------------------------------------------------------------------
 data/raw/
 
-# Private context
+# ---------------------------------------------------------------------
+# Private/local context and agent state
+# ---------------------------------------------------------------------
 context/
 CLAUDE.md
-*.html
-notebooks/*.pdf
-*.txt
 .codex
-logs/
+.agents/
+
+# Local scratch / external tools
 old/
-IEEE-conference-template-062824/
+FigMirror/
+modal_handoff/
 .tmp_ipython/
 .tmp_jupyter/
 explanations/
 
-# Experiment outputs
-experiments/models/**/*.joblib
+# Broad local text/html dumps
+*.html
+*.txt
+
+# ---------------------------------------------------------------------
+# Logs and temporary execution records
+# ---------------------------------------------------------------------
+logs/
+*.log
+*.out
+
+# ---------------------------------------------------------------------
+# Python / Jupyter
+# ---------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.tmp_jupyter/
+.tmp_ipython/
+
+# Notebook exports / executed copies
+notebooks/pdf/
+notebooks/*.pdf
+*_executed.ipynb
+
+# ---------------------------------------------------------------------
+# Environments
+# ---------------------------------------------------------------------
+.env
+venv/
+.venv/
+env/
+
+# ---------------------------------------------------------------------
+# IDE / OS
+# ---------------------------------------------------------------------
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---------------------------------------------------------------------
+# Modal / preflight / smoke outputs
+# ---------------------------------------------------------------------
+data/processed/v4_preflight/
+
+experiments/results/v4_preflight/
+experiments/results/v4_smoke/
+experiments/models/v4_preflight/
+experiments/shap/v4_preflight/
+
 experiments/results/**/*_smoke*.json
 experiments/results/**/*_partial.json
 experiments/results/**/*_local*.json
+
+# ---------------------------------------------------------------------
+# Heavy/intermediate experiment artifacts
+# ---------------------------------------------------------------------
+experiments/models/**/*.joblib
+
+experiments/results/v4/classifier_shards/
+experiments/results/v4/selection_traces/
+experiments/results/v4/control_split_sensitivity_runs/
+
+experiments/models/v4/within_folds/
+experiments/models/v4/control_split_sensitivity_runs/
+
+# SHAP raw caches; keep canonical shap_results_v4.json instead
 experiments/shap/**/*.npz
-report/figures/**/png/*.png
+experiments/shap/v1/
+experiments/shap/v2/
+experiments/shap/v3/
+experiments/shap/v4/
 
-# Python
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
+report/figures/v1/
+report/figures/v2/
+report/figures/v3/
 
-# Environment
-.env
-venv/
-.venv
-.venv/
+# ---------------------------------------------------------------------
+# LaTeX / report build artifacts
+# ---------------------------------------------------------------------
+report/**/*.aux
+report/**/*.bbl
+report/**/*.blg
+report/**/*.fdb_latexmk
+report/**/*.fls
+report/**/*.log
+report/**/*.out
+report/**/*.synctex.gz
+report/**/*.toc
+report/**/*.nav
+report/**/*.snm
 
-# Windows
-Thumbs.db
-desktop.ini
-.vscode/
-.DS_Store
-
-# LaTeX build artifacts
-report/main.aux
-report/main.bbl
-report/main.blg
-report/main.fdb_latexmk
-report/main.fls
-report/main.log
-report/main.synctex.gz
+# Local IEEE template copy if stored at repo root
+IEEE-conference-template-062824/
