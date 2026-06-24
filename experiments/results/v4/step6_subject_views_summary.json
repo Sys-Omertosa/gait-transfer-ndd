@@ -1,0 +1,292 @@
+{
+  "protocol_manifest_sha256": "4de674e9fa5eb8abd86a6dd6d62fe1bfe4cb90edbfd4c7f52c9d6a9cd3ae7116",
+  "preprocessing_manifest_sha256": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
+  "downstream_execution_manifest_sha256": "a649454346c475502657ed2c86f890181dcd861b816a5c46e29897105697c897",
+  "subject_level_matrix_sha256": "4e00a8426f39bbd11312620c264dbd8f0ab7e8fbcbf4a62f1211dfbc077148e2",
+  "notebook_source_sha256": "a1db215041ea7ce77ae6fbb87c4edb1e2cbf1e24e06c34235c5f338c3e76046b",
+  "package_versions": {
+    "numpy": "2.4.4",
+    "polars": "1.39.3",
+    "scikit-learn": "1.8.0",
+    "imbalanced-learn": "0.14.1",
+    "xgboost": "3.2.0",
+    "lightgbm": "4.6.0",
+    "shap": "0.51.0",
+    "joblib": "1.5.3",
+    "modal": "1.4.1"
+  },
+  "random_seeds": {
+    "pca": 42,
+    "kmeans": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "bootstrap": 101
+  },
+  "views": {
+    "disease_only": {
+      "subject_count": 47,
+      "active_feature_list": [
+        "left_stride_s",
+        "right_stride_s",
+        "left_swing_s",
+        "right_swing_s",
+        "left_swing_pct",
+        "right_swing_pct",
+        "left_stance_s",
+        "right_stance_s",
+        "double_support_s",
+        "double_support_pct",
+        "asymmetry_index",
+        "cv_stride",
+        "cv_swing",
+        "dfa_alpha_stride"
+      ],
+      "standardization_rule": "z-score across subjects within each active view before PCA and K-means",
+      "pca_explained_variance": [
+        0.49532765075589685,
+        0.20405348036556142,
+        0.18260391397092918,
+        0.064853423993779,
+        0.04631073225283838
+      ],
+      "pca_coordinates_path": "report/tables/v4/step6_disease_only_pca_coordinates.csv",
+      "k_range_evaluated": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "silhouette_score": 0.46249301102725554,
+      "inertia": 432.4001558397713,
+      "calinski_harabasz_score": 23.478236189563685,
+      "davies_bouldin_score": 1.1190802618057194,
+      "ari_against_relevant_labels": 0.013472519495572141,
+      "seed_stability_mean_ari": 0.9594503351005301,
+      "subject_bootstrap_stability_mean_ari": 0.058783864035838206,
+      "cluster_composition": {
+        "als": {
+          "0": 9,
+          "1": 4
+        },
+        "hd": {
+          "0": 16,
+          "1": 3
+        },
+        "pd": {
+          "0": 14,
+          "1": 1
+        }
+      },
+      "cautious_interpretation_metadata": {
+        "exploratory_only": true,
+        "not_for_confirmatory_hypothesis_testing": true,
+        "best_k_selected_from_internal_unsupervised_criteria": true
+      }
+    },
+    "all_subjects": {
+      "subject_count": 63,
+      "active_feature_list": [
+        "left_stride_s",
+        "right_stride_s",
+        "left_swing_s",
+        "right_swing_s",
+        "left_swing_pct",
+        "right_swing_pct",
+        "left_stance_s",
+        "right_stance_s",
+        "double_support_s",
+        "double_support_pct",
+        "asymmetry_index",
+        "cv_stride",
+        "cv_swing",
+        "dfa_alpha_stride"
+      ],
+      "standardization_rule": "z-score across subjects within each active view before PCA and K-means",
+      "pca_explained_variance": [
+        0.516788081629273,
+        0.20881220618773685,
+        0.16458418317946363,
+        0.059123201185322306,
+        0.04404746966804354
+      ],
+      "pca_coordinates_path": "report/tables/v4/step6_all_subjects_pca_coordinates.csv",
+      "k_range_evaluated": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "silhouette_score": 0.49094373802287483,
+      "inertia": 575.840356595253,
+      "calinski_harabasz_score": 32.43214553094685,
+      "davies_bouldin_score": 1.061447623192999,
+      "ari_against_relevant_labels": 0.025964383345895535,
+      "seed_stability_mean_ari": 0.9824614462071931,
+      "subject_bootstrap_stability_mean_ari": 0.04327428672601965,
+      "cluster_composition": {
+        "als": {
+          "0": 8,
+          "1": 5
+        },
+        "control": {
+          "0": 16,
+          "1": 0
+        },
+        "hd": {
+          "0": 16,
+          "1": 3
+        },
+        "pd": {
+          "0": 14,
+          "1": 1
+        }
+      },
+      "cautious_interpretation_metadata": {
+        "exploratory_only": true,
+        "not_for_confirmatory_hypothesis_testing": true,
+        "best_k_selected_from_internal_unsupervised_criteria": true
+      }
+    },
+    "binary_pathological_vs_control": {
+      "subject_count": 63,
+      "active_feature_list": [
+        "left_stride_s",
+        "right_stride_s",
+        "left_swing_s",
+        "right_swing_s",
+        "left_swing_pct",
+        "right_swing_pct",
+        "left_stance_s",
+        "right_stance_s",
+        "double_support_s",
+        "double_support_pct",
+        "asymmetry_index",
+        "cv_stride",
+        "cv_swing",
+        "dfa_alpha_stride"
+      ],
+      "standardization_rule": "z-score across subjects within each active view before PCA and K-means",
+      "pca_explained_variance": [
+        0.516788081629273,
+        0.20881220618773685,
+        0.16458418317946363,
+        0.059123201185322306,
+        0.04404746966804354
+      ],
+      "pca_coordinates_path": "report/tables/v4/step6_binary_pathological_vs_control_pca_coordinates.csv",
+      "k_range_evaluated": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "silhouette_score": 0.49094373802287483,
+      "inertia": 575.840356595253,
+      "calinski_harabasz_score": 32.43214553094685,
+      "davies_bouldin_score": 1.061447623192999,
+      "ari_against_relevant_labels": -0.09987728752067439,
+      "seed_stability_mean_ari": 0.9824614462071931,
+      "subject_bootstrap_stability_mean_ari": -0.06729087329323272,
+      "cluster_composition": {
+        "control": {
+          "0": 16,
+          "1": 0
+        },
+        "pathological": {
+          "0": 38,
+          "1": 9
+        }
+      },
+      "cautious_interpretation_metadata": {
+        "exploratory_only": true,
+        "not_for_confirmatory_hypothesis_testing": true,
+        "best_k_selected_from_internal_unsupervised_criteria": true
+      }
+    },
+    "control_a_vs_control_b": {
+      "subject_count": 16,
+      "active_feature_list": [
+        "left_stride_s",
+        "right_stride_s",
+        "left_swing_s",
+        "right_swing_s",
+        "left_swing_pct",
+        "right_swing_pct",
+        "left_stance_s",
+        "right_stance_s",
+        "double_support_s",
+        "double_support_pct",
+        "asymmetry_index",
+        "cv_stride",
+        "cv_swing",
+        "dfa_alpha_stride"
+      ],
+      "standardization_rule": "z-score across subjects within each active view before PCA and K-means",
+      "pca_explained_variance": [
+        0.44858091228704483,
+        0.2723512190360396,
+        0.14094589186419293,
+        0.07037026024784679,
+        0.04487078089007949
+      ],
+      "pca_coordinates_path": "report/tables/v4/step6_control_a_vs_control_b_pca_coordinates.csv",
+      "k_range_evaluated": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "silhouette_score": 0.48773225269483284,
+      "inertia": 149.32984689951266,
+      "calinski_harabasz_score": 7.000490291202691,
+      "davies_bouldin_score": 0.3447124776227367,
+      "ari_against_relevant_labels": 0.0,
+      "seed_stability_mean_ari": 1.0,
+      "subject_bootstrap_stability_mean_ari": 0.07360883635150008,
+      "cluster_composition": {
+        "control_A": {
+          "0": 8,
+          "1": 0
+        },
+        "control_B": {
+          "0": 7,
+          "1": 1
+        }
+      },
+      "cautious_interpretation_metadata": {
+        "exploratory_only": true,
+        "not_for_confirmatory_hypothesis_testing": true,
+        "best_k_selected_from_internal_unsupervised_criteria": true
+      }
+    }
+  }
+}

@@ -1,0 +1,2493 @@
+{
+  "data": {
+    "cross": {
+      "als_to_hd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": 0.063005,
+            "phase_percentage": -0.0,
+            "raw_timing": 0.022047,
+            "variability": 0.112727
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.077977,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.15393,
+            "variability": 0.110821
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": 0.110821,
+            "dfa_alpha_stride": 0.077977,
+            "double_support_pct": -0.0,
+            "double_support_s": 0.116354,
+            "left_stance_s": 0.019542,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": 0.018034,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.077977,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.15393,
+            "variability": 0.110821
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.004558,
+            "fractal": 0.024292,
+            "phase_percentage": 0.0003,
+            "raw_timing": -0.014866,
+            "variability": 0.091245
+          },
+          "per_family": {
+            "asymmetry": 0.002121,
+            "fractal": 0.030041,
+            "phase_percentage": -0.00468,
+            "raw_timing": -0.034186,
+            "variability": 0.08345
+          },
+          "per_feature": {
+            "asymmetry_index": 0.002121,
+            "cv_stride": 0.050014,
+            "cv_swing": 0.033436,
+            "dfa_alpha_stride": 0.030041,
+            "double_support_pct": -0.001298,
+            "double_support_s": -0.002679,
+            "left_stance_s": -0.001034,
+            "left_stride_s": -0.007486,
+            "left_swing_pct": 0.001083,
+            "left_swing_s": -0.00479,
+            "right_stance_s": -0.008969,
+            "right_stride_s": -0.007055,
+            "right_swing_pct": -0.004465,
+            "right_swing_s": -0.002173
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.002121,
+            "fractal": 0.030041,
+            "phase_percentage": -0.00468,
+            "raw_timing": -0.034186,
+            "variability": 0.08345
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": 0.056389,
+            "phase_percentage": 0.000373,
+            "raw_timing": 0.018608,
+            "variability": 0.183018
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.049567,
+            "phase_percentage": 0.000186,
+            "raw_timing": 0.033004,
+            "variability": 0.184066
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.183134,
+            "cv_swing": 0.000932,
+            "dfa_alpha_stride": 0.049567,
+            "double_support_pct": 0.000186,
+            "double_support_s": -2.8e-05,
+            "left_stance_s": 0.015753,
+            "left_stride_s": -0.000372,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": 0.017837,
+            "right_stride_s": -0.000186,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.049567,
+            "phase_percentage": 0.000186,
+            "raw_timing": 0.033004,
+            "variability": 0.184066
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.037894,
+            "fractal": 0.053175,
+            "phase_percentage": 0.07223,
+            "raw_timing": 0.125545,
+            "variability": 0.172693
+          },
+          "per_family": {
+            "asymmetry": 0.045947,
+            "fractal": 0.056722,
+            "phase_percentage": 0.075164,
+            "raw_timing": 0.230119,
+            "variability": 0.274293
+          },
+          "per_feature": {
+            "asymmetry_index": 0.045947,
+            "cv_stride": 0.171617,
+            "cv_swing": 0.102676,
+            "dfa_alpha_stride": 0.056722,
+            "double_support_pct": 0.060964,
+            "double_support_s": 0.073971,
+            "left_stance_s": 0.016765,
+            "left_stride_s": -0.000449,
+            "left_swing_pct": 0.003601,
+            "left_swing_s": 0.047546,
+            "right_stance_s": 0.034951,
+            "right_stride_s": 0.008816,
+            "right_swing_pct": 0.010599,
+            "right_swing_s": 0.048519
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.045947,
+            "fractal": 0.056722,
+            "phase_percentage": 0.075164,
+            "raw_timing": 0.230119,
+            "variability": 0.274293
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000504,
+            "fractal": -0.010125,
+            "phase_percentage": 0.000675,
+            "raw_timing": 0.018019,
+            "variability": 0.170468
+          },
+          "per_family": {
+            "asymmetry": -0.000462,
+            "fractal": -0.014779,
+            "phase_percentage": 0.000282,
+            "raw_timing": -0.105252,
+            "variability": 0.093387
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000462,
+            "cv_stride": 0.072702,
+            "cv_swing": 0.020685,
+            "dfa_alpha_stride": -0.014779,
+            "double_support_pct": -0.000547,
+            "double_support_s": -0.013944,
+            "left_stance_s": -0.01522,
+            "left_stride_s": -0.024168,
+            "left_swing_pct": 0.000718,
+            "left_swing_s": -0.000982,
+            "right_stance_s": -0.020724,
+            "right_stride_s": -0.029821,
+            "right_swing_pct": 0.000111,
+            "right_swing_s": -0.000393
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000462,
+            "fractal": -0.014779,
+            "phase_percentage": 0.000282,
+            "raw_timing": -0.105252,
+            "variability": 0.093387
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.001918,
+            "fractal": 0.052725,
+            "phase_percentage": 0.008519,
+            "raw_timing": -0.036836,
+            "variability": 0.075098
+          },
+          "per_family": {
+            "asymmetry": -0.000439,
+            "fractal": 0.050112,
+            "phase_percentage": 0.017104,
+            "raw_timing": -0.007814,
+            "variability": 0.066516
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000439,
+            "cv_stride": 0.052105,
+            "cv_swing": 0.014411,
+            "dfa_alpha_stride": 0.050112,
+            "double_support_pct": 0.005968,
+            "double_support_s": 0.005503,
+            "left_stance_s": 0.001619,
+            "left_stride_s": -0.005282,
+            "left_swing_pct": 0.004507,
+            "left_swing_s": -0.007451,
+            "right_stance_s": -0.000569,
+            "right_stride_s": 0.000953,
+            "right_swing_pct": 0.006629,
+            "right_swing_s": -0.002587
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000439,
+            "fractal": 0.050112,
+            "phase_percentage": 0.017104,
+            "raw_timing": -0.007814,
+            "variability": 0.066516
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 4.4e-05,
+            "fractal": 0.019024,
+            "phase_percentage": 0.000923,
+            "raw_timing": -0.01844,
+            "variability": 0.100013
+          },
+          "per_family": {
+            "asymmetry": -0.000604,
+            "fractal": 0.016052,
+            "phase_percentage": 9.6e-05,
+            "raw_timing": -0.144014,
+            "variability": 0.041515
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000604,
+            "cv_stride": 0.045844,
+            "cv_swing": -0.004329,
+            "dfa_alpha_stride": 0.016052,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.000186,
+            "left_stance_s": -0.030963,
+            "left_stride_s": -0.030891,
+            "left_swing_pct": 0.0,
+            "left_swing_s": -0.000799,
+            "right_stance_s": -0.042402,
+            "right_stride_s": -0.039145,
+            "right_swing_pct": 9.6e-05,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000604,
+            "fractal": 0.016052,
+            "phase_percentage": 9.6e-05,
+            "raw_timing": -0.144014,
+            "variability": 0.041515
+          }
+        }
+      },
+      "als_to_pd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": 0.0523,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.141809,
+            "variability": 0.228613
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.056648,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.307751,
+            "variability": 0.2254
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.0,
+            "cv_swing": 0.2254,
+            "dfa_alpha_stride": 0.056648,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.136515,
+            "left_stance_s": 0.072367,
+            "left_stride_s": 0.0,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.098869,
+            "right_stride_s": 0.0,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.056648,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.307751,
+            "variability": 0.2254
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 8.9e-05,
+            "fractal": 0.044847,
+            "phase_percentage": 0.011868,
+            "raw_timing": 0.045049,
+            "variability": 0.053242
+          },
+          "per_family": {
+            "asymmetry": -0.002615,
+            "fractal": 0.044184,
+            "phase_percentage": 0.009102,
+            "raw_timing": -0.037775,
+            "variability": 0.040938
+          },
+          "per_feature": {
+            "asymmetry_index": -0.002615,
+            "cv_stride": 0.03089,
+            "cv_swing": 0.010048,
+            "dfa_alpha_stride": 0.044184,
+            "double_support_pct": 0.004674,
+            "double_support_s": 0.008291,
+            "left_stance_s": 0.002748,
+            "left_stride_s": -0.006447,
+            "left_swing_pct": 0.004631,
+            "left_swing_s": -0.024638,
+            "right_stance_s": -0.001668,
+            "right_stride_s": -0.005252,
+            "right_swing_pct": -0.000203,
+            "right_swing_s": -0.010809
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.002615,
+            "fractal": 0.044184,
+            "phase_percentage": 0.009102,
+            "raw_timing": -0.037775,
+            "variability": 0.040938
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000185,
+            "fractal": 0.095183,
+            "phase_percentage": -0.000892,
+            "raw_timing": 0.146514,
+            "variability": 0.087902
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.092749,
+            "phase_percentage": -0.001643,
+            "raw_timing": 0.208289,
+            "variability": 0.081749
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.080019,
+            "cv_swing": 0.00173,
+            "dfa_alpha_stride": 0.092749,
+            "double_support_pct": -0.000163,
+            "double_support_s": -0.00162,
+            "left_stance_s": 0.119569,
+            "left_stride_s": -0.000762,
+            "left_swing_pct": -0.00037,
+            "left_swing_s": -0.0,
+            "right_stance_s": 0.091864,
+            "right_stride_s": -0.000762,
+            "right_swing_pct": -0.00111,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.092749,
+            "phase_percentage": -0.001643,
+            "raw_timing": 0.208289,
+            "variability": 0.081749
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.006714,
+            "fractal": 0.019153,
+            "phase_percentage": 0.161023,
+            "raw_timing": 0.14896,
+            "variability": 0.138852
+          },
+          "per_family": {
+            "asymmetry": 0.005721,
+            "fractal": 0.019277,
+            "phase_percentage": 0.179038,
+            "raw_timing": 0.222346,
+            "variability": 0.143734
+          },
+          "per_feature": {
+            "asymmetry_index": 0.005721,
+            "cv_stride": 0.084895,
+            "cv_swing": 0.058839,
+            "dfa_alpha_stride": 0.019277,
+            "double_support_pct": 0.120589,
+            "double_support_s": 0.071028,
+            "left_stance_s": 0.015108,
+            "left_stride_s": 0.010545,
+            "left_swing_pct": 0.037133,
+            "left_swing_s": 0.035917,
+            "right_stance_s": 0.02771,
+            "right_stride_s": 0.011134,
+            "right_swing_pct": 0.021316,
+            "right_swing_s": 0.050904
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.005721,
+            "fractal": 0.019277,
+            "phase_percentage": 0.179038,
+            "raw_timing": 0.222346,
+            "variability": 0.143734
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.001283,
+            "fractal": 0.061318,
+            "phase_percentage": 0.019691,
+            "raw_timing": 0.163205,
+            "variability": 0.193068
+          },
+          "per_family": {
+            "asymmetry": 0.00055,
+            "fractal": 0.062815,
+            "phase_percentage": 0.017463,
+            "raw_timing": -0.142105,
+            "variability": 0.211277
+          },
+          "per_feature": {
+            "asymmetry_index": 0.00055,
+            "cv_stride": 0.093885,
+            "cv_swing": 0.117392,
+            "dfa_alpha_stride": 0.062815,
+            "double_support_pct": 0.003641,
+            "double_support_s": -0.009106,
+            "left_stance_s": 0.011842,
+            "left_stride_s": -0.047637,
+            "left_swing_pct": 0.004732,
+            "left_swing_s": -0.009773,
+            "right_stance_s": -0.032415,
+            "right_stride_s": -0.049046,
+            "right_swing_pct": 0.00909,
+            "right_swing_s": -0.00597
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.00055,
+            "fractal": 0.062815,
+            "phase_percentage": 0.017463,
+            "raw_timing": -0.142105,
+            "variability": 0.211277
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.000315,
+            "fractal": 0.084563,
+            "phase_percentage": 0.103367,
+            "raw_timing": 0.098783,
+            "variability": 0.10029
+          },
+          "per_family": {
+            "asymmetry": 0.000225,
+            "fractal": 0.079843,
+            "phase_percentage": 0.080503,
+            "raw_timing": 0.014271,
+            "variability": 0.113479
+          },
+          "per_feature": {
+            "asymmetry_index": 0.000225,
+            "cv_stride": 0.078545,
+            "cv_swing": 0.034934,
+            "dfa_alpha_stride": 0.079843,
+            "double_support_pct": 0.04374,
+            "double_support_s": 0.031594,
+            "left_stance_s": 0.0012,
+            "left_stride_s": 0.001132,
+            "left_swing_pct": 0.012793,
+            "left_swing_s": -0.013447,
+            "right_stance_s": 0.001769,
+            "right_stride_s": -0.003416,
+            "right_swing_pct": 0.02397,
+            "right_swing_s": -0.004561
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.000225,
+            "fractal": 0.079843,
+            "phase_percentage": 0.080503,
+            "raw_timing": 0.014271,
+            "variability": 0.113479
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000386,
+            "fractal": 0.049075,
+            "phase_percentage": 0.004352,
+            "raw_timing": 0.095946,
+            "variability": 0.067845
+          },
+          "per_family": {
+            "asymmetry": -0.000386,
+            "fractal": 0.044714,
+            "phase_percentage": -0.00267,
+            "raw_timing": -0.115114,
+            "variability": 0.063973
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000386,
+            "cv_stride": 0.024643,
+            "cv_swing": 0.03933,
+            "dfa_alpha_stride": 0.044714,
+            "double_support_pct": -9.6e-05,
+            "double_support_s": 0.000558,
+            "left_stance_s": -0.005868,
+            "left_stride_s": -0.036712,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.000979,
+            "right_stance_s": -0.015561,
+            "right_stride_s": -0.056014,
+            "right_swing_pct": -0.002574,
+            "right_swing_s": -0.000538
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000386,
+            "fractal": 0.044714,
+            "phase_percentage": -0.00267,
+            "raw_timing": -0.115114,
+            "variability": 0.063973
+          }
+        }
+      },
+      "hd_to_als": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.10795
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.117358
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.117358,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.117358
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.011783,
+            "fractal": 0.025022,
+            "phase_percentage": -0.045878,
+            "raw_timing": 0.124103,
+            "variability": 0.044942
+          },
+          "per_family": {
+            "asymmetry": 0.018276,
+            "fractal": 0.019245,
+            "phase_percentage": 0.000654,
+            "raw_timing": -0.180107,
+            "variability": 0.069309
+          },
+          "per_feature": {
+            "asymmetry_index": 0.018276,
+            "cv_stride": 0.050518,
+            "cv_swing": 0.018791,
+            "dfa_alpha_stride": 0.019245,
+            "double_support_pct": -0.000303,
+            "double_support_s": -0.018288,
+            "left_stance_s": -0.054202,
+            "left_stride_s": -0.042818,
+            "left_swing_pct": -0.027479,
+            "left_swing_s": -0.005754,
+            "right_stance_s": -0.003502,
+            "right_stride_s": -0.056536,
+            "right_swing_pct": 0.028436,
+            "right_swing_s": 0.000993
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.018276,
+            "fractal": 0.019245,
+            "phase_percentage": 0.000654,
+            "raw_timing": -0.180107,
+            "variability": 0.069309
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.110426
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.110921
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.110921,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.110921
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.020233,
+            "fractal": 0.090322,
+            "phase_percentage": 0.472915,
+            "raw_timing": 0.491529,
+            "variability": 0.169166
+          },
+          "per_family": {
+            "asymmetry": 0.025407,
+            "fractal": 0.089421,
+            "phase_percentage": 1.047814,
+            "raw_timing": 2.326933,
+            "variability": 0.288135
+          },
+          "per_feature": {
+            "asymmetry_index": 0.025407,
+            "cv_stride": 0.166207,
+            "cv_swing": 0.121928,
+            "dfa_alpha_stride": 0.089421,
+            "double_support_pct": 0.364947,
+            "double_support_s": 0.325597,
+            "left_stance_s": 0.373882,
+            "left_stride_s": 0.261765,
+            "left_swing_pct": 0.362029,
+            "left_swing_s": 0.363507,
+            "right_stance_s": 0.37225,
+            "right_stride_s": 0.288555,
+            "right_swing_pct": 0.320838,
+            "right_swing_s": 0.341377
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.025407,
+            "fractal": 0.089421,
+            "phase_percentage": 1.047814,
+            "raw_timing": 2.326933,
+            "variability": 0.288135
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.124786
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": -0.006314
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.01675,
+            "cv_swing": -0.023064,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": -0.006314
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.004713,
+            "fractal": 0.092427,
+            "phase_percentage": -0.015027,
+            "raw_timing": 0.121673,
+            "variability": 0.136545
+          },
+          "per_family": {
+            "asymmetry": 0.007104,
+            "fractal": 0.086901,
+            "phase_percentage": -0.020565,
+            "raw_timing": 0.153021,
+            "variability": 0.16201
+          },
+          "per_feature": {
+            "asymmetry_index": 0.007104,
+            "cv_stride": 0.192901,
+            "cv_swing": -0.030891,
+            "dfa_alpha_stride": 0.086901,
+            "double_support_pct": -0.002757,
+            "double_support_s": 0.031215,
+            "left_stance_s": 0.028406,
+            "left_stride_s": 0.041071,
+            "left_swing_pct": -0.019385,
+            "left_swing_s": 9.4e-05,
+            "right_stance_s": 0.03244,
+            "right_stride_s": 0.035255,
+            "right_swing_pct": 0.001577,
+            "right_swing_s": -0.01546
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.007104,
+            "fractal": 0.086901,
+            "phase_percentage": -0.020565,
+            "raw_timing": 0.153021,
+            "variability": 0.16201
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.112901
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.119339
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.119339,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.119339
+          }
+        }
+      },
+      "hd_to_pd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.253478
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.253014
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.253014,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.253014
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.00632,
+            "fractal": 0.023693,
+            "phase_percentage": -0.02048,
+            "raw_timing": 0.030954,
+            "variability": 0.083333
+          },
+          "per_family": {
+            "asymmetry": 0.018133,
+            "fractal": 0.022703,
+            "phase_percentage": 0.029299,
+            "raw_timing": -0.073602,
+            "variability": 0.095823
+          },
+          "per_feature": {
+            "asymmetry_index": 0.018133,
+            "cv_stride": 0.064678,
+            "cv_swing": 0.031145,
+            "dfa_alpha_stride": 0.022703,
+            "double_support_pct": 0.012438,
+            "double_support_s": -5.3e-05,
+            "left_stance_s": -0.021876,
+            "left_stride_s": -0.024523,
+            "left_swing_pct": -0.017407,
+            "left_swing_s": -0.023818,
+            "right_stance_s": 0.002574,
+            "right_stride_s": -0.035126,
+            "right_swing_pct": 0.034268,
+            "right_swing_s": 0.02922
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.018133,
+            "fractal": 0.022703,
+            "phase_percentage": 0.029299,
+            "raw_timing": -0.073602,
+            "variability": 0.095823
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.262763
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.2558
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.2558,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.2558
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.014246,
+            "fractal": 0.044216,
+            "phase_percentage": 0.404307,
+            "raw_timing": 0.392229,
+            "variability": 0.164957
+          },
+          "per_family": {
+            "asymmetry": 0.015359,
+            "fractal": 0.050834,
+            "phase_percentage": 0.815363,
+            "raw_timing": 1.513601,
+            "variability": 0.240022
+          },
+          "per_feature": {
+            "asymmetry_index": 0.015359,
+            "cv_stride": 0.140135,
+            "cv_swing": 0.099887,
+            "dfa_alpha_stride": 0.050834,
+            "double_support_pct": 0.277093,
+            "double_support_s": 0.210203,
+            "left_stance_s": 0.226506,
+            "left_stride_s": 0.125713,
+            "left_swing_pct": 0.283765,
+            "left_swing_s": 0.280478,
+            "right_stance_s": 0.227858,
+            "right_stride_s": 0.165906,
+            "right_swing_pct": 0.254505,
+            "right_swing_s": 0.276937
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.015359,
+            "fractal": 0.050834,
+            "phase_percentage": 0.815363,
+            "raw_timing": 1.513601,
+            "variability": 0.240022
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.2493
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.224088
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.208222,
+            "cv_swing": 0.015866,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.224088
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.006546,
+            "fractal": 0.070117,
+            "phase_percentage": -0.050168,
+            "raw_timing": 0.040091,
+            "variability": 0.079474
+          },
+          "per_family": {
+            "asymmetry": 0.008186,
+            "fractal": 0.07698,
+            "phase_percentage": -0.057594,
+            "raw_timing": -0.095952,
+            "variability": 0.131118
+          },
+          "per_feature": {
+            "asymmetry_index": 0.008186,
+            "cv_stride": 0.239291,
+            "cv_swing": -0.108173,
+            "dfa_alpha_stride": 0.07698,
+            "double_support_pct": -0.021619,
+            "double_support_s": 0.000309,
+            "left_stance_s": -0.016341,
+            "left_stride_s": -0.020124,
+            "left_swing_pct": -0.024584,
+            "left_swing_s": -0.018694,
+            "right_stance_s": -0.003745,
+            "right_stride_s": -0.012932,
+            "right_swing_pct": -0.011391,
+            "right_swing_s": -0.024425
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.008186,
+            "fractal": 0.07698,
+            "phase_percentage": -0.057594,
+            "raw_timing": -0.095952,
+            "variability": 0.131118
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": 0.266013
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.25255
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.25255,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.25255
+          }
+        }
+      },
+      "pd_to_als": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": -0.014903,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.051123,
+            "variability": 0.159602
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": -0.01256,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.055813,
+            "variability": 0.154154
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.154154,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": -0.01256,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.0,
+            "left_stance_s": 0.0,
+            "left_stride_s": 0.0,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.0,
+            "right_stride_s": 0.055813,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": -0.01256,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.055813,
+            "variability": 0.154154
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.009727,
+            "fractal": 0.035775,
+            "phase_percentage": -0.000922,
+            "raw_timing": 0.190232,
+            "variability": 0.136296
+          },
+          "per_family": {
+            "asymmetry": -0.009338,
+            "fractal": 0.035886,
+            "phase_percentage": -0.005107,
+            "raw_timing": -0.160288,
+            "variability": 0.122996
+          },
+          "per_feature": {
+            "asymmetry_index": -0.009338,
+            "cv_stride": 0.088823,
+            "cv_swing": 0.034173,
+            "dfa_alpha_stride": 0.035886,
+            "double_support_pct": 0.001383,
+            "double_support_s": -0.007284,
+            "left_stance_s": -0.025606,
+            "left_stride_s": -0.032977,
+            "left_swing_pct": -0.018929,
+            "left_swing_s": -0.023285,
+            "right_stance_s": -0.013277,
+            "right_stride_s": -0.034662,
+            "right_swing_pct": 0.012439,
+            "right_swing_s": -0.023197
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.009338,
+            "fractal": 0.035886,
+            "phase_percentage": -0.005107,
+            "raw_timing": -0.160288,
+            "variability": 0.122996
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": 0.001173,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.117073,
+            "variability": 0.081488
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.000947,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.017949,
+            "variability": 0.076749
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.076481,
+            "cv_swing": 0.000268,
+            "dfa_alpha_stride": 0.000947,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.01249,
+            "left_stance_s": 0.00072,
+            "left_stride_s": 4.2e-05,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.000679,
+            "right_stride_s": 0.004018,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.000947,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.017949,
+            "variability": 0.076749
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.03325,
+            "fractal": 0.093474,
+            "phase_percentage": 0.052073,
+            "raw_timing": 0.233366,
+            "variability": 0.18584
+          },
+          "per_family": {
+            "asymmetry": 0.02664,
+            "fractal": 0.098217,
+            "phase_percentage": 0.030012,
+            "raw_timing": 0.459067,
+            "variability": 0.283387
+          },
+          "per_feature": {
+            "asymmetry_index": 0.02664,
+            "cv_stride": 0.182309,
+            "cv_swing": 0.101078,
+            "dfa_alpha_stride": 0.098217,
+            "double_support_pct": 0.018301,
+            "double_support_s": 0.076448,
+            "left_stance_s": 0.081831,
+            "left_stride_s": 0.067216,
+            "left_swing_pct": 0.004699,
+            "left_swing_s": 0.020999,
+            "right_stance_s": 0.102733,
+            "right_stride_s": 0.100355,
+            "right_swing_pct": 0.007012,
+            "right_swing_s": 0.009485
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.02664,
+            "fractal": 0.098217,
+            "phase_percentage": 0.030012,
+            "raw_timing": 0.459067,
+            "variability": 0.283387
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.000193,
+            "phase_percentage": -0.007945,
+            "raw_timing": 0.014234,
+            "variability": 0.108504
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.000524,
+            "phase_percentage": -0.010286,
+            "raw_timing": 0.007994,
+            "variability": 0.030188
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.046229,
+            "cv_swing": -0.016041,
+            "dfa_alpha_stride": 0.000524,
+            "double_support_pct": -0.010286,
+            "double_support_s": -0.000909,
+            "left_stance_s": 0.002989,
+            "left_stride_s": 0.001887,
+            "left_swing_pct": -0.000227,
+            "left_swing_s": -0.000577,
+            "right_stance_s": 0.002431,
+            "right_stride_s": 0.000844,
+            "right_swing_pct": 0.000227,
+            "right_swing_s": 0.001329
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.000524,
+            "phase_percentage": -0.010286,
+            "raw_timing": 0.007994,
+            "variability": 0.030188
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.010371,
+            "fractal": 0.052593,
+            "phase_percentage": 0.086254,
+            "raw_timing": 0.154208,
+            "variability": 0.160202
+          },
+          "per_family": {
+            "asymmetry": 0.010576,
+            "fractal": 0.053406,
+            "phase_percentage": 0.068968,
+            "raw_timing": 0.193814,
+            "variability": 0.174579
+          },
+          "per_feature": {
+            "asymmetry_index": 0.010576,
+            "cv_stride": 0.119268,
+            "cv_swing": 0.055311,
+            "dfa_alpha_stride": 0.053406,
+            "double_support_pct": 0.038511,
+            "double_support_s": 0.064944,
+            "left_stance_s": 0.035493,
+            "left_stride_s": 0.015757,
+            "left_swing_pct": 0.015776,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.049059,
+            "right_stride_s": 0.020239,
+            "right_swing_pct": 0.014681,
+            "right_swing_s": 0.008322
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.010576,
+            "fractal": 0.053406,
+            "phase_percentage": 0.068968,
+            "raw_timing": 0.193814,
+            "variability": 0.174579
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": 0.0014,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.132037,
+            "variability": 0.094349
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.002078,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.032401,
+            "variability": 0.085613
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.084413,
+            "cv_swing": 0.0012,
+            "dfa_alpha_stride": 0.002078,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.003127,
+            "left_stance_s": 0.000226,
+            "left_stride_s": -0.011724,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.002263,
+            "right_stride_s": -0.026293,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.002078,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.032401,
+            "variability": 0.085613
+          }
+        }
+      },
+      "pd_to_hd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": -0.002446,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.013861,
+            "variability": 0.322615
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": -0.00269,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.010521,
+            "variability": 0.328972
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.328972,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": -0.00269,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.0,
+            "left_stance_s": 0.0,
+            "left_stride_s": 0.0,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.0,
+            "right_stride_s": 0.010521,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": -0.00269,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.010521,
+            "variability": 0.328972
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.006199,
+            "fractal": 0.004201,
+            "phase_percentage": -0.017402,
+            "raw_timing": 0.046925,
+            "variability": 0.202308
+          },
+          "per_family": {
+            "asymmetry": -0.008958,
+            "fractal": 0.00162,
+            "phase_percentage": -0.029385,
+            "raw_timing": -0.150785,
+            "variability": 0.231768
+          },
+          "per_feature": {
+            "asymmetry_index": -0.008958,
+            "cv_stride": 0.169476,
+            "cv_swing": 0.062292,
+            "dfa_alpha_stride": 0.00162,
+            "double_support_pct": -0.015368,
+            "double_support_s": -0.018965,
+            "left_stance_s": -0.024791,
+            "left_stride_s": -0.026205,
+            "left_swing_pct": -0.011062,
+            "left_swing_s": -0.019733,
+            "right_stance_s": -0.020526,
+            "right_stride_s": -0.026989,
+            "right_swing_pct": -0.002955,
+            "right_swing_s": -0.013576
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.008958,
+            "fractal": 0.00162,
+            "phase_percentage": -0.029385,
+            "raw_timing": -0.150785,
+            "variability": 0.231768
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": 0.000244,
+            "phase_percentage": -0.0,
+            "raw_timing": 0.05969,
+            "variability": 0.302128
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.003362,
+            "variability": 0.298963
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.298963,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.000245,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": 0.003607,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.003362,
+            "variability": 0.298963
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.070571,
+            "fractal": 0.079828,
+            "phase_percentage": 0.029832,
+            "raw_timing": 0.082726,
+            "variability": 0.246577
+          },
+          "per_family": {
+            "asymmetry": 0.076865,
+            "fractal": 0.090732,
+            "phase_percentage": 0.023539,
+            "raw_timing": 0.157626,
+            "variability": 0.393241
+          },
+          "per_feature": {
+            "asymmetry_index": 0.076865,
+            "cv_stride": 0.234525,
+            "cv_swing": 0.158716,
+            "dfa_alpha_stride": 0.090732,
+            "double_support_pct": 0.011909,
+            "double_support_s": 0.032231,
+            "left_stance_s": 0.017429,
+            "left_stride_s": 0.0164,
+            "left_swing_pct": 0.003788,
+            "left_swing_s": 0.018359,
+            "right_stance_s": 0.031505,
+            "right_stride_s": 0.026079,
+            "right_swing_pct": 0.007842,
+            "right_swing_s": 0.015623
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.076865,
+            "fractal": 0.090732,
+            "phase_percentage": 0.023539,
+            "raw_timing": 0.157626,
+            "variability": 0.393241
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.000245,
+            "fractal": 0.000983,
+            "phase_percentage": -0.0,
+            "raw_timing": 0.011103,
+            "variability": 0.290962
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.000491,
+            "phase_percentage": -0.000246,
+            "raw_timing": -0.001003,
+            "variability": 0.273216
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": 0.267287,
+            "cv_swing": 0.005929,
+            "dfa_alpha_stride": 0.000491,
+            "double_support_pct": -0.000246,
+            "double_support_s": -0.000246,
+            "left_stance_s": -0.000737,
+            "left_stride_s": -0.000737,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.000246,
+            "right_stance_s": 0.001722,
+            "right_stride_s": -0.000759,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.000491,
+            "phase_percentage": -0.000246,
+            "raw_timing": -0.001003,
+            "variability": 0.273216
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.024506,
+            "fractal": 0.008301,
+            "phase_percentage": 0.014058,
+            "raw_timing": -0.001962,
+            "variability": 0.214319
+          },
+          "per_family": {
+            "asymmetry": 0.026824,
+            "fractal": 0.008374,
+            "phase_percentage": 0.00848,
+            "raw_timing": -0.010049,
+            "variability": 0.281744
+          },
+          "per_feature": {
+            "asymmetry_index": 0.026824,
+            "cv_stride": 0.173856,
+            "cv_swing": 0.107888,
+            "dfa_alpha_stride": 0.008374,
+            "double_support_pct": 0.003455,
+            "double_support_s": 0.003783,
+            "left_stance_s": -0.007748,
+            "left_stride_s": -0.005646,
+            "left_swing_pct": -0.0,
+            "left_swing_s": 0.000171,
+            "right_stance_s": -0.006318,
+            "right_stride_s": -0.004962,
+            "right_swing_pct": 0.005025,
+            "right_swing_s": 0.010671
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.026824,
+            "fractal": 0.008374,
+            "phase_percentage": 0.00848,
+            "raw_timing": -0.010049,
+            "variability": 0.281744
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": 0.000245,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.058188,
+            "variability": 0.293965
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.000245,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.003758,
+            "variability": 0.293765
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.292296,
+            "cv_swing": 0.001469,
+            "dfa_alpha_stride": 0.000245,
+            "double_support_pct": 0.0,
+            "double_support_s": -0.000244,
+            "left_stance_s": 0.0,
+            "left_stride_s": 0.000245,
+            "left_swing_pct": 0.0,
+            "left_swing_s": 0.0,
+            "right_stance_s": 0.0,
+            "right_stride_s": -0.003759,
+            "right_swing_pct": 0.0,
+            "right_swing_s": 0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.000245,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.003758,
+            "variability": 0.293765
+          }
+        }
+      }
+    },
+    "within": {
+      "als": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": 0.000231,
+            "raw_timing": 0.000231,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.000231,
+            "raw_timing": -0.015639,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": 0.000231,
+            "double_support_s": -0.001217,
+            "left_stance_s": -0.008222,
+            "left_stride_s": -0.000462,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.005235,
+            "right_stride_s": -0.000503,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.000231,
+            "raw_timing": -0.015639,
+            "variability": 0.0
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000253,
+            "fractal": 0.0,
+            "phase_percentage": -0.009463,
+            "raw_timing": -0.006886,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": 0.001181,
+            "fractal": 0.0,
+            "phase_percentage": -0.013262,
+            "raw_timing": -0.034589,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 0.001181,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": -0.007375,
+            "double_support_s": -0.008821,
+            "left_stance_s": -0.004555,
+            "left_stride_s": -0.003357,
+            "left_swing_pct": -0.000957,
+            "left_swing_s": -0.001417,
+            "right_stance_s": -0.006682,
+            "right_stride_s": -0.005011,
+            "right_swing_pct": -0.00493,
+            "right_swing_s": -0.004746
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.001181,
+            "fractal": 0.0,
+            "phase_percentage": -0.013262,
+            "raw_timing": -0.034589,
+            "variability": 0.0
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000252,
+            "fractal": 0.0,
+            "phase_percentage": -0.001897,
+            "raw_timing": -0.001921,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": -0.000252,
+            "fractal": 0.0,
+            "phase_percentage": -0.000937,
+            "raw_timing": -0.03288,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000252,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": -0.000913,
+            "double_support_s": -0.009696,
+            "left_stance_s": -0.002905,
+            "left_stride_s": -0.002312,
+            "left_swing_pct": 0.000228,
+            "left_swing_s": -0.000228,
+            "right_stance_s": -0.013623,
+            "right_stride_s": -0.004344,
+            "right_swing_pct": -0.000252,
+            "right_swing_s": 0.000228
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000252,
+            "fractal": 0.0,
+            "phase_percentage": -0.000937,
+            "raw_timing": -0.03288,
+            "variability": 0.0
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000249,
+            "fractal": 0.0,
+            "phase_percentage": 0.015833,
+            "raw_timing": 0.015588,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": -0.000484,
+            "fractal": 0.0,
+            "phase_percentage": 0.010478,
+            "raw_timing": 0.003813,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000484,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": 0.006077,
+            "double_support_s": 0.002702,
+            "left_stance_s": -0.004327,
+            "left_stride_s": -0.003612,
+            "left_swing_pct": 0.000746,
+            "left_swing_s": 0.00268,
+            "right_stance_s": -0.001429,
+            "right_stride_s": -0.002407,
+            "right_swing_pct": 0.003655,
+            "right_swing_s": 0.010206
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000484,
+            "fractal": 0.0,
+            "phase_percentage": 0.010478,
+            "raw_timing": 0.003813,
+            "variability": 0.0
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.000244,
+            "fractal": -0.0,
+            "phase_percentage": -0.004531,
+            "raw_timing": -0.005238,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 8e-06,
+            "fractal": 0.0,
+            "phase_percentage": -0.002846,
+            "raw_timing": -0.055987,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 8e-06,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.000934,
+            "double_support_s": -0.007436,
+            "left_stance_s": -0.004605,
+            "left_stride_s": -0.012272,
+            "left_swing_pct": 0.000235,
+            "left_swing_s": -0.001196,
+            "right_stance_s": -0.015373,
+            "right_stride_s": -0.012486,
+            "right_swing_pct": -0.002147,
+            "right_swing_s": -0.002619
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 8e-06,
+            "fractal": 0.0,
+            "phase_percentage": -0.002846,
+            "raw_timing": -0.055987,
+            "variability": 0.0
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.000949,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.000711,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": 0.000951,
+            "fractal": 0.0,
+            "phase_percentage": -0.001888,
+            "raw_timing": -0.019925,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 0.000951,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": -0.001183,
+            "double_support_s": -0.004737,
+            "left_stance_s": -0.003797,
+            "left_stride_s": -0.002848,
+            "left_swing_pct": -0.000472,
+            "left_swing_s": -0.001426,
+            "right_stance_s": -0.002843,
+            "right_stride_s": -0.002846,
+            "right_swing_pct": -0.000233,
+            "right_swing_s": -0.001428
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.000951,
+            "fractal": 0.0,
+            "phase_percentage": -0.001888,
+            "raw_timing": -0.019925,
+            "variability": 0.0
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.00023,
+            "fractal": -0.0,
+            "phase_percentage": -0.001903,
+            "raw_timing": -0.000751,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.00023,
+            "fractal": 0.0,
+            "phase_percentage": -0.001463,
+            "raw_timing": -0.030532,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 0.00023,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.000271,
+            "double_support_s": -0.006573,
+            "left_stance_s": -0.00648,
+            "left_stride_s": -0.003135,
+            "left_swing_pct": -0.00023,
+            "left_swing_s": -0.00023,
+            "right_stance_s": -0.008557,
+            "right_stride_s": -0.005327,
+            "right_swing_pct": -0.000962,
+            "right_swing_s": -0.00023
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.00023,
+            "fractal": 0.0,
+            "phase_percentage": -0.001463,
+            "raw_timing": -0.030532,
+            "variability": 0.0
+          }
+        }
+      },
+      "hd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.00111,
+            "fractal": 0.0,
+            "phase_percentage": -0.001994,
+            "raw_timing": -0.00273,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": -0.002109,
+            "fractal": 0.0,
+            "phase_percentage": -0.007372,
+            "raw_timing": -0.011453,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.002109,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": -0.003198,
+            "double_support_s": -0.001587,
+            "left_stance_s": 0.001194,
+            "left_stride_s": -0.000826,
+            "left_swing_pct": -0.001978,
+            "left_swing_s": -0.004982,
+            "right_stance_s": -0.002741,
+            "right_stride_s": -0.002936,
+            "right_swing_pct": -0.002196,
+            "right_swing_s": 0.000425
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.002109,
+            "fractal": 0.0,
+            "phase_percentage": -0.007372,
+            "raw_timing": -0.011453,
+            "variability": 0.0
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.001311,
+            "fractal": 0.0,
+            "phase_percentage": 0.294378,
+            "raw_timing": 0.294324,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": -0.000671,
+            "fractal": 0.0,
+            "phase_percentage": 0.426303,
+            "raw_timing": 0.332763,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000671,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": 0.142745,
+            "double_support_s": 0.047399,
+            "left_stance_s": 0.03235,
+            "left_stride_s": 0.000498,
+            "left_swing_pct": 0.161169,
+            "left_swing_s": 0.126667,
+            "right_stance_s": 0.0271,
+            "right_stride_s": 0.002597,
+            "right_swing_pct": 0.122389,
+            "right_swing_s": 0.096152
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000671,
+            "fractal": 0.0,
+            "phase_percentage": 0.426303,
+            "raw_timing": 0.332763,
+            "variability": 0.0
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.001516,
+            "fractal": -0.0,
+            "phase_percentage": -0.001565,
+            "raw_timing": 1.1e-05,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.00049,
+            "fractal": 0.0,
+            "phase_percentage": -0.000632,
+            "raw_timing": -0.009939,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 0.00049,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": 0.000233,
+            "double_support_s": -0.000653,
+            "left_stance_s": -0.001471,
+            "left_stride_s": -0.003997,
+            "left_swing_pct": -0.000841,
+            "left_swing_s": -0.00104,
+            "right_stance_s": -0.001015,
+            "right_stride_s": -0.001471,
+            "right_swing_pct": -2.4e-05,
+            "right_swing_s": -0.000292
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.00049,
+            "fractal": 0.0,
+            "phase_percentage": -0.000632,
+            "raw_timing": -0.009939,
+            "variability": 0.0
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          }
+        }
+      },
+      "pd": {
+        "dt": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.0,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.0,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": 0.0,
+            "variability": 0.0
+          }
+        },
+        "knn": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000187,
+            "fractal": -0.0,
+            "phase_percentage": 0.001744,
+            "raw_timing": 0.000301,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": -0.000655,
+            "fractal": 0.0,
+            "phase_percentage": -0.001687,
+            "raw_timing": -0.002208,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.000655,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": 0.00114,
+            "double_support_s": 0.003355,
+            "left_stance_s": -0.000726,
+            "left_stride_s": -0.003616,
+            "left_swing_pct": -0.002219,
+            "left_swing_s": -0.001821,
+            "right_stance_s": 0.00198,
+            "right_stride_s": -0.002031,
+            "right_swing_pct": -0.000608,
+            "right_swing_s": 0.000651
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.000655,
+            "fractal": 0.0,
+            "phase_percentage": -0.001687,
+            "raw_timing": -0.002208,
+            "variability": 0.0
+          }
+        },
+        "lgbm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": -0.0,
+            "raw_timing": -0.0,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.00108,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": -0.0,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.000216,
+            "left_swing_pct": -0.0,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.0,
+            "right_stride_s": -0.000864,
+            "right_swing_pct": -0.0,
+            "right_swing_s": -0.0
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.0,
+            "raw_timing": -0.00108,
+            "variability": 0.0
+          }
+        },
+        "qda": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.000443,
+            "fractal": 0.0,
+            "phase_percentage": 0.003173,
+            "raw_timing": 0.004082,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": -0.002474,
+            "fractal": 0.0,
+            "phase_percentage": 0.008249,
+            "raw_timing": 0.002448,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.002474,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": 0.002446,
+            "double_support_s": -0.001042,
+            "left_stance_s": -0.001615,
+            "left_stride_s": 0.00068,
+            "left_swing_pct": 0.003308,
+            "left_swing_s": 0.001435,
+            "right_stance_s": -0.000548,
+            "right_stride_s": 0.000937,
+            "right_swing_pct": 0.002495,
+            "right_swing_s": 0.002601
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.002474,
+            "fractal": 0.0,
+            "phase_percentage": 0.008249,
+            "raw_timing": 0.002448,
+            "variability": 0.0
+          }
+        },
+        "rf": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.0,
+            "fractal": -0.0,
+            "phase_percentage": 2.4e-05,
+            "raw_timing": 0.000432,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.00084,
+            "raw_timing": -0.007291,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.0,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": -0.0,
+            "double_support_s": 0.000384,
+            "left_stance_s": -0.0,
+            "left_stride_s": -0.003911,
+            "left_swing_pct": 0.000408,
+            "left_swing_s": -0.0,
+            "right_stance_s": -0.000192,
+            "right_stride_s": -0.002779,
+            "right_swing_pct": 0.000432,
+            "right_swing_s": -0.000793
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.00084,
+            "raw_timing": -0.007291,
+            "variability": 0.0
+          }
+        },
+        "svm": {
+          "joint_family_permutation_drop": {
+            "asymmetry": -0.001898,
+            "fractal": -0.0,
+            "phase_percentage": -0.002996,
+            "raw_timing": -0.000664,
+            "variability": -0.0
+          },
+          "per_family": {
+            "asymmetry": -0.001986,
+            "fractal": 0.0,
+            "phase_percentage": -7.3e-05,
+            "raw_timing": -0.008159,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": -0.001986,
+            "cv_stride": -0.0,
+            "cv_swing": -0.0,
+            "dfa_alpha_stride": -0.0,
+            "double_support_pct": 0.000635,
+            "double_support_s": 0.000657,
+            "left_stance_s": -0.001912,
+            "left_stride_s": -0.002095,
+            "left_swing_pct": -0.001343,
+            "left_swing_s": -0.000956,
+            "right_stance_s": -0.00173,
+            "right_stride_s": -0.000233,
+            "right_swing_pct": 0.000635,
+            "right_swing_s": -0.00189
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": -0.001986,
+            "fractal": 0.0,
+            "phase_percentage": -7.3e-05,
+            "raw_timing": -0.008159,
+            "variability": 0.0
+          }
+        },
+        "xgb": {
+          "joint_family_permutation_drop": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.000429,
+            "raw_timing": 0.000643,
+            "variability": 0.0
+          },
+          "per_family": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.000643,
+            "raw_timing": 0.003002,
+            "variability": 0.0
+          },
+          "per_feature": {
+            "asymmetry_index": 0.0,
+            "cv_stride": 0.0,
+            "cv_swing": 0.0,
+            "dfa_alpha_stride": 0.0,
+            "double_support_pct": 0.0,
+            "double_support_s": 0.0,
+            "left_stance_s": 0.0,
+            "left_stride_s": 0.000857,
+            "left_swing_pct": 0.0,
+            "left_swing_s": -0.000214,
+            "right_stance_s": 0.000429,
+            "right_stride_s": 0.001501,
+            "right_swing_pct": 0.000643,
+            "right_swing_s": 0.000429
+          },
+          "sum_of_marginal_feature_drops": {
+            "asymmetry": 0.0,
+            "fractal": 0.0,
+            "phase_percentage": 0.000643,
+            "raw_timing": 0.003002,
+            "variability": 0.0
+          }
+        }
+      }
+    }
+  },
+  "downstream_execution_id": "v4d-20260611T022033+0000-85765ad9afd7",
+  "downstream_execution_manifest_hash": "a649454346c475502657ed2c86f890181dcd861b816a5c46e29897105697c897",
+  "feature_matrix_hash": "3955e85b58160417644d8f72095c061f83d7d305e6b06ae1f5b3990fff6031bd",
+  "partition_hash": "8d917540c09b2af2c58443a9425c240b3a4120860968eb0778f5ddc86d36366e",
+  "payload_sha256": "bbc1905229dbb902fafcd0b212be66ca978fc5225d091e42ee486af40ff9f9b8",
+  "preprocessing_manifest_hash": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
+  "protocol_manifest_hash": "4de674e9fa5eb8abd86a6dd6d62fe1bfe4cb90edbfd4c7f52c9d6a9cd3ae7116",
+  "reporting_label": "engineered_feature_permutation_sensitivity",
+  "schema_version": "v4-step5-feature-sensitivity-final-v1",
+  "step": "step5"
+}

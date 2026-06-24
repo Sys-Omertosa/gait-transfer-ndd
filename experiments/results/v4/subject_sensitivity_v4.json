@@ -1,0 +1,6126 @@
+{
+  "data": {
+    "cross": {
+      "als_to_hd": {
+        "dt": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.888889,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.945378,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.93617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 0.995575,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 0.995763,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 0.965517,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.008368,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.324786,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 0.956332,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 0.943925,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 0.973214,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.004149,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "knn": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.982222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.903361,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.923404,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.752336,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 0.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 0.99115,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 0.974576,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.025105,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 0.994709,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.57265,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 0.921397,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 0.995327,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.004274,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.20332,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.024896,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "lgbm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.884444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.878151,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.93617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.976636,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.008368,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.952991,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 0.943925,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.008299,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.004149,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "qda": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.982222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.819328,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.876596,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.182243,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.451883,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.452991,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.070539,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.012,
+            "n_strides": 250
+          }
+        },
+        "rf": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.951111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.932773,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.940426,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.010638,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.873832,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.004184,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.504274,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.004274,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.012448,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "svm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.995556,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.836134,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.919149,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.163551,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 0.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.096234,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.747863,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.004274,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.937759,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.004149,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "xgb": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.937778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.907563,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.948936,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.766355,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.008368,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.487179,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.029915,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.257261,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.004149,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        }
+      },
+      "als_to_pd": {
+        "dt": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.888889,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.945378,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.93617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.985646,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.408511,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.838057,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 0.985437,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.98419,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.971292,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 0.989583,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.985149,
+            "n_strides": 202
+          }
+        },
+        "knn": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.982222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.903361,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.923404,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.752336,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.921739,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.007326,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.976077,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.685106,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.777311,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.202429,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 0.990476,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.427419,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.961722,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.50495,
+            "n_strides": 202
+          }
+        },
+        "lgbm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.884444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.878151,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.93617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.976636,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.630435,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.003663,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.985646,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.27234,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.605042,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.838057,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 0.981567,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 0.966667,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.266129,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.971292,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 0.989583,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.990099,
+            "n_strides": 202
+          }
+        },
+        "qda": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.982222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.819328,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.876596,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.182243,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.923404,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.114286,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.126482,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.589109,
+            "n_strides": 202
+          }
+        },
+        "rf": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.951111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.932773,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.940426,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.010638,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.873832,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.947826,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.18315,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.985646,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.480851,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.928571,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.955466,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.883065,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.980237,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.980861,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.990099,
+            "n_strides": 202
+          }
+        },
+        "svm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.995556,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.836134,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.919149,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.163551,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.897436,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.866029,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.868085,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.700405,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.995968,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.871287,
+            "n_strides": 202
+          }
+        },
+        "xgb": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.937778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.907563,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.948936,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.766355,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.956522,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.336996,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.985646,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.476596,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.907563,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 0.178138,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 0.995392,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.495968,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.980861,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.945545,
+            "n_strides": 202
+          }
+        }
+      },
+      "hd_to_als": {
+        "dt": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "knn": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.837607,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.995305,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.965957,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 0.265873,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.391111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.277311,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.106383,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.079439,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.979675,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.566929,
+            "n_strides": 254
+          }
+        },
+        "lgbm": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "qda": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.752137,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.882629,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 0.996032,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.977778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.852941,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.893617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.462617,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "rf": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "svm": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.354701,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.915493,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 0.261905,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 1.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.968504,
+            "n_strides": 254
+          }
+        },
+        "xgb": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        }
+      },
+      "hd_to_pd": {
+        "dt": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "knn": {
+          "control10": {
+            "accuracy": 0.265873,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.391111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.277311,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.106383,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.079439,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.979675,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.566929,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.982609,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.893773,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.956938,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.957447,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.87395,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 0.97235,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.902041,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.435484,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.249012,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 0.995215,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.752475,
+            "n_strides": 202
+          }
+        },
+        "lgbm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "qda": {
+          "control10": {
+            "accuracy": 0.996032,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.977778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.852941,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.893617,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.462617,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.859574,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.685714,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.150198,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.341584,
+            "n_strides": 202
+          }
+        },
+        "rf": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "svm": {
+          "control10": {
+            "accuracy": 0.261905,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 1.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.968504,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 0.304348,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.32967,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 0.808612,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.719149,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 0.966387,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 0.539171,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 0.870968,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.039526,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.306931,
+            "n_strides": 202
+          }
+        },
+        "xgb": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.0,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        }
+      },
+      "pd_to_als": {
+        "dt": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.951111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "knn": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.790598,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.924883,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.851064,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 0.503968,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.8,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.621849,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.331915,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.915888,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.808943,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.80315,
+            "n_strides": 254
+          }
+        },
+        "lgbm": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.025641,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.788732,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.038298,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.973333,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "qda": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.820513,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.943662,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 0.996032,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.964444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.840336,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.846809,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.705607,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.996063,
+            "n_strides": 254
+          }
+        },
+        "rf": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.070423,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.008511,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.924444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "svm": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.840376,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.740426,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.942222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.630252,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.268085,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.976636,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        },
+        "xgb": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.029915,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.840376,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.051064,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.977778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          }
+        }
+      },
+      "pd_to_hd": {
+        "dt": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.951111,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "knn": {
+          "control10": {
+            "accuracy": 0.503968,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.8,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.621849,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.331915,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.915888,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.808943,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.80315,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.539749,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.965812,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.803419,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.991701,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.705394,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.104,
+            "n_strides": 250
+          }
+        },
+        "lgbm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.973333,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "qda": {
+          "control10": {
+            "accuracy": 0.996032,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.964444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.840336,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.846809,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.705607,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 0.995935,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 0.996063,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.195021,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.044,
+            "n_strides": 250
+          }
+        },
+        "rf": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.924444,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "svm": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.942222,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.630252,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.268085,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 0.976636,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.51046,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.940171,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.136929,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.132,
+            "n_strides": 250
+          }
+        },
+        "xgb": {
+          "control10": {
+            "accuracy": 1.0,
+            "n_strides": 252
+          },
+          "control12": {
+            "accuracy": 0.977778,
+            "n_strides": 225
+          },
+          "control13": {
+            "accuracy": 0.0,
+            "n_strides": 238
+          },
+          "control14": {
+            "accuracy": 0.0,
+            "n_strides": 235
+          },
+          "control15": {
+            "accuracy": 0.0,
+            "n_strides": 188
+          },
+          "control5": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "control8": {
+            "accuracy": 1.0,
+            "n_strides": 246
+          },
+          "control9": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        }
+      }
+    },
+    "within": {
+      "als": {
+        "dt": {
+          "als1": {
+            "accuracy": 0.047872,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.893162,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 1.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.965957,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 0.907767,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.962343,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.944882,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.922078,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.529148,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.810924,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 0.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "knn": {
+          "als1": {
+            "accuracy": 0.989362,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.619658,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 1.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.817021,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 0.99505,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 0.958904,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 0.985437,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.991632,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.681102,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.982684,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.959641,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.932773,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "lgbm": {
+          "als1": {
+            "accuracy": 0.829787,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.75641,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.825532,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 0.808219,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 0.980583,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.88189,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.948052,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.161435,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.836134,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 0.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "qda": {
+          "als1": {
+            "accuracy": 1.0,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.965812,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.971831,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.92126,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.547085,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.987395,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.96139,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "rf": {
+          "als1": {
+            "accuracy": 0.984043,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.675214,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 1.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.885106,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 0.968037,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.991632,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.980315,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.930736,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.251121,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.831933,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "svm": {
+          "als1": {
+            "accuracy": 0.925532,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.004274,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.967136,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.988189,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.93722,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.991597,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        },
+        "xgb": {
+          "als1": {
+            "accuracy": 0.978723,
+            "n_strides": 188
+          },
+          "als10": {
+            "accuracy": 0.816239,
+            "n_strides": 234
+          },
+          "als11": {
+            "accuracy": 0.0,
+            "n_strides": 213
+          },
+          "als12": {
+            "accuracy": 1.0,
+            "n_strides": 105
+          },
+          "als13": {
+            "accuracy": 1.0,
+            "n_strides": 162
+          },
+          "als2": {
+            "accuracy": 0.851064,
+            "n_strides": 235
+          },
+          "als3": {
+            "accuracy": 1.0,
+            "n_strides": 202
+          },
+          "als4": {
+            "accuracy": 1.0,
+            "n_strides": 125
+          },
+          "als5": {
+            "accuracy": 1.0,
+            "n_strides": 114
+          },
+          "als6": {
+            "accuracy": 1.0,
+            "n_strides": 163
+          },
+          "als7": {
+            "accuracy": 1.0,
+            "n_strides": 119
+          },
+          "als8": {
+            "accuracy": 1.0,
+            "n_strides": 219
+          },
+          "als9": {
+            "accuracy": 0.995146,
+            "n_strides": 206
+          },
+          "control1": {
+            "accuracy": 0.991632,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.944882,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.952381,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.251121,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 0.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          }
+        }
+      },
+      "hd": {
+        "dt": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 1.0,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "knn": {
+          "control1": {
+            "accuracy": 0.979079,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.885827,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.818182,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.004484,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.87395,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 0.971888,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.142857,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 0.697095,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 0.995575,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 0.987288,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.535565,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 0.324786,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 0.981308,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 0.918803,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.975104,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.365145,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.012,
+            "n_strides": 250
+          }
+        },
+        "lgbm": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 1.0,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "qda": {
+          "control1": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.944882,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.116592,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.932773,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.772201,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.365145,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.02,
+            "n_strides": 250
+          }
+        },
+        "rf": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 1.0,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "svm": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.996063,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.986547,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.019305,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 0.99115,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 0.016598,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 0.755187,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        },
+        "xgb": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 1.0,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 1.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt1": {
+            "accuracy": 1.0,
+            "n_strides": 288
+          },
+          "hunt10": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "hunt11": {
+            "accuracy": 1.0,
+            "n_strides": 226
+          },
+          "hunt12": {
+            "accuracy": 1.0,
+            "n_strides": 236
+          },
+          "hunt13": {
+            "accuracy": 1.0,
+            "n_strides": 145
+          },
+          "hunt14": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt15": {
+            "accuracy": 1.0,
+            "n_strides": 189
+          },
+          "hunt16": {
+            "accuracy": 1.0,
+            "n_strides": 169
+          },
+          "hunt17": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt18": {
+            "accuracy": 1.0,
+            "n_strides": 229
+          },
+          "hunt19": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "hunt2": {
+            "accuracy": 1.0,
+            "n_strides": 214
+          },
+          "hunt3": {
+            "accuracy": 1.0,
+            "n_strides": 224
+          },
+          "hunt4": {
+            "accuracy": 1.0,
+            "n_strides": 255
+          },
+          "hunt5": {
+            "accuracy": 1.0,
+            "n_strides": 234
+          },
+          "hunt6": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt7": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "hunt8": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "hunt9": {
+            "accuracy": 0.0,
+            "n_strides": 250
+          }
+        }
+      },
+      "pd": {
+        "dt": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.919283,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "knn": {
+          "control1": {
+            "accuracy": 0.995816,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.992126,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.930736,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.600897,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.957983,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.6139,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.996337,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.961702,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.436735,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 0.995146,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.482213,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.371287,
+            "n_strides": 202
+          }
+        },
+        "lgbm": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.914798,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 1.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "qda": {
+          "control1": {
+            "accuracy": 0.991632,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 0.972441,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.103139,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 0.987395,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.915058,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.531915,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.249012,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.69802,
+            "n_strides": 202
+          }
+        },
+        "rf": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.90583,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.955102,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        },
+        "svm": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 0.95671,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 1.0,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.467181,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 0.970696,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 0.995745,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 0.185771,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.014851,
+            "n_strides": 202
+          }
+        },
+        "xgb": {
+          "control1": {
+            "accuracy": 1.0,
+            "n_strides": 239
+          },
+          "control11": {
+            "accuracy": 1.0,
+            "n_strides": 254
+          },
+          "control16": {
+            "accuracy": 1.0,
+            "n_strides": 231
+          },
+          "control2": {
+            "accuracy": 0.811659,
+            "n_strides": 223
+          },
+          "control3": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "control4": {
+            "accuracy": 1.0,
+            "n_strides": 249
+          },
+          "control6": {
+            "accuracy": 0.0,
+            "n_strides": 259
+          },
+          "control7": {
+            "accuracy": 1.0,
+            "n_strides": 241
+          },
+          "park1": {
+            "accuracy": 1.0,
+            "n_strides": 230
+          },
+          "park10": {
+            "accuracy": 1.0,
+            "n_strides": 273
+          },
+          "park11": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park12": {
+            "accuracy": 1.0,
+            "n_strides": 235
+          },
+          "park13": {
+            "accuracy": 1.0,
+            "n_strides": 238
+          },
+          "park14": {
+            "accuracy": 1.0,
+            "n_strides": 247
+          },
+          "park15": {
+            "accuracy": 1.0,
+            "n_strides": 217
+          },
+          "park2": {
+            "accuracy": 0.0,
+            "n_strides": 245
+          },
+          "park3": {
+            "accuracy": 1.0,
+            "n_strides": 210
+          },
+          "park4": {
+            "accuracy": 1.0,
+            "n_strides": 206
+          },
+          "park5": {
+            "accuracy": 1.0,
+            "n_strides": 248
+          },
+          "park6": {
+            "accuracy": 1.0,
+            "n_strides": 253
+          },
+          "park7": {
+            "accuracy": 1.0,
+            "n_strides": 209
+          },
+          "park8": {
+            "accuracy": 1.0,
+            "n_strides": 192
+          },
+          "park9": {
+            "accuracy": 0.0,
+            "n_strides": 202
+          }
+        }
+      }
+    }
+  },
+  "downstream_execution_id": "v4d-20260611T022033+0000-85765ad9afd7",
+  "downstream_execution_manifest_hash": "a649454346c475502657ed2c86f890181dcd861b816a5c46e29897105697c897",
+  "feature_matrix_hash": "3955e85b58160417644d8f72095c061f83d7d305e6b06ae1f5b3990fff6031bd",
+  "partition_hash": "8d917540c09b2af2c58443a9425c240b3a4120860968eb0778f5ddc86d36366e",
+  "payload_sha256": "3d0d1069196384a253f06d4f6ed05cee8cc9eff22a328a617bf857a290f1e995",
+  "preprocessing_manifest_hash": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
+  "protocol_manifest_hash": "4de674e9fa5eb8abd86a6dd6d62fe1bfe4cb90edbfd4c7f52c9d6a9cd3ae7116",
+  "reporting_label": "subject_level_replay_sensitivity",
+  "schema_version": "v4-step5-subject-sensitivity-final-v1",
+  "step": "step5"
+}

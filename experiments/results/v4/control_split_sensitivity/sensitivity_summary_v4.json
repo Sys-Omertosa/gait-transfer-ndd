@@ -1,0 +1,935 @@
+{
+  "candidate_family": "near_optimal",
+  "downstream_execution_id": "v4d-20260611T022033+0000-85765ad9afd7",
+  "downstream_execution_manifest_hash": "a649454346c475502657ed2c86f890181dcd861b816a5c46e29897105697c897",
+  "feature_matrix_hash": "3955e85b58160417644d8f72095c061f83d7d305e6b06ae1f5b3990fff6031bd",
+  "main_authoritative": {
+    "direction_signs_subject": {
+      "als_to_hd": "+",
+      "als_to_pd": "+",
+      "hd_to_als": "+",
+      "hd_to_pd": "+",
+      "pd_to_als": "+",
+      "pd_to_hd": "+"
+    },
+    "primary_direction_mean_matched_degradation_subject": {
+      "als_to_hd": 0.161047,
+      "als_to_pd": 0.133876,
+      "hd_to_als": 0.192531,
+      "hd_to_pd": 0.173528,
+      "pd_to_als": 0.071398,
+      "pd_to_hd": 0.045839
+    },
+    "within_best_subject_f1_by_source": {
+      "als": 1.0,
+      "hd": 0.957075,
+      "pd": 0.904167
+    }
+  },
+  "max_partitions_requested": 3,
+  "n_partitions_evaluated": 3,
+  "partition_hash": "8d917540c09b2af2c58443a9425c240b3a4120860968eb0778f5ddc86d36366e",
+  "partitions": [
+    {
+      "age_delta_years": 0.125,
+      "candidate_family": "near_optimal",
+      "control_A": [
+        "control1",
+        "control2",
+        "control3",
+        "control4",
+        "control6",
+        "control7",
+        "control11",
+        "control16"
+      ],
+      "control_B": [
+        "control5",
+        "control8",
+        "control9",
+        "control10",
+        "control12",
+        "control13",
+        "control14",
+        "control15"
+      ],
+      "directions": {
+        "als_to_hd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.221053,
+          "legacy_within_best_minus_mean_cross_subject": 0.235121,
+          "median_matched_degradation_subject": 0.151156,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.085462,
+            "knn": 0.250362,
+            "lgbm": 0.003521,
+            "qda": 0.181443,
+            "rf": 0.150403,
+            "svm": 0.236184,
+            "xgb": 0.088448
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.082679,
+            "knn": 0.272727,
+            "lgbm": 0.039249,
+            "qda": 0.214626,
+            "rf": 0.151156,
+            "svm": 0.284211,
+            "xgb": 0.082679
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.752643,
+            "knn": 0.687903,
+            "lgbm": 0.77868,
+            "qda": 0.782793,
+            "rf": 0.767285,
+            "svm": 0.69906,
+            "xgb": 0.733917
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.761765,
+            "knn": 0.727273,
+            "lgbm": 0.805195,
+            "qda": 0.785374,
+            "rf": 0.796992,
+            "svm": 0.715789,
+            "xgb": 0.761765
+          },
+          "primary_mean_matched_degradation_subject": 0.161047
+        },
+        "als_to_pd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.197174,
+          "legacy_within_best_minus_mean_cross_subject": 0.20795,
+          "median_matched_degradation_subject": 0.130688,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.016656,
+            "knn": 0.254987,
+            "lgbm": 0.05657,
+            "qda": 0.165695,
+            "rf": 0.102426,
+            "svm": 0.160159,
+            "xgb": 0.105487
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.015597,
+            "knn": 0.265385,
+            "lgbm": 0.063492,
+            "qda": 0.191667,
+            "rf": 0.130688,
+            "svm": 0.191667,
+            "xgb": 0.109829
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.854761,
+            "knn": 0.683278,
+            "lgbm": 0.725631,
+            "qda": 0.798541,
+            "rf": 0.815262,
+            "svm": 0.775085,
+            "xgb": 0.716878
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.860041,
+            "knn": 0.734615,
+            "lgbm": 0.780952,
+            "qda": 0.808333,
+            "rf": 0.81746,
+            "svm": 0.808333,
+            "xgb": 0.734615
+          },
+          "primary_mean_matched_degradation_subject": 0.133876
+        },
+        "hd_to_als": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.281414,
+          "legacy_within_best_minus_mean_cross_subject": 0.275826,
+          "median_matched_degradation_subject": 0.274147,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.292573,
+            "knn": 0.107304,
+            "lgbm": 0.292573,
+            "qda": -0.013862,
+            "rf": 0.292573,
+            "svm": 0.121409,
+            "xgb": 0.342826
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.274147,
+            "knn": 0.179124,
+            "lgbm": 0.274147,
+            "qda": -0.021633,
+            "rf": 0.274147,
+            "svm": 0.047746,
+            "xgb": 0.320038
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.611777,
+            "knn": 0.645197,
+            "lgbm": 0.611777,
+            "qda": 0.88708,
+            "rf": 0.611777,
+            "svm": 0.732939,
+            "xgb": 0.611777
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.637037,
+            "knn": 0.60625,
+            "lgbm": 0.637037,
+            "qda": 0.892857,
+            "rf": 0.637037,
+            "svm": 0.721485,
+            "xgb": 0.637037
+          },
+          "primary_mean_matched_degradation_subject": 0.192531
+        },
+        "hd_to_pd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.233466,
+          "legacy_within_best_minus_mean_cross_subject": 0.256824,
+          "median_matched_degradation_subject": 0.179249,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.1569,
+            "knn": 0.148544,
+            "lgbm": 0.1569,
+            "qda": 0.04382,
+            "rf": 0.1569,
+            "svm": 0.229541,
+            "xgb": 0.207153
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.179249,
+            "knn": 0.236354,
+            "lgbm": 0.179249,
+            "qda": 0.062891,
+            "rf": 0.179249,
+            "svm": 0.152564,
+            "xgb": 0.22514
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.74745,
+            "knn": 0.603957,
+            "lgbm": 0.74745,
+            "qda": 0.829398,
+            "rf": 0.74745,
+            "svm": 0.624807,
+            "xgb": 0.74745
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.731935,
+            "knn": 0.54902,
+            "lgbm": 0.731935,
+            "qda": 0.808333,
+            "rf": 0.731935,
+            "svm": 0.616667,
+            "xgb": 0.731935
+          },
+          "primary_mean_matched_degradation_subject": 0.173528
+        },
+        "pd_to_als": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.142366,
+          "legacy_within_best_minus_mean_cross_subject": 0.101916,
+          "median_matched_degradation_subject": 0.1193,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.23291,
+            "knn": 0.087844,
+            "lgbm": 0.189869,
+            "qda": -0.066938,
+            "rf": 0.227847,
+            "svm": -0.015092,
+            "xgb": 0.135116
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.207052,
+            "knn": -0.02736,
+            "lgbm": 0.163426,
+            "qda": -0.088107,
+            "rf": 0.207052,
+            "svm": -0.081578,
+            "xgb": 0.1193
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.669252,
+            "knn": 0.788058,
+            "lgbm": 0.712077,
+            "qda": 0.902826,
+            "rf": 0.671551,
+            "svm": 0.859072,
+            "xgb": 0.715739
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.697115,
+            "knn": 0.892857,
+            "lgbm": 0.740741,
+            "qda": 0.948148,
+            "rf": 0.697115,
+            "svm": 0.899038,
+            "xgb": 0.740741
+          },
+          "primary_mean_matched_degradation_subject": 0.071398
+        },
+        "pd_to_hd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.094434,
+          "legacy_within_best_minus_mean_cross_subject": 0.076357,
+          "median_matched_degradation_subject": 0.052898,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.09395,
+            "knn": 0.114268,
+            "lgbm": 0.09251,
+            "qda": -0.017521,
+            "rf": 0.092659,
+            "svm": 0.038997,
+            "xgb": 0.041174
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.097024,
+            "knn": 0.003959,
+            "lgbm": 0.097024,
+            "qda": -0.011183,
+            "rf": 0.097024,
+            "svm": -0.015873,
+            "xgb": 0.052898
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.808212,
+            "knn": 0.761634,
+            "lgbm": 0.809436,
+            "qda": 0.853409,
+            "rf": 0.806739,
+            "svm": 0.804983,
+            "xgb": 0.809681
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.807143,
+            "knn": 0.861538,
+            "lgbm": 0.807143,
+            "qda": 0.871224,
+            "rf": 0.807143,
+            "svm": 0.833333,
+            "xgb": 0.807143
+          },
+          "primary_mean_matched_degradation_subject": 0.045839
+        }
+      },
+      "gait_speed_delta_m_per_s": 0.00374999999999992,
+      "independent_sensitivity_candidate": false,
+      "is_main_partition": true,
+      "is_role_reversal_of_main": false,
+      "overlap_with_main": null,
+      "overlap_with_main_control_a": 8,
+      "partition_hash": "90ce3379d875c958db301b3e09faf9697059b5a36778abd10771cb9d4f0f914f",
+      "partition_index": 1,
+      "partition_key": "partition_1",
+      "score": 0.031154296277919616,
+      "selection_bin": null,
+      "stability_check": {
+        "n_directions_same_sign": 6,
+        "ordering_rank_correlation": 1.0
+      }
+    },
+    {
+      "age_delta_years": 0.125,
+      "candidate_family": "near_optimal",
+      "control_A": [
+        "control1",
+        "control2",
+        "control3",
+        "control4",
+        "control9",
+        "control11",
+        "control14",
+        "control16"
+      ],
+      "control_B": [
+        "control5",
+        "control6",
+        "control7",
+        "control8",
+        "control10",
+        "control12",
+        "control13",
+        "control15"
+      ],
+      "directions": {
+        "als_to_hd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.226632,
+          "legacy_within_best_minus_mean_cross_subject": 0.233461,
+          "median_matched_degradation_subject": 0.142953,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.011927,
+            "knn": 0.246389,
+            "lgbm": 0.015838,
+            "qda": 0.152945,
+            "rf": 0.079938,
+            "svm": 0.270578,
+            "xgb": 0.108793
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.024952,
+            "knn": 0.272727,
+            "lgbm": 0.047452,
+            "qda": 0.203008,
+            "rf": 0.142953,
+            "svm": 0.238235,
+            "xgb": 0.131092
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.724161,
+            "knn": 0.682906,
+            "lgbm": 0.793558,
+            "qda": 0.777516,
+            "rf": 0.79401,
+            "svm": 0.704581,
+            "xgb": 0.762956
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.715789,
+            "knn": 0.727273,
+            "lgbm": 0.796992,
+            "qda": 0.796992,
+            "rf": 0.805195,
+            "svm": 0.761765,
+            "xgb": 0.761765
+          },
+          "primary_mean_matched_degradation_subject": 0.151488
+        },
+        "als_to_pd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.203335,
+          "legacy_within_best_minus_mean_cross_subject": 0.230341,
+          "median_matched_degradation_subject": 0.18254,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.108799,
+            "knn": 0.247275,
+            "lgbm": 0.053645,
+            "qda": 0.111946,
+            "rf": 0.047707,
+            "svm": 0.212826,
+            "xgb": 0.134875
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.067592,
+            "knn": 0.306667,
+            "lgbm": 0.109829,
+            "qda": 0.18254,
+            "rf": 0.125071,
+            "svm": 0.18254,
+            "xgb": 0.199524
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.821033,
+            "knn": 0.68202,
+            "lgbm": 0.755751,
+            "qda": 0.818515,
+            "rf": 0.826241,
+            "svm": 0.762333,
+            "xgb": 0.736874
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.808333,
+            "knn": 0.693333,
+            "lgbm": 0.734615,
+            "qda": 0.81746,
+            "rf": 0.823077,
+            "svm": 0.81746,
+            "xgb": 0.693333
+          },
+          "primary_mean_matched_degradation_subject": 0.148368
+        },
+        "hd_to_als": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.137322,
+          "legacy_within_best_minus_mean_cross_subject": 0.11301,
+          "median_matched_degradation_subject": 0.136218,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.198629,
+            "knn": -0.091542,
+            "lgbm": 0.222485,
+            "qda": -0.117028,
+            "rf": 0.140853,
+            "svm": -0.066028,
+            "xgb": 0.192034
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.174109,
+            "knn": -0.133368,
+            "lgbm": 0.196296,
+            "qda": -0.151156,
+            "rf": 0.136218,
+            "svm": 0.024291,
+            "xgb": 0.174109
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.670325,
+            "knn": 0.801021,
+            "lgbm": 0.606539,
+            "qda": 0.899688,
+            "rf": 0.681936,
+            "svm": 0.786156,
+            "xgb": 0.675759
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.697115,
+            "knn": 0.832891,
+            "lgbm": 0.637037,
+            "qda": 0.948148,
+            "rf": 0.697115,
+            "svm": 0.798077,
+            "xgb": 0.697115
+          },
+          "primary_mean_matched_degradation_subject": 0.060071
+        },
+        "hd_to_pd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.097751,
+          "legacy_within_best_minus_mean_cross_subject": 0.103949,
+          "median_matched_degradation_subject": 0.055634,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.063047,
+            "knn": 0.007501,
+            "lgbm": 0.087031,
+            "qda": -0.044197,
+            "rf": 0.005506,
+            "svm": 0.026963,
+            "xgb": 0.056552
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.076581,
+            "knn": -0.012977,
+            "lgbm": 0.101398,
+            "qda": 0.021164,
+            "rf": 0.03869,
+            "svm": 0.055634,
+            "xgb": 0.076581
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.805907,
+            "knn": 0.701978,
+            "lgbm": 0.741993,
+            "qda": 0.826857,
+            "rf": 0.817283,
+            "svm": 0.693165,
+            "xgb": 0.811241
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.794643,
+            "knn": 0.7125,
+            "lgbm": 0.731935,
+            "qda": 0.775828,
+            "rf": 0.794643,
+            "svm": 0.766734,
+            "xgb": 0.794643
+          },
+          "primary_mean_matched_degradation_subject": 0.05101
+        },
+        "pd_to_als": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.098345,
+          "legacy_within_best_minus_mean_cross_subject": 0.0622,
+          "median_matched_degradation_subject": 0.046057,
+          "per_classifier_matched_degradation_stride": {
+            "dt": 0.076497,
+            "knn": -0.062821,
+            "lgbm": 0.251283,
+            "qda": -0.091488,
+            "rf": 0.155559,
+            "svm": -0.033985,
+            "xgb": 0.207155
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": 0.046057,
+            "knn": -0.130688,
+            "lgbm": 0.214576,
+            "qda": -0.139815,
+            "rf": 0.111218,
+            "svm": -0.034305,
+            "xgb": 0.162926
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.781325,
+            "knn": 0.884266,
+            "lgbm": 0.606539,
+            "qda": 0.910428,
+            "rf": 0.670325,
+            "svm": 0.852418,
+            "xgb": 0.657272
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.805556,
+            "knn": 0.948148,
+            "lgbm": 0.637037,
+            "qda": 0.948148,
+            "rf": 0.697115,
+            "svm": 0.851765,
+            "xgb": 0.697115
+          },
+          "primary_mean_matched_degradation_subject": 0.032853
+        },
+        "pd_to_hd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.057463,
+          "legacy_within_best_minus_mean_cross_subject": 0.045896,
+          "median_matched_degradation_subject": 0.020468,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.052999,
+            "knn": 0.018063,
+            "lgbm": 0.067445,
+            "qda": -0.004883,
+            "rf": 0.054686,
+            "svm": 0.028502,
+            "xgb": 0.10521
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.059571,
+            "knn": -0.015873,
+            "lgbm": 0.065899,
+            "qda": -0.025,
+            "rf": 0.039102,
+            "svm": 0.020468,
+            "xgb": 0.09081
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.910821,
+            "knn": 0.803382,
+            "lgbm": 0.790377,
+            "qda": 0.823823,
+            "rf": 0.771198,
+            "svm": 0.789931,
+            "xgb": 0.759217
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.911184,
+            "knn": 0.833333,
+            "lgbm": 0.785714,
+            "qda": 0.833333,
+            "rf": 0.769231,
+            "svm": 0.796992,
+            "xgb": 0.769231
+          },
+          "primary_mean_matched_degradation_subject": 0.016548
+        }
+      },
+      "gait_speed_delta_m_per_s": 0.00374999999999992,
+      "independent_sensitivity_candidate": true,
+      "is_main_partition": false,
+      "is_role_reversal_of_main": false,
+      "overlap_with_main": null,
+      "overlap_with_main_control_a": 6,
+      "partition_hash": "0f3174560a65cd5383b7bd75953b6438eb2b5cfa76579a1589292ef862f5f606",
+      "partition_index": 2,
+      "partition_key": "partition_2",
+      "score": 0.031154296277919616,
+      "selection_bin": null,
+      "stability_check": {
+        "n_directions_same_sign": 6,
+        "ordering_rank_correlation": 0.542857
+      }
+    },
+    {
+      "age_delta_years": 0.125,
+      "candidate_family": "near_optimal",
+      "control_A": [
+        "control1",
+        "control2",
+        "control5",
+        "control6",
+        "control10",
+        "control13",
+        "control15",
+        "control16"
+      ],
+      "control_B": [
+        "control3",
+        "control4",
+        "control7",
+        "control8",
+        "control9",
+        "control11",
+        "control12",
+        "control14"
+      ],
+      "directions": {
+        "als_to_hd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.111968,
+          "legacy_within_best_minus_mean_cross_subject": 0.145105,
+          "median_matched_degradation_subject": 0.039249,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.093583,
+            "knn": 0.06692,
+            "lgbm": 0.021153,
+            "qda": -0.145039,
+            "rf": 0.048961,
+            "svm": 0.112386,
+            "xgb": 0.025605
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.081451,
+            "knn": 0.074558,
+            "lgbm": 0.037152,
+            "qda": -0.137454,
+            "rf": 0.051681,
+            "svm": 0.178262,
+            "xgb": 0.039249
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.81782,
+            "knn": 0.732471,
+            "lgbm": 0.70305,
+            "qda": 0.854803,
+            "rf": 0.815887,
+            "svm": 0.785874,
+            "xgb": 0.794141
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.841176,
+            "knn": 0.769886,
+            "lgbm": 0.715789,
+            "qda": 0.878195,
+            "rf": 0.841176,
+            "svm": 0.769886,
+            "xgb": 0.805195
+          },
+          "primary_mean_matched_degradation_subject": 0.023142
+        },
+        "als_to_pd": {
+          "direction_sign": "+",
+          "legacy_within_best_minus_mean_cross_stride": 0.126329,
+          "legacy_within_best_minus_mean_cross_subject": 0.161562,
+          "median_matched_degradation_subject": 0.082651,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.193873,
+            "knn": 0.083571,
+            "lgbm": 0.144973,
+            "qda": -0.161804,
+            "rf": 0.076319,
+            "svm": 0.068126,
+            "xgb": 0.119621
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.193622,
+            "knn": 0.105808,
+            "lgbm": 0.188547,
+            "qda": -0.124756,
+            "rf": 0.06978,
+            "svm": 0.082651,
+            "xgb": 0.148792
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.91811,
+            "knn": 0.71582,
+            "lgbm": 0.57923,
+            "qda": 0.871568,
+            "rf": 0.788529,
+            "svm": 0.830134,
+            "xgb": 0.700125
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.953347,
+            "knn": 0.738636,
+            "lgbm": 0.564394,
+            "qda": 0.865497,
+            "rf": 0.823077,
+            "svm": 0.865497,
+            "xgb": 0.695652
+          },
+          "primary_mean_matched_degradation_subject": 0.0396
+        },
+        "hd_to_als": {
+          "direction_sign": "-",
+          "legacy_within_best_minus_mean_cross_stride": 0.061688,
+          "legacy_within_best_minus_mean_cross_subject": 0.088041,
+          "median_matched_degradation_subject": -0.107538,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.082961,
+            "knn": -0.106947,
+            "lgbm": -0.078391,
+            "qda": -0.172196,
+            "rf": -0.138954,
+            "svm": -0.068824,
+            "xgb": 0.052083
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.107538,
+            "knn": -0.052378,
+            "lgbm": -0.094842,
+            "qda": -0.189168,
+            "rf": -0.160153,
+            "svm": -0.114322,
+            "xgb": 0.065668
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.724553,
+            "knn": 0.731952,
+            "lgbm": 0.78293,
+            "qda": 0.840973,
+            "rf": 0.78293,
+            "svm": 0.76701,
+            "xgb": 0.78293
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.752941,
+            "knn": 0.697115,
+            "lgbm": 0.805556,
+            "qda": 0.855835,
+            "rf": 0.805556,
+            "svm": 0.759725,
+            "xgb": 0.805556
+          },
+          "primary_mean_matched_degradation_subject": -0.093248
+        },
+        "hd_to_pd": {
+          "direction_sign": "-",
+          "legacy_within_best_minus_mean_cross_stride": 0.001581,
+          "legacy_within_best_minus_mean_cross_subject": 0.044229,
+          "median_matched_degradation_subject": -0.16293,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.175357,
+            "knn": -0.094776,
+            "lgbm": -0.16586,
+            "qda": -0.167375,
+            "rf": -0.264746,
+            "svm": -0.113436,
+            "xgb": -0.035386
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.16293,
+            "knn": -0.028691,
+            "lgbm": -0.149327,
+            "qda": -0.19883,
+            "rf": -0.258764,
+            "svm": -0.172057,
+            "xgb": 0.011183
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.816949,
+            "knn": 0.719781,
+            "lgbm": 0.870399,
+            "qda": 0.836152,
+            "rf": 0.908722,
+            "svm": 0.811622,
+            "xgb": 0.870399
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.808333,
+            "knn": 0.673428,
+            "lgbm": 0.860041,
+            "qda": 0.865497,
+            "rf": 0.904167,
+            "svm": 0.81746,
+            "xgb": 0.860041
+          },
+          "primary_mean_matched_degradation_subject": -0.137059
+        },
+        "pd_to_als": {
+          "direction_sign": "-",
+          "legacy_within_best_minus_mean_cross_stride": -0.041831,
+          "legacy_within_best_minus_mean_cross_subject": -0.049656,
+          "median_matched_degradation_subject": -0.198102,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.171849,
+            "knn": -0.164846,
+            "lgbm": -0.233117,
+            "qda": -0.078829,
+            "rf": -0.170036,
+            "svm": -0.209,
+            "xgb": -0.23657
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.198102,
+            "knn": -0.190278,
+            "lgbm": -0.250717,
+            "qda": -0.080007,
+            "rf": -0.180847,
+            "svm": -0.210814,
+            "xgb": -0.266334
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.72961,
+            "knn": 0.873654,
+            "lgbm": 0.78293,
+            "qda": 0.841539,
+            "rf": 0.794164,
+            "svm": 0.88028,
+            "xgb": 0.72961
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.752941,
+            "knn": 0.902778,
+            "lgbm": 0.805556,
+            "qda": 0.855835,
+            "rf": 0.805556,
+            "svm": 0.902778,
+            "xgb": 0.752941
+          },
+          "primary_mean_matched_degradation_subject": -0.196728
+        },
+        "pd_to_hd": {
+          "direction_sign": "-",
+          "legacy_within_best_minus_mean_cross_stride": -0.09835,
+          "legacy_within_best_minus_mean_cross_subject": -0.090748,
+          "median_matched_degradation_subject": -0.246515,
+          "per_classifier_matched_degradation_stride": {
+            "dt": -0.307024,
+            "knn": -0.123379,
+            "lgbm": -0.36153,
+            "qda": -0.055955,
+            "rf": -0.242835,
+            "svm": -0.197413,
+            "xgb": -0.371745
+          },
+          "per_classifier_matched_degradation_subject": {
+            "dt": -0.306699,
+            "knn": -0.128676,
+            "lgbm": -0.356345,
+            "qda": -0.065348,
+            "rf": -0.246515,
+            "svm": -0.186231,
+            "xgb": -0.374931
+          },
+          "per_classifier_stride_f1": {
+            "dt": 0.864785,
+            "knn": 0.832187,
+            "lgbm": 0.911343,
+            "qda": 0.818665,
+            "rf": 0.866963,
+            "svm": 0.868693,
+            "xgb": 0.864785
+          },
+          "per_classifier_subject_f1": {
+            "dt": 0.861538,
+            "knn": 0.841176,
+            "lgbm": 0.911184,
+            "qda": 0.841176,
+            "rf": 0.871224,
+            "svm": 0.878195,
+            "xgb": 0.861538
+          },
+          "primary_mean_matched_degradation_subject": -0.237821
+        }
+      },
+      "gait_speed_delta_m_per_s": 0.00374999999999992,
+      "independent_sensitivity_candidate": true,
+      "is_main_partition": false,
+      "is_role_reversal_of_main": false,
+      "overlap_with_main": null,
+      "overlap_with_main_control_a": 4,
+      "partition_hash": "c2e20fc82d81ab0fa314772d9171c4dad98aafac02361d7731eb7a35b5fcd85e",
+      "partition_index": 3,
+      "partition_key": "partition_3",
+      "score": 0.031154296277919616,
+      "selection_bin": null,
+      "stability_check": {
+        "n_directions_same_sign": 2,
+        "ordering_rank_correlation": 0.485714
+      }
+    }
+  ],
+  "payload_sha256": "abd344e26fba7d8d3e7971ae49a0132c71e4765aa3535341f4fcf55dbf7682b6",
+  "preprocessing_manifest_hash": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
+  "protocol_manifest_hash": "4de674e9fa5eb8abd86a6dd6d62fe1bfe4cb90edbfd4c7f52c9d6a9cd3ae7116",
+  "schema_version": "v4-step8-summary-v1"
+}
