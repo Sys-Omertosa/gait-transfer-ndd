@@ -2,14 +2,19 @@
 # Raw/private data
 # ---------------------------------------------------------------------
 data/raw/
+context.md
 
 # ---------------------------------------------------------------------
 # Private/local context and agent state
 # ---------------------------------------------------------------------
 context/
 CLAUDE.md
+.claude/
 .codex
 .agents/
+
+# Local course/reference material
+CS-471 Machine Learning Sp26 - Daud Abdullah.pdf
 
 # Local scratch / external tools
 old/
@@ -113,3 +118,8 @@ report/**/*.snm
 
 # Local IEEE template copy if stored at repo root
 IEEE-conference-template-062824/
+
+# Local manuscript freeze backups; Git history preserves canonical revisions
+report/icacs27/FROZEN_*/
+report/icacs27/FROZEN.md
+report/icacs27/CHECKSUMS.sha256
