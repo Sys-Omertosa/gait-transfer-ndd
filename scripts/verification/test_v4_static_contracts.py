@@ -55,16 +55,23 @@ def main() -> None:
         raise AssertionError('code_hash() should reject files outside repo_root.')
 
     shap_runner = (REPO_ROOT / 'scripts' / 'training' / 'run_shap_modal.py').read_text()
-    assert "batch.put_file(" in shap_runner
-    assert "'results_v4/shap_results_v4.json'" in shap_runner
-    assert 'v4_protocol_manifest.json' in shap_runner
-    assert 'preprocessing_manifest_v4.json' in shap_runner
+    # The runner writes its payload straight into the mounted results volume and
+    # commits, rather than uploading it from the client with a batch handle.
+    # Manifest validation now happens inside build_authoritative_step12_context(),
+    # which reads the protocol and preprocessing manifests on the runner's behalf,
+    # so those filenames no longer appear literally in this runner.
+    assert 'build_authoritative_step12_context(' in shap_runner
+    assert 'require_downstream_manifest=True' in shap_runner
+    assert 'write_payload_json(' in shap_runner
+    assert "Path('/results/results_v4/shap_results_v4.json')" in shap_runner
     assert 'volume.commit()' in shap_runner
 
     sensitivity_runner = (
         REPO_ROOT / 'scripts' / 'training' / 'run_control_split_sensitivity_modal.py'
     ).read_text()
-    assert 'models_dir=models_dir' in sensitivity_runner
+    # The models directory is still threaded explicitly through to each shard;
+    # the local variable holding it is now named for the partition it belongs to.
+    assert 'models_dir=partition_models_dir' in sensitivity_runner
     assert 'allow_refit=False' in sensitivity_runner
 
     freeze_script = (
