@@ -1,208 +1,203 @@
 # Contributing
 
-Thank you for your interest in contributing to this project.
+Thanks for your interest in this project.
 
-This repository supports a research study on gait-timing transfer across
-neurological conditions using the PhysioNet Neurodegenerative Disease Gait
-database. Contributions are welcome, especially when they improve
-reproducibility, methodological clarity, documentation quality, statistical
-rigor, and robustness of the experimental pipeline.
+This repository supports a research study on zero-shot gait-timing transfer across Parkinson's disease, Huntington's disease, and ALS, using the PhysioNet Gait in Neurodegenerative Disease Database. Contributions are welcome, particularly those that improve reproducibility, methodological clarity, statistical rigour, verification coverage, and documentation quality.
 
-## Scope of Contributions
+Because this is research code with published numbers attached to it, correctness and provenance matter more here than style. The sections below describe how the experiment line is organised and what a contribution needs to respect.
 
-Useful contributions include:
+---
 
-- bug fixes in preprocessing, training, explainability, robustness, or app code
-- reproducibility improvements for the `v2` experiment path
-- validation scripts, consistency checks, and artifact verification utilities
-- documentation improvements for setup, interpretation, and replication
-- notebook cleanup that improves clarity without changing scientific meaning
-- additional tests for metric computation, data filtering, and result integrity
-- careful extensions of the methodology, provided they preserve provenance and
-  do not silently overwrite the current authoritative artifacts
+## The authoritative experiment line is `v4`
 
-Less useful contributions include:
+`v1`, `v2`, and `v3` are earlier experiment lines. They are retained for provenance only. **All current results come from `v4`**, and the methodology changed materially between these lines, so older numbers are not comparable.
 
-- stylistic refactors with no research or maintenance benefit
-- replacing committed authoritative outputs without a clear reproduction path
-- adding unpublished claims to the paper or README without code-backed evidence
-- committing raw private data, local environment files, or private working notes
+Treat these as the reference artifacts:
 
-## Before You Start
+| Artifact | Path |
+|---|---|
+| Frozen feature matrix, partition, manifests | `data/processed/v4/` |
+| Result envelopes | `experiments/results/v4/` |
+| Figures | `report/figures/v4/` |
+| Manuscript tables | `report/tables/v4/` |
+
+Model binaries, SHAP caches, and run logs are generated locally and excluded from version control by size. They are not part of the committed evidence.
+
+What changed between `v3` and `v4`, in case you touch the affected code:
+
+- inner model selection pools predictions across all held-out inner subjects instead of scoring each inner fold independently
+- imbalance handling became part of the grouped candidate space rather than a post-hoc choice
+- transfer models are re-selected and refitted on the full source pool instead of reusing modal fold parameters
+- permutation inference became subject-aware, with Monte Carlo p-values that cannot be zero
+- SHAP backgrounds became source-specific and class-balanced
+- family-level SHAP aggregation uses total movement, so opposing feature movements inside a family no longer cancel
+
+If you find documentation or notebook text that still describes `v2` behaviour as current, correcting it is a useful contribution. `PROGRESS.md` is a historical log whose entries stop before the `v4` line; `README.md` is the current overview.
+
+---
+
+## Before you start
 
 Please read:
 
-- `README.md` for project scope and reproduction flow
-- `PROGRESS.md` for the historical development path
+- `README.md` for scope, protocol, results, and the reproduction path
 - `report/main.tex` if your contribution touches manuscript-facing outputs
-- specifications and docstrings in relevant code files
+- the docstrings in the relevant `src/` module, which carry the methodological reasoning
 
-The current authoritative result path is `v2`. If your work builds on the
-present experiment line, please treat these as the reference artifacts:
+---
 
-- `data/processed/v2/gait_features_v2.csv`
-- `experiments/results/v2/`
-- `experiments/models/v2/`
-- `report/figures/v2/`
-- `report/tables/v2/`
+## Environment
 
-## Environment Setup
-
-Use Python 3.12.
-
-Full environment:
+Python 3.12.
 
 ```bash
 python3.12 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-core.txt     # or requirements.txt for the full pinned set
 ```
 
-Smaller research environment:
+Modules inside `src/` import each other flat, so put `src` on the path rather than importing through the package root:
 
 ```bash
-python3.12 -m venv venv
-source venv/bin/activate
-pip install -r requirements-core.txt
+PYTHONPATH=src python -c "from features import get_feature_cols; print(len(get_feature_cols()))"
 ```
 
-## Repository Principles
+Raw GAITNDD data is not committed. Download it from PhysioNet and place it under `data/raw/gait-in-neurodegenerative-disease-database-1.0.0/` if you need to rebuild the feature matrix.
 
-The repository is organized around a simple rule: reusable logic lives in
-`src/`, while notebooks remain the narrative and visualization layer.
+---
 
-- Put reusable data-processing or modeling logic in `src/`
-- Use notebooks to inspect, summarize, and export results
-- Keep manuscript-facing artifacts in `report/`
-- Keep runner scripts in `scripts/training/` or `scripts/verification/`
+## Repository principles
 
-Please do not duplicate core logic across notebooks when it can live in a
-shared module.
+Reusable logic lives in `src/`; notebooks are the narrative and visualisation layer.
 
-## Research Integrity Requirements
+- put reusable data-processing or modelling logic in `src/`
+- use notebooks to inspect, summarise, and export results, not to hold core logic
+- keep manuscript-facing artifacts in `report/`
+- keep runners in `scripts/training/` and checks in `scripts/verification/`
 
-This project is research code, so contributions need stronger discipline than a
-typical application repository.
+Note which runner you are looking at. The `*_modal.py` runners produce the `v4` line and execute remotely; the `*_local.py` runners target the earlier `v3` line and do not reproduce `v4` artifacts.
 
-- Do not modify reported metrics manually
-- Do not overwrite authoritative outputs without recording how they were
-  regenerated
-- Do not change sign conventions, labels, or metric definitions silently
-- Do not mix `v1` and `v2` artifacts inside the same analysis without stating it
-- Do not introduce data leakage, especially across subject boundaries or control
-  partitions
+---
 
-If you change experimental logic, please explain:
+## Methodological rules
+
+These constraints are what make the reported numbers defensible. A change that breaks one of them is a scientific regression, not a refactor.
+
+- **Subject-level evaluation is primary.** Metrics are computed after aggregating each subject's stride probabilities into one decision. Stride-level scores are companions and are labelled as such.
+- **No subject spans training and evaluation.** Grouping is by subject at every level, including the inner selection loop.
+- **The held-out subject is never seen during tuning.** Candidate selection happens entirely inside the outer training pool.
+- **Control A trains, Control B scores.** The two healthy pools are disjoint and were fixed before any task was defined. Do not mix them, and do not re-derive the partition casually.
+- **SMOTE is training-fold only.** It never touches evaluation rows. Control A is the minority class in every source pool, so it synthesises healthy strides.
+- **Transfer is zero-shot.** No target labels, hyperparameters, thresholds, or calibration sets may enter model construction.
+- **Matched degradation compares like with like.** Each classifier family is compared against its own within-condition estimate, never against the source condition's best model.
+- **Seeds are fixed.** The protocol manifest records seed 42; keep stochastic behaviour reproducible.
+
+Interpretation rules that apply to text as much as code:
+
+- SHAP reliance shift describes model behaviour, not disease mechanism, and supports no causal claim
+- direction leaders are identified after observing target labels and are not a selection rule
+- the conformal analysis in the repository is exploratory and is deliberately excluded from reported evidence
+
+---
+
+## Artifact and provenance discipline
+
+- do not edit reported metrics by hand
+- do not overwrite frozen `v4` artifacts without recording how they were regenerated
+- do not change sign conventions, label semantics, or metric definitions silently
+- do not mix artifacts from different experiment lines in one analysis without saying so
+- preserve the existing JSON schema keys; downstream notebooks, figures, and the verification suite read them
+- manifest hashes tie results to the state that produced them. If you regenerate an artifact, regenerate its manifest through `scripts/setup/` rather than editing hashes
+
+If you change experimental logic, state in the pull request:
 
 1. what changed
 2. why it changed
 3. which artifacts must be regenerated
-4. whether prior manuscript text becomes stale
+4. whether any manuscript text or figure becomes stale
 
-## Data and Privacy Rules
+---
 
-The repository intentionally does not commit raw GAITNDD source files.
+## Verification
 
-Please do not commit:
+There is no CI and no pytest suite. `scripts/verification/` contains 33 standalone scripts that check artifact identity, envelope schemas, runner contracts, notebook wiring, and replay equivalence. Run them directly with `python`; each prints a pass line or exits with an error.
+
+Run the narrowest relevant checks and report what you ran:
+
+```bash
+python scripts/verification/test_v4_artifact_identity.py
+python scripts/verification/test_v4_downstream_final_envelopes.py
+python scripts/verification/test_v4_static_contracts.py
+python scripts/verification/test_v4_authoritative_runner_contracts.py
+python scripts/verification/test_v4_notebook_contracts.py
+```
+
+By area:
+
+| If you change | Verify |
+|---|---|
+| preprocessing | subject and stride counts, control partition integrity, preprocessing manifest |
+| training or selection | subject grouping, selection trace, result envelope structure |
+| SHAP | explainer assignment, background construction, completeness behaviour |
+| robustness | output keys and downstream notebook compatibility |
+| manuscript-facing outputs | figures, tables, and LaTeX references still resolve |
+
+**Known state:** `test_v4_subject_aggregation_fragmented_equivalence.py` currently fails on a stale fixture that pins the superseded tie-break rule. The pipeline is correct and the fixture is out of date. If you see that failure, it is pre-existing; fixing the fixture is a welcome contribution.
+
+If you could not run a full validation, say so plainly in the pull request.
+
+---
+
+## Data and privacy
+
+Do not commit:
 
 - raw dataset copies under `data/raw/`
 - local environment directories such as `venv/`
-- any private planning files, like under `context/`
-- temporary notebook or Jupyter cache files
-- personal API keys, tokens, or secrets
+- private planning material, including `context/`
+- notebook checkpoints and temporary caches
+- API keys, tokens, or credentials
 
-If you add new ignores that improve repository hygiene, that is a welcome
-contribution.
+Improvements to ignore rules that strengthen this boundary are welcome.
 
-## Coding Guidelines
+---
 
-Please follow these conventions:
+## Coding guidelines
 
 - prefer small, reviewable changes
-- keep file and function names descriptive
-- use ASCII by default unless a file already requires Unicode
-- preserve existing result schema conventions in JSON outputs
-- avoid unnecessary dependency additions
-- prefer `rg` for fast text search and repository inspection
+- follow the existing style in `src/`; keep names descriptive
+- keep numerical behaviour explicit and reproducible
+- document non-obvious methodological choices in docstrings, including the reason
+- avoid unnecessary dependencies; the environment is pinned
+- use ASCII unless a file already requires Unicode
 
-For Python:
+---
 
-- follow the existing code style in `src/`
-- keep numerical behavior explicit and reproducible
-- use fixed random seeds where the current pipeline expects them
-- document non-obvious methodological choices in comments or docstrings
+## Pull requests and issues
 
-## Testing and Verification
+A good pull request states the problem, what changed, which files and artifacts are affected, any regeneration steps, and what you verified. If it changes experimental outputs, say whether it preserves the `v4` line, opens a new experiment line, or supersedes an existing artifact set.
 
-If your contribution affects experimental results, please run the narrowest
-relevant verification step you can and report what you checked.
+Issues are welcome for reproducibility failures, documentation gaps, methodological concerns, suspicious metrics or figures, and app behaviour that diverges from stored results. Include paths, commands, and exact error messages.
 
-Examples:
+---
 
-- preprocessing changes:
-  - verify subject counts, stride counts, and control partition integrity
-- training changes:
-  - verify LOSO grouping, modal parameter selection, and result JSON structure
-- SHAP changes:
-  - verify explainer assignment and completeness behavior where applicable
-- robustness changes:
-  - verify output JSON keys and downstream notebook compatibility
-- manuscript-facing changes:
-  - verify figures, tables, or LaTeX references still resolve correctly
+## Useful contribution areas
 
-If you could not run a full validation, say so clearly in the pull request.
+- migrating the Streamlit app in `app/` from the legacy artifact line to `v4`, so its numbers match the current results
+- refreshing historical documentation that still describes `v2` as authoritative
+- broader verification coverage over result envelopes and derived tables
+- manuscript-to-artifact consistency checks
+- regenerating the few notebook figures that still use the superseded family-aggregation convention
+- research extensions listed in the README roadmap, such as external validation, a selection rule that never reads target labels, or shift-aware calibration with a held-out split
 
-## Pull Request Expectations
+---
 
-Good pull requests usually include:
+## Citation and attribution
 
-- a short description of the problem
-- a clear summary of what changed
-- the scope of affected files or artifacts
-- any regeneration steps needed
-- verification notes
+The manuscript is a working draft and has not been submitted to or accepted by any venue, so there is no formal citation yet. If you build on this work in the meantime, cite the repository and preserve author attribution in source files and documentation.
 
-If your contribution changes experimental outputs, please say whether it:
+---
 
-- preserves the current `v2` authoritative path
-- creates a new experimental branch
-- supersedes an existing artifact set
+## Final note
 
-## Issues and Discussion
-
-Issues are welcome for:
-
-- reproducibility failures
-- documentation gaps
-- methodological concerns
-- suspicious metrics or figure inconsistencies
-- app behavior that diverges from stored results
-
-When opening an issue, please include enough context for someone else to
-reproduce the problem. Paths, commands, and exact error messages help.
-
-## Suggested Contribution Areas
-
-Researchers and external contributors may find these areas especially useful:
-
-- better verification coverage around result JSON integrity
-- lightweight tests for preprocessing and metric utilities
-- clearer artifact provenance around exported paper tables
-- manuscript-to-code consistency checks
-- app usability improvements that do not alter the underlying science
-- future experiment-path preparation for post-`v2` improvement work
-
-## Citation and Attribution
-
-If you use this repository in academic work, please cite the associated paper
-or repository once the formal citation is finalized in the manuscript and
-project metadata.
-
-Please preserve author attribution in source files and documentation when
-extending existing work.
-
-## Final Note
-
-We welcome careful contributions that make the repository easier to trust,
-understand, and reproduce. In this project, correctness and provenance matter
-at least as much as code style.
+We welcome careful contributions that make this repository easier to trust, understand, and reproduce. Provenance and correctness come first; everything else is negotiable.
