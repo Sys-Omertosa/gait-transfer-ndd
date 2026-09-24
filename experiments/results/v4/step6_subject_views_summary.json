@@ -3,7 +3,7 @@
   "preprocessing_manifest_sha256": "0ff2a252a817693bd552539e1cb1ea7cc0aee5245f58014cbb12edcb520aca57",
   "downstream_execution_manifest_sha256": "a649454346c475502657ed2c86f890181dcd861b816a5c46e29897105697c897",
   "subject_level_matrix_sha256": "4e00a8426f39bbd11312620c264dbd8f0ab7e8fbcbf4a62f1211dfbc077148e2",
-  "notebook_source_sha256": "a1db215041ea7ce77ae6fbb87c4edb1e2cbf1e24e06c34235c5f338c3e76046b",
+  "notebook_source_sha256": "60496f3e4b9af50dd4f0ac58350454a2337112be928461fc4e3448de439dc8f6",
   "package_versions": {
     "numpy": "2.4.4",
     "polars": "1.39.3",
@@ -136,7 +136,7 @@
         10
       ],
       "silhouette_score": 0.49094373802287483,
-      "inertia": 575.840356595253,
+      "inertia": 575.8403565952528,
       "calinski_harabasz_score": 32.43214553094685,
       "davies_bouldin_score": 1.061447623192999,
       "ari_against_relevant_labels": 0.025964383345895535,
@@ -205,7 +205,7 @@
         10
       ],
       "silhouette_score": 0.49094373802287483,
-      "inertia": 575.840356595253,
+      "inertia": 575.8403565952528,
       "calinski_harabasz_score": 32.43214553094685,
       "davies_bouldin_score": 1.061447623192999,
       "ari_against_relevant_labels": -0.09987728752067439,
